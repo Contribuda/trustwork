@@ -6,7 +6,7 @@ import { Body, Params, Query } from '../../common/zod.js';
 import { PrincipalService } from '../identity/principal.service.js';
 import { Elevation, ElevationGuard } from '../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../identity/second-factor/deps.js';
-import { ClearJurisdictionHoldCommandSchema, jurisdictionHolds, JurisdictionHoldSchema, type JurisdictionHold, type JurisdictionHoldRow } from './deps.js';
+import { ClearJurisdictionHoldCommandSchema, jurisdictionHolds, JurisdictionHoldSchema, jurisdictionStaff, type JurisdictionHold, type JurisdictionHoldRow } from './deps.js';
 
 const UuidParams = z.strictObject({ id: z.uuid() });
 const ListQuery = z.strictObject({ open: z.enum(['true', 'false']).optional(), personId: z.uuid().optional() });
@@ -46,7 +46,10 @@ function clearRefusal(error: unknown): never {
 /**
  * Compliance staff (ADR 014 decision 8): list holds and clear one with a reason and an evidence category. Behind an
  * elevated session; the database checks the compliance-officer role at the node, refuses the subject and declared
- * conflicts, serialises concurrent reviewers and writes the audit row in the same transaction.
+ * conflicts, serialises concurrent reviewers and writes the audit row in the same transaction. A hold names a person, so
+ * reading one follows the compliance panel of the screening console (console design, section 4.1): the compliance
+ * officer's alone, an auditor gets the answer any other staff member gets, and row-level security removes every subject
+ * the reader is conflicted with.
  */
 @Controller('v1/admin/jurisdiction/holds')
 @Authenticated()
@@ -57,6 +60,7 @@ export class JurisdictionHoldsController {
   @Get()
   list(@Query(ListQuery) query: z.infer<typeof ListQuery>, @ReqState() state: RequestState) {
     return this.principals.runAs(state, async (trx) => {
+      if (!await jurisdictionStaff.canReadHolds(trx)) throw new ApiError('access.not_found');
       const rows = await jurisdictionHolds.list(trx, { ...(query.open ? { open: query.open === 'true' } : {}), ...(query.personId ? { personId: query.personId } : {}) });
       return { items: rows.map(holdView) };
     });

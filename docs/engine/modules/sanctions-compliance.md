@@ -15,7 +15,7 @@ Keep every hub lawful under the sanctions and export-control rules that bind its
 | Compliance officer (hub or node scope) | Reviews possible matches, clears holds, decides appeals as a different reviewer, watches list freshness |
 | Second person (compliance permission) | Approves "not the same person" decisions and reversals |
 | Hub owner, node operator | Configure lists, adapters, thresholds and service levels inside engine bounds; attest the deployment location |
-| Auditor | Reads the audit trail, lists, runs, holds and report drafts; not the queue or the compliance panel of a named subject (console design, section 4.1) |
+| Auditor | Reads the audit trail, lists, runs and refusal counters; not the queue, holds, report drafts or the compliance panel of a named subject (console design, section 4.1) |
 
 ## User stories
 

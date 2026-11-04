@@ -118,7 +118,7 @@ test('jurisdiction gate and holds through the API', { skip: h ? false : SKIP_REA
     const carlFactor = await enrol(h, carl);
     await elevate(h, carl, carlFactor.secret);
     expectError(await carl.post(`/v1/admin/jurisdiction/holds/${holdId}/clear`, { reason: 'Synthetic', evidence: 'call' }, from(SERVED_ADDRESS)), 403, 'access.forbidden');
-    assert.deepEqual((await carl.get('/v1/admin/jurisdiction/holds', from(SERVED_ADDRESS))).body, { items: [] }, 'other staff read no holds');
+    expectError(await carl.get('/v1/admin/jurisdiction/holds', from(SERVED_ADDRESS)), 404, 'access.not_found');
     const anna = await staffClient('anna');
     const unelevated = await anna.post(`/v1/admin/jurisdiction/holds/${holdId}/clear`, { reason: 'Synthetic', evidence: 'call' }, from(SERVED_ADDRESS));
     expectError(unelevated, 403, 'access.forbidden');

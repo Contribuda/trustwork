@@ -272,7 +272,7 @@ test('SANC-003 screening engine on PostgreSQL', { skip: env ? false : SKIP_REASO
       assert.equal(await count(zorvan), 0, `${table}: the subject reads nothing directly`);
       assert.equal(await count(staff.customer), 0, `${table}: another participant reads nothing`);
       assert.equal(await count(staff.agent), 0, `${table}: staff without a compliance role read nothing`);
-      assert.ok((await count(staff.auditor)) > 0, `${table}: the auditor reads`);
+      assert.equal(await count(staff.auditor), 0, `${table}: a named subject is the compliance officer's, not the auditor's`);
       assert.ok((await count(staff.moderator)) > 0, `${table}: a compliance officer reads`);
       await rejects(worker.query(`SELECT 1 FROM trustwork.${table}`), '42501');
       await rejects(runtime.query(`DELETE FROM trustwork.${table}`), '42501');

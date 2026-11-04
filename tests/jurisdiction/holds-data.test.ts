@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash, randomBytes } from 'node:crypto';
 import { createPool, withMaintenance, type DataPool } from '@trustwork/data';
 import { staffConflicts, staffRoleDefinitions } from '../../packages/data/src/repositories/admin.js';
-import { jurisdictionGate, jurisdictionHolds } from '../../packages/data/src/repositories/jurisdiction.js';
+import { jurisdictionGate, jurisdictionHolds, jurisdictionStaff } from '../../packages/data/src/repositories/jurisdiction.js';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { TABLE_COLUMNS } from '../../packages/data/src/schema/jurisdiction.js';
 import { provisionTestDatabase, SKIP_REASON } from '../data/helpers/postgres.js';
@@ -81,7 +81,9 @@ test('jurisdiction holds: sightings hold the session person once, only complianc
     assert.equal((await as(p.customer, (trx) => jurisdictionHolds.list(trx))).length, 0, 'the subject does not read the record');
     assert.equal((await as(p.agent, (trx) => jurisdictionHolds.list(trx))).length, 0, 'staff without a compliance role read nothing');
     assert.equal((await as(p.outsider, (trx) => jurisdictionHolds.list(trx))).length, 0);
-    assert.equal((await as(p.auditor, (trx) => jurisdictionHolds.list(trx, { open: true }))).length, 1, 'the auditor reads');
+    assert.equal((await as(p.auditor, (trx) => jurisdictionHolds.list(trx, { open: true }))).length, 0, 'a hold names a person: an auditor reads none, as on the compliance panel');
+    assert.equal(await as(p.auditor, (trx) => jurisdictionStaff.canReadHolds(trx)), false);
+    assert.equal(await as(p.moderator, (trx) => jurisdictionStaff.canReadHolds(trx)), true);
     assert.equal((await as(p.moderator, (trx) => jurisdictionHolds.list(trx, { personId: p.customer }))).length, 1, 'a compliance officer reads');
   });
 
@@ -99,11 +101,16 @@ test('jurisdiction holds: sightings hold the session person once, only complianc
     const opsCtx = await elevate(p.ops);
     await rejects(as(p.ops, (trx) => jurisdictionHolds.clear(trx, opsCtx, { holdId, reason: 'Synthetic', evidence: 'call' })), '42501', 'admin.conflict_of_interest');
     assert.ok(declaration.id);
+    // It also takes the subject out of the reviewer's reads, on the rows, whichever filter the caller uses.
+    assert.equal((await as(p.ops, (trx) => jurisdictionHolds.list(trx))).length, 0, 'a conflicted officer reads no hold of that subject');
+    assert.equal((await as(p.ops, (trx) => jurisdictionHolds.list(trx, { personId: p.customer }))).length, 0);
+    assert.equal((await as(p.moderator, (trx) => jurisdictionHolds.list(trx, { personId: p.customer }))).length, 1, 'an independent officer still does');
     // A compliance officer who is the subject of their own hold cannot clear it.
     const moderatorToken = await liveSession(db.admin, p.moderator);
     assert.equal(await jurisdictionGate.holdSession(runtime, { tokenHashHex: moderatorToken, place: 'IR', source: 'geolocation', dataset: 'fake' }), true);
     const ownHold = (await db.admin.query<{ id: string }>('SELECT id FROM trustwork.jurisdiction_hold WHERE person_id = $1 AND cleared_at IS NULL', [p.moderator])).rows[0]?.id as string;
     await rejects(as(p.moderator, (trx) => jurisdictionHolds.clear(trx, moderatorCtx, { holdId: ownHold, reason: 'Synthetic: I am home', evidence: 'other' })), '42501', 'jurisdiction.self_clear');
+    assert.ok(!(await as(p.moderator, (trx) => jurisdictionHolds.list(trx))).some((row) => row.id === ownHold), 'an officer does not read their own hold');
   });
 
   await t.test('two reviewers race: exactly one clears, the other sees it cleared; the audit names the reviewer and the cleared row stays', async () => {
@@ -129,7 +136,7 @@ test('jurisdiction holds: sightings hold the session person once, only complianc
 
   await t.test('a new sighting after a clear holds again and the history keeps both rows', async () => {
     assert.equal(await jurisdictionGate.holdSession(runtime, { tokenHashHex: customerToken, place: 'KP', source: 'edge_header', dataset: 'edge-header' }), true);
-    const history = await as(p.auditor, (trx) => jurisdictionHolds.list(trx, { personId: p.customer }));
+    const history = await as(p.moderator, (trx) => jurisdictionHolds.list(trx, { personId: p.customer }));
     assert.equal(history.length, 2);
     assert.equal(history.filter((h) => h.cleared_at === null).length, 1);
   });
