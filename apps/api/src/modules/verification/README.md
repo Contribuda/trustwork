@@ -8,6 +8,7 @@ Storage: [`packages/data/migrations/verification`](../../../../../packages/data/
 
 - **Providers.** A provider starts in `fake` or `manual` mode. `live` needs a credential reference of the hub (KEYS-001) and consumes a different person's approval (`providers.enable_non_fake`) of exactly that provider version (`GET .../providers/:id/live-digest`).
 - **Recipes.** Recipes are immutable versions per key. Every version carries `sanctions_screening` as a required step, and no version can drop it. No check repeats. Activation supersedes the active version.
+- **Launch gate.** `verification_recipe_enabled` is confirmed by an active recipe of the hub, not by a configuration version. Activating a version re-opens a passed gate until a person checks it again.
 - **Results.** Check results are append-only evidence references, never documents, with an expiry from the recipe's re-check period. A person records only fake or manual results; live results come from the adapter.
 - **The sanctions check** keeps no lists and decides no match. It records a reference to the SANC-003 subject state and passes only when screening is available and the subject is neither held nor suspended. It is never `fail`.
 - **Standing** (`GET .../standing`) re-reads screening. An unscreened subject, a possible match, a hold or an unavailable screening store blocks every hand-over, whatever the other checks say. Badges show categories only.

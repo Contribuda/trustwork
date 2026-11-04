@@ -441,7 +441,12 @@ test('hubs core: territories, scoped staff, versioned configuration, launch gate
     const publicBlockers = await a.as(p.owner, (trx) => hubs.blockers(trx, hubC, 'public'));
     assert.deepEqual(publicBlockers.sort(), LAUNCH_GATES.filter((g) => !SOFT_LAUNCH_GATES.includes(g)).map((g) => `gate:${g}`).sort());
     await rejects(transition(p.owner, hubC, 'public', await approveTransition(p.owner, p.officer, hubC, 'public')), '23514', 'hubs.launch_gate_open');
-    for (const domain of ['editorial', 'sources', 'verification', 'screening'] as const) await activate(p.owner, await draft(p.owner, hubC, domain, { policy: 'synthetic' }));
+    for (const domain of ['editorial', 'sources', 'screening'] as const) await activate(p.owner, await draft(p.owner, hubC, domain, { policy: 'synthetic' }));
+    // The verification gate rests on an active recipe (tests/verification/launch-gate.test.ts), not on a configuration version.
+    await withMaintenance(db.admin, (trx) => trx.insertInto('verification_recipe').values({
+      hub_id: hubC, key: 'synthetic-recipe', version: 1, subject_kind: 'company', trigger: 'claim_verified', steps: JSON.stringify([{ check: 'sanctions_screening', required: true }]), badge_categories: ['sanctions_screening_clear'],
+      recheck_months: 12, status: 'active', drafted_by: p.owner, activated_by: p.owner, activated_at: new Date(),
+    } as never).execute());
     for (const gate of LAUNCH_GATES.filter((g) => !SOFT_LAUNCH_GATES.includes(g))) await a.cmd(p.owner, (trx, ctx) => launchGates.check(trx, ctx, hubC, gate, evidence()));
     await transition(p.owner, hubC, 'public', await approveTransition(p.owner, p.officer, hubC, 'public'));
     assert.equal((await hubRow(hubC)).lifecycle, 'public');
