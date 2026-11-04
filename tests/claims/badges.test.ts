@@ -6,6 +6,7 @@ import { silentLogger } from '../../apps/worker/src/log.js';
 import { command, expectRefusal } from '../admin/helpers.js';
 import { workerLogin } from '../assistant/helpers.js';
 import { Client, SKIP_REASON, startHarness } from '../backend/helpers/app.js';
+import { screen } from '../screening-gates/helpers.js';
 import { claimsWorld, ok, type Claim } from './helpers.js';
 
 const h = await startHarness('claims_badges');
@@ -25,7 +26,7 @@ test('CLM-001 verification badges', { skip: h ? false : SKIP_REASON }, async (t)
   const workers = await workerLogin(h);
   const worker: DataPool = workers.pool(2);
   t.after(async () => { await workers.close(); await world.w.close(); await h.close(); });
-  const { w, otherHubId, reviewer, recipes, provider, page, claimant, submit, decide, statusOf, roleOf, notices } = world;
+  const { w, otherHubId, reviewer, second, recipes, provider, page, claimant, submit, decide, decideOnly, statusOf, roleOf, notices } = world;
   const base = world.console;
   const admin = h.db.admin;
   const anonymous = new Client(w.app);
@@ -95,6 +96,31 @@ test('CLM-001 verification badges', { skip: h ? false : SKIP_REASON }, async (t)
     assert.deepEqual((await verifications(companyId)).map((v) => v.state), ['active']);
   });
 
+  await t.test('a re-check makes the person checks of a decision: nobody renews their own badge, and a held or suspended holder keeps none', async () => {
+    const companyId = await page('Synthetic Own Recheck Builders');
+    const own = ok<{ claim: Claim }>(await submit(second, companyId, 'verified')).claim;
+    await withMaintenance(admin, async (trx) => {
+      await trx.updateTable('membership').set({ status: 'ended', ended_at: new Date(), ended_by: w.people.lead2, ended_reason: 'Synthetic: clears the way for the test' }).where('person_id', '=', w.people.lead2).where('status', '=', 'active').execute();
+    });
+    await screen(admin, { kind: 'person', id: w.people.lead2 });
+    ok(await decide(reviewer, own));
+    const [mine] = await verifications(companyId);
+    expectRefusal(await recheck(second, mine!.id), 403, 'access.forbidden', 'own_claim');
+    const asHolder = ok<{ items: Array<Record<string, unknown>> }>(await second.get(`${base}/claims/verifications?companyId=${companyId}`)).items[0];
+    assert.ok(asHolder && !('decidedBy' in asHolder), 'a holder who is also staff does not read who decided');
+    assert.ok('decidedBy' in (ok<{ items: Array<Record<string, unknown>> }>(await reviewer.get(`${base}/claims/verifications?companyId=${companyId}`)).items[0] as object));
+    const [handover] = ok<{ items: Array<{ id: string }> }>(await reviewer.get(`${base}/claims/handovers?companyId=${companyId}`)).items;
+    ok(await command(reviewer, `${base}/claims/handovers/${handover!.id}/revoke`, { revocationReason: 'Synthetic: ends the fixture hand-over.' }));
+
+    for (const [key, state, label] of [['suspended', { suspended: true, money_held: true }, 'a suspended holder'], ['held', { money_held: true }, 'a held holder']] as const) {
+      const held = await verifiedPage(`Synthetic ${key} Builders`, `admin@${key}.synthetic.invalid`);
+      const [row] = await verifications(held.companyId);
+      await withMaintenance(admin, (trx) => trx.updateTable('screening_subject_state').set(state as never).where('subject_person_id', '=', held.person.id).execute());
+      expectRefusal(await recheck(reviewer, row!.id), 422, 'validation.schema', 'claimant_not_clear');
+      assert.deepEqual((await verifications(held.companyId)).map((v) => v.state), ['active'], label);
+    }
+  });
+
   await t.test('revocation reaches every projection: the record, the badge, the directory, the role and the outbox', async () => {
     const { companyId, person } = await verifiedPage('Synthetic Revoked Badge Builders', 'admin@revokedbadge.synthetic.invalid');
     assert.equal(await directoryStatus(companyId), 'verified');
@@ -115,13 +141,18 @@ test('CLM-001 verification badges', { skip: h ? false : SKIP_REASON }, async (t)
     await withMaintenance(admin, (trx) => trx.updateTable('membership').set({ status: 'ended', ended_at: new Date(), ended_by: person.id, ended_reason: 'Synthetic: left the company' })
       .where('person_id', '=', person.id).where('company_id', '=', companyId).execute());
     assert.equal(await statusOf(companyId), 'claimed');
+    assert.deepEqual((await verifications(companyId)).map((v) => [v.level, v.state]), [['verified', 'active']], 'the record stands');
+    assert.deepEqual(await badges(companyId), [], 'the badge never says more than the status');
 
     const successor = await claimant('Synthetic Recovery Successor', 'successor@recovery.synthetic.invalid');
     const waiting = ok<{ claim: Claim }>(await submit(successor.client, companyId, 'verified')).claim;
     assert.equal(waiting.state, 'waiting', 'the previous hand-over still stands, so the waiting period applies');
     await withMaintenance(admin, (trx) => trx.updateTable('company_claim').set({ waiting_until: new Date(Date.now() - 60_000) }).where('id', '=', waiting.id).execute());
+    // The earlier holder's results prove nothing for the successor: the claim needs its own.
+    expectRefusal(await decideOnly(reviewer, waiting), 422, 'validation.schema', 'evidence_required');
     ok(await decide(reviewer, waiting));
     assert.deepEqual([await statusOf(companyId), await roleOf(successor.id, companyId)], ['verified', 'administrator']);
+    assert.deepEqual((await badges(companyId)).map((b) => b.level), ['verified']);
 
     const unrelated = await withMaintenance(admin, async (trx) => {
       const id = (await trx.insertInto('company').values({ display_name: 'Synthetic Never Claimed Builders', claim_status: 'claimed' }).returning('id').executeTakeFirstOrThrow()).id;

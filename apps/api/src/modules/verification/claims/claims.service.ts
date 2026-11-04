@@ -11,7 +11,7 @@ import { staffHubFromEnv } from '../../identity/staff-roles.js';
 import type { BindEvidenceCommandSchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RecheckVerificationCommandSchema, RevokeHandoverCommandSchema, SubmitClaimCommandSchema } from './commands.js';
 import { adminAudit, claims, type ClaimState, type CommandContext, type StaffRole } from './deps.js';
 import { claimsRefusal, isAuthorityRefusal } from './errors.js';
-import { toBadge, toClaim, toDispute, toHandover, toOwnClaim, toOwnHandover, toRecipe, toSettings, toVerification } from './views.js';
+import { toBadge, toClaim, toDispute, toHandover, toOwnClaim, toOwnHandover, toOwnVerification, toRecipe, toSettings, toVerification } from './views.js';
 
 type Body<S extends z.ZodType> = z.infer<S>;
 type Cmd = { idempotencyKey: string; reason: string };
@@ -153,7 +153,10 @@ export class ClaimsService {
   }
 
   verifications(state: RequestState, hubId: string, filter: { companyId?: string; dueDays?: number }) {
-    return this.read(state, async (trx) => ({ items: (await claims.verifications(trx, hubId, filter)).map(toVerification) }));
+    return this.read(state, async (trx, p) => {
+      const own = new Set((await claims.ownHandovers(trx, p.personId)).map((h) => h.id));
+      return { items: (await claims.verifications(trx, hubId, filter)).map((v) => (own.has(v.handover_id) ? toOwnVerification(v) : toVerification(v))) };
+    });
   }
 
   /* ---------- Staff commands ---------- */
