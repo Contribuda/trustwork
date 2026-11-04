@@ -7,7 +7,9 @@
 -- Nothing is ever removed silently: an item unanswered at the deadline is *escalated*, which means only a holder of the
 -- scope's owner role (hub-owner, node-operator or platform-owner) may still decide it; the state is computed from the
 -- deadline at every read, so no job has to run. The campaign closes by itself with the last decision and the audit row
--- carries the kept and removed counts; a campaign opened by mistake is withdrawn with a reason, never deleted.
+-- carries the kept and removed counts; a campaign opened by mistake is withdrawn with a reason, never deleted, but not
+-- by a person whose own access is undecided in it, and once an item is escalated only the owner role withdraws. A
+-- removed role takes the holder's eligibility for the same role at that scope with it, so it is not reactivated.
 --
 -- No item records what the holder did: no last use, counts or any other activity (the design's last-use question stays
 -- open with the owner and is deliberately not implemented).
@@ -160,6 +162,7 @@ DECLARE
   v_actor trustwork.admin_actor;
   v_assignment trustwork.staff_role_assignment%ROWTYPE;
   v_effect text;
+  v_act trustwork.staff_activation%ROWTYPE;
 BEGIN
   SELECT * INTO v_before FROM trustwork.staff_access_review_item WHERE id = p_item FOR UPDATE;
   IF NOT FOUND THEN
@@ -193,6 +196,25 @@ BEGIN
   ELSE
     v_effect := 'kept';
   END IF;
+  -- A removed role is not reactivated through an eligibility for the same role at the same scope: the eligibility ends
+  -- with the role, its pending activation is withdrawn and its running one ended (as staff_revoke_eligible_role does).
+  IF p_verdict = 'remove' THEN
+    FOR v_act IN SELECT a.* FROM trustwork.staff_activation a JOIN trustwork.staff_eligible_role e ON e.id = a.eligible_role_id
+                  WHERE e.person_id = v_before.holder_person_id AND e.role = v_before.role AND e.scope_kind = v_before.scope_kind
+                    AND e.node_id IS NOT DISTINCT FROM v_before.node_id AND e.hub_id IS NOT DISTINCT FROM v_before.hub_id AND e.revoked_at IS NULL
+                    AND a.status IN ('pending', 'active') FOR UPDATE OF a LOOP
+      IF v_act.status = 'pending' THEN
+        UPDATE trustwork.second_person_approval SET status = 'revoked', revoked_by = v_actor.person_id WHERE id = v_act.approval_id AND status IN ('pending', 'approved');
+        UPDATE trustwork.staff_activation SET status = 'withdrawn', withdrawn_by = v_actor.person_id WHERE id = v_act.id;
+      ELSE
+        UPDATE trustwork.staff_role_assignment SET revoked_at = now(), revoked_by = v_actor.person_id, revoke_reason = p_ctx ->> 'reasonText'
+         WHERE id = v_act.assignment_id AND revoked_at IS NULL AND valid_until > now();
+      END IF;
+    END LOOP;
+    UPDATE trustwork.staff_eligible_role SET revoked_at = now(), revoked_by = v_actor.person_id, revoke_reason = p_ctx ->> 'reasonText'
+     WHERE person_id = v_before.holder_person_id AND role = v_before.role AND scope_kind = v_before.scope_kind
+       AND node_id IS NOT DISTINCT FROM v_before.node_id AND hub_id IS NOT DISTINCT FROM v_before.hub_id AND revoked_at IS NULL;
+  END IF;
   UPDATE trustwork.staff_access_review_item SET verdict = p_verdict, effect = v_effect, decided_by = v_actor.person_id, decided_at = now(), decision_reason = p_ctx ->> 'reasonText'
    WHERE id = v_before.id RETURNING * INTO v_row;
   PERFORM trustwork.admin_record(v_actor, p_ctx, v_target.node, v_target.hub, 'staff.access_review_decided', 'staff_access_review_item', v_row.id,
@@ -222,6 +244,15 @@ BEGIN
   v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.staff.revoke'], v_target.node, v_target.hub);
   IF v_before.status <> 'open' THEN
     RAISE EXCEPTION 'the campaign is %', v_before.status USING ERRCODE = 'check_violation', HINT = 'admin.invalid_transition';
+  END IF;
+  -- Withdrawal never serves as a way around the review: a person whose own access is still undecided in the campaign
+  -- cannot withdraw it, and once an item is escalated only the owner role it escalated to may withdraw.
+  IF EXISTS (SELECT 1 FROM trustwork.staff_access_review_item i WHERE i.campaign_id = v_before.id AND i.verdict IS NULL AND i.holder_person_id = v_actor.person_id) THEN
+    RAISE EXCEPTION 'nobody withdraws a review of their own access' USING ERRCODE = 'insufficient_privilege', HINT = 'admin.self_review';
+  END IF;
+  IF v_before.due_at <= now() AND EXISTS (SELECT 1 FROM trustwork.staff_access_review_item i WHERE i.campaign_id = v_before.id AND i.verdict IS NULL)
+     AND NOT trustwork.admin_person_is_staff(v_actor.person_id, v_target.node, v_target.hub, trustwork.staff_scope_owner_role(v_before.scope_kind)) THEN
+    RAISE EXCEPTION 'the campaign has escalated items; only the % withdraws it', trustwork.staff_scope_owner_role(v_before.scope_kind) USING ERRCODE = 'insufficient_privilege', HINT = 'admin.review_escalated';
   END IF;
   UPDATE trustwork.staff_access_review_campaign SET status = 'withdrawn', closed_at = now(), closed_by = v_actor.person_id WHERE id = v_before.id RETURNING * INTO v_row;
   PERFORM trustwork.admin_record(v_actor, p_ctx, v_target.node, v_target.hub, 'staff.access_review_withdrawn', 'staff_access_review_campaign', v_row.id,

@@ -86,7 +86,9 @@ test('access reviews through the API (ADM-004 part 4)', { skip: h ? false : SKIP
 
   await t.test('a campaign opened by mistake is withdrawn; nothing changes for its holders', async () => {
     const mistaken = campaignOf(await open(c.admin, { title: 'Synthetic mistaken review' }));
-    const withdrawn = await command(c.hubOwner, `/v1/admin/staff/access-reviews/${mistaken.id}/withdraw`);
+    // The hub owner's own role is among the items: they cannot withdraw; the staff administrator (no hub role) can.
+    expectRefusal(await command(c.hubOwner, `/v1/admin/staff/access-reviews/${mistaken.id}/withdraw`), 403, 'access.second_approver_required', 'self_review');
+    const withdrawn = await command(c.admin, `/v1/admin/staff/access-reviews/${mistaken.id}/withdraw`);
     assert.equal(withdrawn.status, 200, JSON.stringify(withdrawn.body));
     assert.equal(campaignOf(withdrawn).status, 'withdrawn');
     assert.deepEqual(await activeRoles(p.moderator), ['moderator']);
