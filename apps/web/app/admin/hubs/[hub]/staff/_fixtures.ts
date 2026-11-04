@@ -10,10 +10,12 @@ const hub = { kind: 'hub' as const, hubId: HUB_US_ID };
 const base = {
   scope: hub, definitionVersion: 1, validForSeconds: null, sensitive: false, status: 'pending' as const, expired: false, personId: null, invitedBy: 'p-staff-admin',
   reason: 'Synthetic invitation for the demo', expiresAt: '2026-11-05T09:00:00Z', respondedAt: null, approvalId: null, assignmentId: null, revision: 1,
+  functionKey: null, functionTitle: null,
 };
 
 export const STAFF_INVITATIONS: readonly StaffInvitationView[] = [
-  { ...base, id: 'inv-waiting', email: 'new-editor@example.invalid', role: 'editor', reason: 'A second editor for the hub news' },
+  // One invitation names the function position it fills (ADM-004 part 5); the title is synthetic demo data.
+  { ...base, id: 'inv-waiting', email: 'new-editor@example.invalid', role: 'editor', reason: 'A second editor for the hub news', functionKey: 'editorial', functionTitle: 'Synthetic: second editor' },
   { ...base, id: 'inv-accepted', email: 'new-moderator@example.invalid', role: 'moderator', status: 'accepted', personId: 'p-invited-moderator', validForSeconds: 90 * 86_400,
     respondedAt: '2026-10-30T15:00:00Z', revision: 2, reason: 'Moderation cover for the autumn' },
   { ...base, id: 'inv-sensitive', email: 'new-owner@example.invalid', role: 'hub-owner', sensitive: true, status: 'accepted', personId: 'p-invited-owner',
