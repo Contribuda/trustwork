@@ -47,6 +47,11 @@ export interface StaffInvitationTable {
 export type StaffInvitationRow = Selectable<StaffInvitationTable>;
 
 /** One row of `trustwork.staff_my_invitations()`: the invitee's own open invitations. */
+/** One invitation in the person's own subject export: the address and what it offered, without the staff member's reason. */
+export interface OwnStaffInvitationRow {
+  id: string; email_normalized: string; role: string; scope_kind: 'platform' | 'node' | 'hub'; node_id: string | null; hub_id: string | null; status: string;
+  expires_at: Date; responded_at: Date | null; created_at: Date;
+}
 export interface MyStaffInvitationRow {
   id: string;
   role: string;
