@@ -21,5 +21,5 @@ export async function hasSecondFactor(): Promise<boolean> {
 /** The demo's one example: synthetic, labelled on the page, with its controls disabled. */
 export const DEMO_INVITATION: MyStaffInvitation = {
   id: 'demo-invitation', role: 'editor', scope: { kind: 'hub', hubId: 'hub-us-demo' }, validForSeconds: 90 * 86_400, reason: 'Synthetic invitation for the demo', inviterName: 'Synthetic Hub Owner',
-  expiresAt: '2026-11-05T09:00:00Z',
+  expiresAt: '2026-11-05T09:00:00Z', functionKey: null, functionTitle: null,
 };
