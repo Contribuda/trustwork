@@ -177,8 +177,9 @@ export const provenanceWorker = {
     const result = await sql<ImageTarget>`SELECT * FROM trustwork.provenance_image_target(${id}::uuid)`.execute(trx);
     return result.rows[0];
   },
-  async imageComplete(trx: Transaction, id: string, carried: { key: string; sha256: string; bytes: number; credentials: unknown }): Promise<void> {
-    await sql`SELECT trustwork.provenance_image_complete(${id}::uuid,${carried.key},${carried.sha256},${carried.bytes}::bigint,${carried.credentials === null ? null : JSON.stringify(carried.credentials)}::jsonb)`.execute(trx);
+  async imageComplete(trx: Transaction, id: string, carried: { key: string; sha256: string; bytes: number; credentials: unknown }): Promise<boolean> {
+    const { rows } = await sql<{ carried: boolean }>`SELECT trustwork.provenance_image_complete(${id}::uuid,${carried.key},${carried.sha256},${carried.bytes}::bigint,${carried.credentials === null ? null : JSON.stringify(carried.credentials)}::jsonb) AS carried`.execute(trx);
+    return rows[0]?.carried === true;
   },
   async imageFail(trx: Transaction, id: string, failure: string): Promise<void> {
     await sql`SELECT trustwork.provenance_image_fail(${id}::uuid,${failure})`.execute(trx);

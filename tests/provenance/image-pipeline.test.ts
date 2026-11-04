@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
+import { sql } from 'kysely';
 import { withMaintenance } from '@trustwork/data';
+import { inTransaction } from '@trustwork/worker';
 import { digitalSourceTypeUri, ProvenanceWorkspaceSchema, PublicPublicationSchema } from '../../packages/contracts/src/client.js';
 import { BlobStoreUnavailableError } from '../../packages/data/src/files/index.js';
 import { PROVENANCE_IMAGE_KIND } from '../../apps/worker/src/provenance/handlers.js';
+import { provenanceWorker } from '../../packages/data/src/repositories/provenance.js';
 import { readDigitalSourceType } from '../../apps/worker/src/provenance/xmp.js';
 import { SKIP_REASON } from '../data/helpers/postgres.js';
 import { exifTiff, jpeg, startFilesStack, uploadKey } from '../files/helpers.js';
@@ -184,6 +187,72 @@ test('PROV-001 generated images: labelled in the file, gated at release, public 
     ok(await petr.post('/v1/provenance/images', body(v, asset.id)), 202);
     ok(await petr.post(`/v1/files/${asset.id}/delete`, {}));
     await stack.drain();
+    assert.deepEqual((await images(piece.id)).map(i => [i.status, i.failure]), [['failed', 'source_unavailable']]);
+  });
+
+  await t.test('a source deleted while the job runs leaves no public copy and no labelled bytes', async () => {
+    const piece = await create();
+    const v = await declare(piece.id);
+    const asset = await upload(piece.id, await png(18));
+    const put = stack.store.put.bind(stack.store);
+    stack.store.put = async (...args) => { await put(...args); ok(await petr.post(`/v1/files/${asset.id}/delete`, {})); };
+    const id = ok<{ imageId: string }>(await petr.post('/v1/provenance/images', body(v, asset.id)), 202).imageId;
+    await stack.drain();
+    stack.store.put = put;
+    assert.deepEqual((await images(piece.id)).map(i => [i.status, i.failure]), [['failed', 'source_unavailable']]);
+    const copies = await stack.admin.query("SELECT 1 FROM trustwork.evidence_artifact WHERE parent_id=$1 AND classification='public'", [piece.id]);
+    assert.equal(copies.rowCount, 0, 'nothing public was created from the withdrawn image');
+    assert.deepEqual(await stack.store.list(`provenance/${id}`), [], 'the labelled bytes are gone with the source');
+    const audit = await stack.admin.query<{ action: string }>("SELECT action FROM trustwork.audit_event WHERE object_kind='provenance_image' AND object_id=$1", [id]);
+    assert.deepEqual(audit.rows.map(r => r.action), ['provenance.image_failed']);
+    expectRefusal(await publish(piece.id, (await workspace(piece.id)).publicationRevision), 422, 'validation.schema', 'provenance_image_required');
+  });
+
+  await t.test('a retry after the store refused the clean-up still removes the labelled bytes', async () => {
+    const piece = await create();
+    const v = await declare(piece.id);
+    const asset = await upload(piece.id, await png(19));
+    const put = stack.store.put.bind(stack.store), remove = stack.store.delete.bind(stack.store);
+    stack.store.put = async (...args) => { await put(...args); ok(await petr.post(`/v1/files/${asset.id}/delete`, {})); };
+    stack.store.delete = async (key: string) => {
+      if (key.startsWith('provenance/')) throw new BlobStoreUnavailableError('connection refused');
+      return remove(key);
+    };
+    const id = ok<{ imageId: string }>(await petr.post('/v1/provenance/images', body(v, asset.id)), 202).imageId;
+    await stack.drain();
+    stack.store.put = put;
+    stack.store.delete = remove;
+    assert.equal((await stack.store.list(`provenance/${id}`)).length, 1);
+    await stack.admin.query('UPDATE trustwork.job SET next_at=now() WHERE kind=$1', [PROVENANCE_IMAGE_KIND]);
+    await stack.drain();
+    assert.deepEqual(await stack.store.list(`provenance/${id}`), []);
+  });
+
+  await t.test('a deletion in flight when the job completes is waited for, and wins', async () => {
+    const piece = await create();
+    const v = await declare(piece.id);
+    const asset = await upload(piece.id, await png(20));
+    const id = ok<{ imageId: string }>(await petr.post('/v1/provenance/images', body(v, asset.id)), 202).imageId;
+    let decide!: () => void, begun!: () => void;
+    const decided = new Promise<void>(resolve => { decide = resolve; }), started = new Promise<void>(resolve => { begun = resolve; });
+    // The two writes of files_request_deletion, in its order, held open.
+    const deletion = withMaintenance(stack.admin, async trx => {
+      await sql`SELECT 1 FROM trustwork.evidence_artifact WHERE id=${asset.id}::uuid FOR UPDATE`.execute(trx);
+      await sql`UPDATE trustwork.file_artifact_state SET deletion_requested_at=now(),deletion_requested_by=${owner.id}::uuid,deletion_mode='delete' WHERE artifact_id=${asset.id}::uuid`.execute(trx);
+      begun();
+      await decided;
+    });
+    await started;
+    const completion = inTransaction(stack.env.workerPool(2), trx => provenanceWorker.imageComplete(trx, id, { key: `provenance/${id}`, sha256: 'a'.repeat(64), bytes: 1, credentials: null }));
+    let waiting = false;
+    for (let attempt = 0; attempt < 400 && !waiting; attempt++) {
+      waiting = (await stack.admin.query<{ n: number }>("SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'")).rows[0]!.n > 0;
+      if (!waiting) await new Promise(resolve => setTimeout(resolve, 5));
+    }
+    decide();
+    await deletion;
+    assert.ok(waiting, 'the completion waits for the deletion, not merely races it');
+    assert.equal(await completion, false);
     assert.deepEqual((await images(piece.id)).map(i => [i.status, i.failure]), [['failed', 'source_unavailable']]);
   });
 
