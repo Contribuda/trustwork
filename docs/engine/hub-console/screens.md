@@ -232,6 +232,12 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Actions**: edit recipe (new version); set provider mode (live needs second person); add screening list.
 - **States**: baseline screening shown as always on, with no switch.
 - **Locale**: `admin.participants.verification.*`
+- **Live** (built on the API, HUBC-007; demo mode keeps the fixture screen). Recipes and check providers come from HUB-003, the claim periods from CLM-001, the hub's credentials from HUB-001, the lists from SANC-006. A value the viewer may not read is said to be hidden, never shown as empty.
+  - A recipe is drafted from a form, or from an existing version ("Start a new version from this one"), and activated with the revision the page showed, so a version someone else moved answers "Changed by another staff member". Sanctions screening is added as a required step whatever the form says.
+  - A provider registers as `fake` or `manual` only. Going live is two steps on this screen, per credential: "Ask a second person" opens `providers.enable_non_fake` with the digest of that provider version and credential; once another staff member approves it in Approvals, the person who asked sees "Switch to live", and anyone else sees that the approval is taken. Only an active, non-fake credential is offered. No route retires a provider yet.
+  - "Launch checklist record": the gate `verification_recipe_enabled` reads the hub's active `verification` configuration version, not the recipes, so this panel records the active recipes as that version and says when the record is out of date. A new record reopens a passed gate until someone checks it again.
+  - Lists are read here and added on HC-74 Screening. The claim periods are the waiting and cooling-off days of CLM-001, 1 to 30 each.
+  - Hub staff need `admin.claims.read` to see the section, `admin.claims.policy.edit` to change it, and `admin.providers.toggle` to ask for live mode.
 
 ### HC-24 Credentials — `/participants/credentials`
 - **Purpose**: verifiable credentials the hub issues.

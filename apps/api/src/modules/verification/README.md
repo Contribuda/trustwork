@@ -49,5 +49,5 @@ A result replaced in the meantime is skipped.
 ## Later
 
 - Live register and licence adapters per country, with the country packs (the reference recipes name the candidate registers).
-- Console screens on these routes (HUBC-004 shows fixtures).
+- Console screens for checks, standing and appeals (HC-23 reads and configures providers and recipes on these routes, HUBC-007; the claim and appeal queues still show fixtures).
 - Notices to the subject when an appeal is decided (COMMS-001).

@@ -21,10 +21,13 @@ import type { ConsoleRequest } from './personas.js';
 import { OverviewSchema, QUEUE_IDS, ResidencySchema, type Overview, type QueueId, type Residency } from './read-models.js';
 import { ApprovalDecisionSchema, ApprovalRequestSchema, ConsoleNodeSchema, HubRecordSchema, LegalDocumentSchema, type ApprovalDecision, type ApprovalRequest, type ConsoleNode, type HubRecord, type LegalDocument } from './schemas.js';
 import type { SectionDef } from './section-types.js';
+import { readVerification, verificationCommand } from './live-verification.js';
+import { isVerificationCommand, VERIFICATION_COMMANDS } from '../hubs/[hub]/participants/verification/_commands.js';
 
 /**
  * The console's live adapter (HUBC-007): the same port as the fixtures, read from the API with the visitor's session
- * cookie: the viewer, the node, hubs, access, roles, approvals, staff, legal documents, residency and the overview.
+ * cookie: the viewer, the node, hubs, access, roles, approvals, staff, legal documents, residency, the overview and the
+ * verification section (`live-verification.ts`).
  * Everything else answers like the unavailable adapter (empty or `null`, commands `not_found`) until its backend route
  * exists, so a live console never shows a fixture or an invented value. Today that is local additions (the `country`
  * configuration holds no additions), the taxonomy (no console read), brand contrast checks (nothing measures them) and
@@ -380,7 +383,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
   /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
   const LIVE_COMMANDS = new Set<CommandInput['command']>([
     'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'staff.invite', 'staff.invitation_apply', 'staff.invitation_withdraw', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request',
-    'launch.mark_passed', 'residency.request_change', 'legal.draft',
+    'launch.mark_passed', 'residency.request_change', 'legal.draft', ...VERIFICATION_COMMANDS,
   ]);
 
   /** An API refusal as a console reject code (the API decides; the console only words it). */
@@ -445,6 +448,9 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       }
       return settled(await send(`${hubPath}/config/${encodeURIComponent(version.id)}/activate`, { expectedRevision: version.revision, approvalId: null }));
     };
+    if (isVerificationCommand(input.command)) {
+      return verificationCommand(input.command, f, { send, saveConfig: draftAndActivate, read: () => readVerification(api, orNothing, hub.hub.id, v.person.id, now()), viewerId: v.person.id, hubId: hub.hub.id });
+    }
     if (input.command === 'staff.assign') {
       // A hub role from the latest released definition; the API checks the grantor, conflicts and sensitivity again.
       const definition = catalogue.find((d) => d.role === f.role)!;
@@ -597,6 +603,10 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       return { operator: null, documents };
     },
     residency,
+    async verification(hubId) {
+      const me = MeSchema.safeParse(await orNothing(api.get('/v1/me'))).data?.person.id ?? null;
+      return readVerification(api, orNothing, hubId, me, now());
+    },
     localAdditions: async () => [],
     taxonomy: async () => [],
     brandChecks: async () => [],

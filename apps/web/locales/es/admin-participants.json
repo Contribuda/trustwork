@@ -263,7 +263,132 @@
       "addList": "Añadir una lista del paquete del país",
       "packList": "Lista del paquete del país",
       "costAndUse": "Costo y uso este mes",
-      "retentionAndBasis": "Conservación y base legal"
+      "retentionAndBasis": "Conservación y base legal",
+      "live": {
+        "hidden": "Esta sección no está disponible para usted en este hub.",
+        "states": {
+          "draft": "Borrador",
+          "active": "Activa",
+          "superseded": "Reemplazada",
+          "retired": "Retirado"
+        },
+        "modes": {
+          "fake": "Simulado (sintético)",
+          "manual": "Manual",
+          "live": "Real"
+        },
+        "checks": {
+          "register_match": "Coincidencia en el registro",
+          "officer_match": "Coincidencia de administradores",
+          "tax_status": "Situación fiscal",
+          "licence": "Licencia",
+          "qualification": "Cualificación profesional",
+          "ownership": "Titularidad",
+          "sanctions_screening": "Verificación de sanciones",
+          "domain_confirmed": "Dominio confirmado",
+          "signed_authority": "Autorización firmada",
+          "callback_confirmed": "Llamada de vuelta confirmada"
+        },
+        "triggers": {
+          "claim_claimed": "Se reclama una empresa",
+          "claim_verified": "Se verifica una empresa",
+          "seller_onboarding": "Se incorpora un vendedor",
+          "regulated_category": "Una categoría regulada",
+          "professional_qualification": "Una cualificación profesional"
+        },
+        "legalBases": {
+          "statutory_public_register": "Registro público legal",
+          "contract": "Contrato",
+          "consent": "Consentimiento",
+          "legitimate_interest_assessed": "Interés legítimo evaluado",
+          "legal_obligation": "Obligación legal"
+        },
+        "recipes": {
+          "required": "obligatorio",
+          "optional": "opcional",
+          "anyOf": "Uno de: {checks}",
+          "recheck": "se vuelve a comprobar a los {months, plural, one {# mes} other {# meses}}",
+          "badges": "Categorías de distintivo",
+          "draftedBy": "Redactada por",
+          "activatedBy": "Activada por",
+          "activate": "Activar esta versión",
+          "newVersion": "Empezar una versión nueva a partir de esta"
+        },
+        "draft": {
+          "title": "Nueva versión de receta",
+          "help": "Una versión no cambia nunca una vez redactada. Usar una clave existente crea la versión siguiente de esa receta; al activarla sustituye a la activa.",
+          "key": "Clave de la receta",
+          "keyHelp": "Minúsculas, cifras, guiones y guiones bajos, por ejemplo company-verified.",
+          "subject": "A quién verifica",
+          "trigger": "Cuándo se ejecuta",
+          "recheckMonths": "Volver a comprobar a los meses",
+          "recheckHelp": "De 1 a 24 meses.",
+          "badges": "Categorías de distintivo",
+          "badgesHelp": "Separadas por comas, por ejemplo register_record_matches. Un distintivo muestra solo la categoría.",
+          "steps": "Pasos",
+          "anyHelp": "Marque de dos a cuatro comprobaciones como parte de un grupo: basta con que pase una de ellas.",
+          "submit": "Guardar como versión en borrador",
+          "uses": {
+            "off": "Sin usar",
+            "required": "Obligatorio",
+            "optional": "Opcional",
+            "any": "Una de un grupo"
+          }
+        },
+        "providers": {
+          "cost": "Coste por comprobación",
+          "noCost": "Sin registrar",
+          "costMinor": "{minor} unidades menores",
+          "register": "Registrar un proveedor",
+          "adapter": "Adaptador",
+          "adapterHelp": "El nombre del adaptador: minúsculas, cifras y guiones bajos.",
+          "retentionDays": "Conservación en días",
+          "legalBasis": "Base legal",
+          "costField": "Coste por comprobación en unidades menores",
+          "costHelp": "Número entero; déjelo vacío si no hay coste registrado."
+        },
+        "goLive": {
+          "title": "Pasar un proveedor a modo real",
+          "digest": "Resumen",
+          "ask": "Pedir a una segunda persona",
+          "apply": "Pasar a modo real",
+          "waiting": "Esperando a una segunda persona; lo pidió",
+          "approvedForOther": "Aprobado; solo quien lo pidió puede terminarlo:",
+          "openApprovals": "Abrir aprobaciones",
+          "noCredentials": "Aún no se puede usar ninguna credencial activa de este hub. Una credencial simulada nunca cuenta.",
+          "credentialsHidden": "Sus roles no muestran las credenciales de este hub, así que no se puede cambiar un proveedor desde aquí."
+        },
+        "claims": {
+          "title": "Plazos de las reclamaciones",
+          "help": "Cuánto espera una reclamación antes de surtir efecto y durante cuánto tiempo se puede detener un traspaso.",
+          "waitingDays": "Plazo de espera en días",
+          "waitingHelp": "De 1 a 30 días.",
+          "coolingDays": "Plazo de enfriamiento en días",
+          "coolingHelp": "De 1 a 30 días.",
+          "save": "Guardar los plazos",
+          "hidden": "Sus roles no muestran los plazos de las reclamaciones."
+        },
+        "lists": {
+          "age": "Antigüedad de los datos",
+          "noAge": "Aún sin versión",
+          "note": "Las listas se añaden y confirman en la pantalla de verificación de sanciones; las listas básicas no tienen interruptor.",
+          "open": "Abrir verificación de sanciones",
+          "hidden": "Sus roles no muestran las listas de sanciones."
+        },
+        "launch": {
+          "title": "Registro para la lista de lanzamiento",
+          "state": {
+            "missing": "Sin registrar",
+            "outdated": "Desactualizado",
+            "current": "Al día"
+          },
+          "version": "La versión {version} de la configuración está activa.",
+          "none": "Aún no hay ninguna configuración de verificación activa.",
+          "help": "La lista de lanzamiento lee la configuración de verificación del hub, no las recetas. Registre aquí las recetas activas después de cambiarlas; un registro nuevo reabre el control hasta que alguien lo compruebe de nuevo.",
+          "noActive": "Active primero una receta.",
+          "record": "Registrar las recetas activas"
+        }
+      }
     },
     "credentials": {
       "title": "Credenciales",

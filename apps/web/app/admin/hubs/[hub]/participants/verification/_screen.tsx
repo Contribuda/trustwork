@@ -9,6 +9,7 @@ import { submitParticipantsCommand } from '../_actions';
 import { participantsOf, PROVIDER_MODES } from '../_fixtures';
 import { fixturesOn, Lang, Pill, SectionForm, Table } from '../_kit';
 import { PACK_LIST_FACTS, trustOf } from '../../trust/_fixtures';
+import { LiveVerification } from './_live';
 
 function money(minor: number, currency: string): string {
   try {
@@ -114,5 +115,5 @@ async function Verification(ctx: HubContext) {
   );
 }
 
-/** HC-23 Verification: recipes, check providers with mode, cost, quota, retention and legal basis, and screening lists (baseline always on). */
-export const screen: Screen = { group: 'participants', id: 'verification', title: () => t('adminParticipants.verification.title'), render: Verification };
+/** HC-23 Verification: recipes, check providers with mode, cost, quota, retention and legal basis, and screening lists (baseline always on). Demo mode reads fixtures, live mode the API. */
+export const screen: Screen = { group: 'participants', id: 'verification', title: () => t('adminParticipants.verification.title'), render: (ctx, route) => (ctx.port.source === 'api' ? LiveVerification(ctx, route) : Verification(ctx)) };

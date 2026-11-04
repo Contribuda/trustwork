@@ -263,7 +263,132 @@
       "addList": "Mamlakat paketidan roʻyxat qoʻshish",
       "packList": "Mamlakat paketidagi roʻyxat",
       "costAndUse": "Narx va shu oydagi sarf",
-      "retentionAndBasis": "Saqlash va huquqiy asos"
+      "retentionAndBasis": "Saqlash va huquqiy asos",
+      "live": {
+        "hidden": "Bu boʻlim ushbu habda siz uchun mavjud emas.",
+        "states": {
+          "draft": "Qoralama",
+          "active": "Faol",
+          "superseded": "Almashtirilgan",
+          "retired": "Toʻxtatilgan"
+        },
+        "modes": {
+          "fake": "Taqlid (sintetik)",
+          "manual": "Qoʻlda",
+          "live": "Ishchi"
+        },
+        "checks": {
+          "register_match": "Reyestr bilan moslik",
+          "officer_match": "Rahbarlar mosligi",
+          "tax_status": "Soliq holati",
+          "licence": "Litsenziya",
+          "qualification": "Kasbiy malaka",
+          "ownership": "Egalik",
+          "sanctions_screening": "Sanksiyalar tekshiruvi",
+          "domain_confirmed": "Domen tasdiqlangan",
+          "signed_authority": "Imzolangan vakolat",
+          "callback_confirmed": "Qaytarma qoʻngʻiroq tasdiqlangan"
+        },
+        "triggers": {
+          "claim_claimed": "Kompaniya daʼvo qilinganda",
+          "claim_verified": "Kompaniya tasdiqlanganda",
+          "seller_onboarding": "Sotuvchi qoʻshilganda",
+          "regulated_category": "Tartibga solinadigan toifa",
+          "professional_qualification": "Kasbiy malaka"
+        },
+        "legalBases": {
+          "statutory_public_register": "Qonuniy ochiq reyestr",
+          "contract": "Shartnoma",
+          "consent": "Rozilik",
+          "legitimate_interest_assessed": "Baholangan qonuniy manfaat",
+          "legal_obligation": "Qonuniy majburiyat"
+        },
+        "recipes": {
+          "required": "majburiy",
+          "optional": "ixtiyoriy",
+          "anyOf": "Bittasi: {checks}",
+          "recheck": "{months, plural, one {# oydan} other {# oydan}} keyin qayta tekshiriladi",
+          "badges": "Nishon toifalari",
+          "draftedBy": "Tuzgan",
+          "activatedBy": "Faollashtirgan",
+          "activate": "Bu versiyani faollashtirish",
+          "newVersion": "Shundan yangi versiya boshlash"
+        },
+        "draft": {
+          "title": "Retseptning yangi versiyasi",
+          "help": "Versiya tuzilgach oʻzgarmaydi. Mavjud kalit shu retseptning keyingi versiyasini yaratadi; faollashtirilganda u faol versiya oʻrnini oladi.",
+          "key": "Retsept kaliti",
+          "keyHelp": "Kichik harflar, raqamlar, chiziqcha va pastki chiziq, masalan company-verified.",
+          "subject": "Kimni tekshiradi",
+          "trigger": "Qachon ishlaydi",
+          "recheckMonths": "Qayta tekshiruv, oylarda",
+          "recheckHelp": "1 dan 24 oygacha.",
+          "badges": "Nishon toifalari",
+          "badgesHelp": "Vergul bilan ajrating, masalan register_record_matches. Nishon faqat toifani koʻrsatadi.",
+          "steps": "Qadamlar",
+          "anyHelp": "Ikki-toʻrt tekshiruvni guruhga kiriting: ulardan bittasi oʻtsa yetarli.",
+          "submit": "Qoralama versiya sifatida saqlash",
+          "uses": {
+            "off": "Ishlatilmaydi",
+            "required": "Majburiy",
+            "optional": "Ixtiyoriy",
+            "any": "Guruhdan bittasi"
+          }
+        },
+        "providers": {
+          "cost": "Bir tekshiruv narxi",
+          "noCost": "Qayd etilmagan",
+          "costMinor": "{minor} kichik birlik",
+          "register": "Provayderni roʻyxatga olish",
+          "adapter": "Moslashtirgich",
+          "adapterHelp": "Moslashtirgich nomi: kichik harflar, raqamlar va pastki chiziq.",
+          "retentionDays": "Saqlash muddati, kunlarda",
+          "legalBasis": "Huquqiy asos",
+          "costField": "Bir tekshiruv narxi, kichik birliklarda",
+          "costHelp": "Butun son; narx qayd etilmagan boʻlsa boʻsh qoldiring."
+        },
+        "goLive": {
+          "title": "Provayderni ishchi rejimga oʻtkazish",
+          "digest": "Dayjest",
+          "ask": "Ikkinchi xodimdan soʻrash",
+          "apply": "Ishchi rejimga oʻtkazish",
+          "waiting": "Ikkinchi xodim kutilmoqda; soʻragan",
+          "approvedForOther": "Tasdiqlandi; faqat soʻragan xodim yakunlay oladi:",
+          "openApprovals": "Tasdiqlarni ochish",
+          "noCredentials": "Bu habning faol maʼlumotlaridan hali foydalanib boʻlmaydi. Taqlid maʼlumotlari hisobga olinmaydi.",
+          "credentialsHidden": "Rollaringiz bu habning kirish maʼlumotlarini koʻrsatmaydi, shuning uchun provayderni bu yerdan oʻtkazib boʻlmaydi."
+        },
+        "claims": {
+          "title": "Daʼvo muddatlari",
+          "help": "Daʼvo kuchga kirgunicha qancha kutishi va topshirishni qancha muddat toʻxtatish mumkinligi.",
+          "waitingDays": "Kutish muddati, kunlarda",
+          "waitingHelp": "1 dan 30 kungacha.",
+          "coolingDays": "Sovish muddati, kunlarda",
+          "coolingHelp": "1 dan 30 kungacha.",
+          "save": "Daʼvo muddatlarini saqlash",
+          "hidden": "Rollaringiz daʼvo muddatlarini koʻrsatmaydi."
+        },
+        "lists": {
+          "age": "Maʼlumotlar yoshi",
+          "noAge": "Hali versiya yoʻq",
+          "note": "Roʻyxatlar sanksiyalar tekshiruvi ekranida qoʻshiladi va tasdiqlanadi; asosiy roʻyxatlarni oʻchirib boʻlmaydi.",
+          "open": "Sanksiyalar tekshiruvini ochish",
+          "hidden": "Rollaringiz sanksiyalar roʻyxatlarini koʻrsatmaydi."
+        },
+        "launch": {
+          "title": "Ishga tushirish roʻyxati uchun yozuv",
+          "state": {
+            "missing": "Qayd etilmagan",
+            "outdated": "Eskirgan",
+            "current": "Dolzarb"
+          },
+          "version": "Konfiguratsiyaning {version}-versiyasi faol.",
+          "none": "Hali faol tekshiruv konfiguratsiyasi yoʻq.",
+          "help": "Ishga tushirish roʻyxati retseptlarni emas, habning tekshiruv konfiguratsiyasini oʻqiydi. Retseptlarni oʻzgartirgach, faollarini shu yerda qayd eting; yangi yozuv kimdir qayta tekshirmaguncha shartni ochib qoʻyadi.",
+          "noActive": "Avval retseptni faollashtiring.",
+          "record": "Faol retseptlarni qayd etish"
+        }
+      }
     },
     "credentials": {
       "title": "Guvohnomalar",

@@ -263,7 +263,132 @@
       "addList": "Ölkə paketindən siyahı əlavə etmək",
       "packList": "Ölkə paketindəki siyahı",
       "costAndUse": "Qiymət və bu ayki istifadə",
-      "retentionAndBasis": "Saxlama və hüquqi əsas"
+      "retentionAndBasis": "Saxlama və hüquqi əsas",
+      "live": {
+        "hidden": "Bu bölmə bu habda sizin üçün əlçatan deyil.",
+        "states": {
+          "draft": "Layihə",
+          "active": "Aktiv",
+          "superseded": "Əvəzlənib",
+          "retired": "Dayandırılıb"
+        },
+        "modes": {
+          "fake": "İmitasiya (sintetik)",
+          "manual": "Əllə",
+          "live": "İşlək"
+        },
+        "checks": {
+          "register_match": "Reyestrlə uyğunluq",
+          "officer_match": "Rəhbərlərin uyğunluğu",
+          "tax_status": "Vergi statusu",
+          "licence": "Lisenziya",
+          "qualification": "Peşə ixtisası",
+          "ownership": "Mülkiyyət",
+          "sanctions_screening": "Sanksiya yoxlaması",
+          "domain_confirmed": "Domen təsdiqlənib",
+          "signed_authority": "İmzalanmış səlahiyyət",
+          "callback_confirmed": "Geri zənglə təsdiqlənib"
+        },
+        "triggers": {
+          "claim_claimed": "Şirkətə iddia edildikdə",
+          "claim_verified": "Şirkət təsdiqləndikdə",
+          "seller_onboarding": "Satıcı qoşulduqda",
+          "regulated_category": "Tənzimlənən kateqoriya",
+          "professional_qualification": "Peşə ixtisası"
+        },
+        "legalBases": {
+          "statutory_public_register": "Qanuni açıq reyestr",
+          "contract": "Müqavilə",
+          "consent": "Razılıq",
+          "legitimate_interest_assessed": "Qiymətləndirilmiş qanuni maraq",
+          "legal_obligation": "Hüquqi öhdəlik"
+        },
+        "recipes": {
+          "required": "məcburi",
+          "optional": "könüllü",
+          "anyOf": "Biri: {checks}",
+          "recheck": "{months, plural, one {# aydan} other {# aydan}} sonra yenidən yoxlanılır",
+          "badges": "Nişan kateqoriyaları",
+          "draftedBy": "Tərtib edib",
+          "activatedBy": "Aktivləşdirib",
+          "activate": "Bu versiyanı aktivləşdirmək",
+          "newVersion": "Bundan yeni versiyaya başlamaq"
+        },
+        "draft": {
+          "title": "Reseptin yeni versiyası",
+          "help": "Tərtib edilmiş versiya dəyişmir. Mövcud açar həmin reseptin növbəti versiyasını yaradır; aktivləşdirildikdə aktiv olanı əvəz edir.",
+          "key": "Resept açarı",
+          "keyHelp": "Kiçik hərflər, rəqəmlər, defis və alt xətt, məsələn company-verified.",
+          "subject": "Kimi yoxlayır",
+          "trigger": "Nə vaxt işləyir",
+          "recheckMonths": "Yenidən yoxlama, aylarla",
+          "recheckHelp": "1-dən 24 aya qədər.",
+          "badges": "Nişan kateqoriyaları",
+          "badgesHelp": "Vergüllə ayırın, məsələn register_record_matches. Nişan yalnız kateqoriyanı göstərir.",
+          "steps": "Addımlar",
+          "anyHelp": "İkidən dördə qədər yoxlamanı qrup kimi işarələyin: birinin keçməsi kifayətdir.",
+          "submit": "Layihə versiyası kimi saxlamaq",
+          "uses": {
+            "off": "İstifadə olunmur",
+            "required": "Məcburi",
+            "optional": "Könüllü",
+            "any": "Qrupdan biri"
+          }
+        },
+        "providers": {
+          "cost": "Bir yoxlamanın dəyəri",
+          "noCost": "Qeyd olunmayıb",
+          "costMinor": "{minor} kiçik vahid",
+          "register": "Provayderi qeydiyyatdan keçirmək",
+          "adapter": "Uyğunlaşdırıcı",
+          "adapterHelp": "Uyğunlaşdırıcının adı: kiçik hərflər, rəqəmlər və alt xətt.",
+          "retentionDays": "Saxlama müddəti, günlərlə",
+          "legalBasis": "Hüquqi əsas",
+          "costField": "Bir yoxlamanın dəyəri, kiçik vahidlərlə",
+          "costHelp": "Tam ədəd; dəyər qeyd olunmayıbsa boş saxlayın."
+        },
+        "goLive": {
+          "title": "Provayderi işlək rejimə keçirmək",
+          "digest": "Həzm",
+          "ask": "İkinci əməkdaşdan xahiş etmək",
+          "apply": "İşlək rejimə keçirmək",
+          "waiting": "İkinci şəxs gözlənilir; xahiş edib",
+          "approvedForOther": "Təsdiqlənib; yalnız xahiş edən şəxs tamamlaya bilər:",
+          "openApprovals": "Təsdiqləri açmaq",
+          "noCredentials": "Bu habın aktiv giriş məlumatlarından hələ istifadə etmək olmur. İmitasiya məlumatları sayılmır.",
+          "credentialsHidden": "Rollarınız bu habın giriş məlumatlarını göstərmir, ona görə provayderi buradan keçirmək olmur."
+        },
+        "claims": {
+          "title": "İddia müddətləri",
+          "help": "İddianın qüvvəyə minməzdən əvvəl nə qədər gözlədiyi və ötürməni nə qədər müddətə dayandırmağın mümkün olduğu.",
+          "waitingDays": "Gözləmə müddəti, günlərlə",
+          "waitingHelp": "1-dən 30 günə qədər.",
+          "coolingDays": "Soyuma müddəti, günlərlə",
+          "coolingHelp": "1-dən 30 günə qədər.",
+          "save": "İddia müddətlərini saxlamaq",
+          "hidden": "Rollarınız iddia müddətlərini göstərmir."
+        },
+        "lists": {
+          "age": "Məlumatların yaşı",
+          "noAge": "Hələ versiya yoxdur",
+          "note": "Siyahılar sanksiya yoxlaması ekranında əlavə olunur və təsdiqlənir; əsas siyahıları söndürmək olmur.",
+          "open": "Sanksiya yoxlamasını açmaq",
+          "hidden": "Rollarınız sanksiya siyahılarını göstərmir."
+        },
+        "launch": {
+          "title": "Başlanğıc siyahısı üçün qeyd",
+          "state": {
+            "missing": "Qeyd olunmayıb",
+            "outdated": "Köhnəlib",
+            "current": "Aktualdır"
+          },
+          "version": "Konfiqurasiyanın {version} versiyası aktivdir.",
+          "none": "Hələ aktiv yoxlama konfiqurasiyası yoxdur.",
+          "help": "Başlanğıc siyahısı reseptləri deyil, habın yoxlama konfiqurasiyasını oxuyur. Reseptləri dəyişdikdən sonra aktivləri burada qeyd edin; yeni qeyd kimsə yenidən yoxlayana qədər şərti açır.",
+          "noActive": "Əvvəlcə resepti aktivləşdirin.",
+          "record": "Aktiv reseptləri qeyd etmək"
+        }
+      }
     },
     "credentials": {
       "title": "Vəsiqələr",

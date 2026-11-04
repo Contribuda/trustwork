@@ -28,7 +28,7 @@ export function hiddenFor(ctx: HubContext, command: string, fields: Record<strin
   };
 }
 
-/** Whether this request reads synthetic fixtures (demo mode). Live mode has no participants backend in the console yet. */
+/** Whether this request reads synthetic fixtures (demo mode). In live mode only HC-23 Verification has its backend in the console so far. */
 export function fixturesOn(ctx: HubContext): boolean {
   return ctx.port.source === 'fixtures';
 }
