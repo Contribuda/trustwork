@@ -1,10 +1,11 @@
 -- PRV-001. privacy_objection suppressed only the addresses verified at that moment, and no send path read
 -- direct_marketing_objection, so an address verified later received non-transactional mail. An objection belongs to the
 -- person, not to the addresses they had that day. The final dispatch port now answers for the person who holds the
--- address, whichever address it is. The worker already calls this port on every non-transactional mail.
-
--- The port receives MAIL's hash, never an address. The index keeps the holder lookup off a scan of every binding.
-CREATE INDEX email_binding_mail_hash ON trustwork.email_binding (trustwork.comms_mail_hash(email_normalized));
+-- address, whichever address it is. The worker calls this port on non-transactional mail only.
+--
+-- This migration changes nothing on an identity table, and must not: sign-in, verification and address changes write
+-- email_binding under the runtime role, and an index on an expression makes every such write need EXECUTE on the
+-- expression's function. An objection never touches those paths.
 
 -- A send holds the contact lock and then the person lock through transport and commit, and an objection takes them in
 -- the same order. So a touch in transport finishes before the objection is acknowledged, and an objection that holds
@@ -16,8 +17,11 @@ BEGIN
   IF p_digest IS NULL OR p_digest !~ '^[a-f0-9]{64}$' THEN RETURN false; END IF;
   PERFORM trustwork.privacy_contact_lock(p_digest);
   IF EXISTS(SELECT 1 FROM trustwork.privacy_suppression WHERE digest = p_digest AND marketing) THEN RETURN false; END IF;
-  -- An address has one holder (email_normalized is unique). An address without one has only its suppression above.
-  SELECT b.person_id INTO v_person FROM trustwork.email_binding b WHERE trustwork.comms_mail_hash(b.email_normalized) = p_digest;
+  -- The port receives MAIL's hash, never an address. The caller has already claimed its delivery, so the claimed row
+  -- gives the address, and the unique index gives its one holder. An address without a holder has only the check above.
+  SELECT b.person_id INTO v_person FROM trustwork.email_binding b
+   WHERE b.email_normalized IN (SELECT lower(normalize(btrim(d.recipient), NFC)) FROM trustwork.mail_delivery d
+     WHERE d.recipient_hash = p_digest AND d.claimed_at IS NOT NULL AND d.recipient IS NOT NULL);
   IF v_person IS NULL THEN RETURN true; END IF;
   PERFORM trustwork.privacy_contact_lock('person:' || v_person::text);
   RETURN NOT EXISTS(SELECT 1 FROM trustwork.privacy_preference p WHERE p.person_id = v_person AND p.direct_marketing_objection);
