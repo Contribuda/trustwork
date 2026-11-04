@@ -43,6 +43,7 @@ const MODULE_COVERAGE = [
   { module: 'screening', status: 'partial', includes: 'own minimal compliance status; sensitive match/reviewer internals excluded' },
   { module: 'content', status: 'partial', includes: 'all owned publication working views with published versions and corrections; comment, wall and editorial history pending' },
   { module: 'execution', status: 'partial', includes: 'authorized confirmed agreement execution projections; full audit history pending' },
+  { module: 'federation', status: 'unsupported', includes: 'no participant data held: peering records, events, the node key chain and identity reference local staff identifiers only (requester, second approver, who ended a peering, who created a key) and peers\' manifests name operator legal entities with role contacts; nothing of a subject to export, like administration audit records' },
   { module: 'files', status: 'partial', includes: 'own authorized metadata and clean local bytes with digest checks; authenticated bounded streams include all clean local file sizes; external storage remains explicit' },
   { module: 'identity', status: 'partial', includes: 'person, emails, provider identities, memberships and all session views without token hashes; account-change history pending' },
   { module: 'plans', status: 'partial', includes: 'owner plans, all versions/states/changes/timing/shares/locations/permits/diary plus currently addressed shared-item projections; revoked private shares excluded' },
