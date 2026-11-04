@@ -1,5 +1,5 @@
 import { computeDigest, type ConsolePermission, type HubStaffRole, type StaffScope } from '../../../deps/contracts.js';
-import { effectiveGrants, sodEvaluation, type AssignmentFact, type DefinitionFact, type StaffTarget } from '../authority.js';
+import { effectiveGrants, type AssignmentFact, type DefinitionFact, type StaffTarget } from '../authority.js';
 import { adminDigests, type StaffRoleAssignmentRow, type StaffRoleDefinitionRow } from '../deps.js';
 import { toDefs, toFacts } from '../platform-admin.service.js';
 import { scopeOf } from '../views.js';
@@ -52,9 +52,9 @@ function conflictsOf(defs: readonly DefinitionFact[], held: readonly AssignmentF
 
 /**
  * @param personRows the person's assignments as the caller may read them (active ones are the basis)
- * @param allRows every active assignment the caller may read (the head count of the scope)
+ * @param sod the scope's separation-of-duties mode and head count, as the database enforces them
  */
-export function previewRoleChange(request: RoleChangeRequest, personRows: StaffRoleAssignmentRow[], allRows: StaffRoleAssignmentRow[], definitionRows: StaffRoleDefinitionRow[], sensitiveRoles: readonly HubStaffRole[], now: Date): RoleChangePreview {
+export function previewRoleChange(request: RoleChangeRequest, personRows: StaffRoleAssignmentRow[], sod: { mode: RoleChangePreview['sod']['mode']; staffCount: number }, definitionRows: StaffRoleDefinitionRow[], sensitiveRoles: readonly HubStaffRole[], now: Date): RoleChangePreview {
   const defs = toDefs(definitionRows);
   const target: StaffTarget = request.scope;
   const active = personRows.filter((r) => r.revoked_at === null && new Date(r.valid_from).getTime() <= now.getTime() && (r.valid_until === null || new Date(r.valid_until).getTime() > now.getTime()));
@@ -76,7 +76,6 @@ export function previewRoleChange(request: RoleChangeRequest, personRows: StaffR
   const after = effectiveGrants([...kept, ...added], defs, request.personId, target, now);
   const beforeSet = new Set<ConsolePermission>(before.permissions);
   const afterSet = new Set<ConsolePermission>(after.permissions);
-  const mode = sodEvaluation(toFacts(allRows), defs, target, now);
   const basis = active.map((r) => ({ id: r.id, role: r.role, scope: scopeOf(r), definitionVersion: r.definition_version, validUntil: r.valid_until === null ? null : new Date(r.valid_until).toISOString() }))
     .sort((a, b) => a.id.localeCompare(b.id));
   const change = {
@@ -90,7 +89,7 @@ export function previewRoleChange(request: RoleChangeRequest, personRows: StaffR
     after: { roles: after.roles, permissions: after.permissions },
     gained: sortStrings(after.permissions.filter((p) => !beforeSet.has(p))),
     lost: sortStrings(before.permissions.filter((p) => !afterSet.has(p))),
-    sod: { mode: mode.mode, people: mode.staffCount, conflicts: conflictsOf(defs, kept, request.add) },
+    sod: { mode: sod.mode, people: sod.staffCount, conflicts: conflictsOf(defs, kept, request.add) },
     approvals: change.add.filter((a) => sensitiveRoles.includes(a.role)).map((a) => ({
       role: a.role, action: 'staff.assign_sensitive_role' as const,
       actionDigest: adminDigests.assignment({ breakglass: false, personId: request.personId, role: a.role, scope: request.scope, definitionVersion: a.definitionVersion, validForSeconds: a.validForSeconds }),

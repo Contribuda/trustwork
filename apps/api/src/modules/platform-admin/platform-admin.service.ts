@@ -7,12 +7,13 @@ import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import {
-  approverAllowed, effectiveGrants, rolesGranting, sodEvaluation, type AssignmentFact, type DefinitionFact, type SodEvaluation, type StaffTarget,
+  approverAllowed, DATABASE_ROLE_RULE_ACTIONS, effectiveGrants, FULL_SOD_MIN_STAFF, rolesGranting, sodEvaluation, type AssignmentFact, type DefinitionFact, type SodEvaluation, type StaffTarget,
 } from './authority.js';
 import {
   adminAudit, adminDigests, adminSetup, appeals, approvals, caseGrants, featureFlags, incidents, moderation, staffAssignments, staffConflicts, staffRoleDefinitions,
   type CommandContext, type ModerationDecision, type SecondPersonApprovalRow, type StaffRoleAssignmentRow, type StaffRoleDefinitionRow,
 } from './deps.js';
+import { staffLifecycle } from './staff-lifecycle/deps.js';
 import { adminRefusal, isAuthorityRefusal } from './errors.js';
 import type { ModerationTargetPort, SanctionEnforcementPort } from './ports.js';
 import type {
@@ -27,6 +28,8 @@ import {
 type Cmd = z.infer<typeof PlainCommandSchema>;
 export interface Elevated { state: RequestState; elevationId: string; idempotencyKey: string | undefined }
 export interface Attempt { target: StaffTarget; permission: ConsolePermission; action: string; objectType: string; objectId: string }
+/** An attempt whose scope is only known by reading the object; `null` leaves no row (the person is not staff there). */
+export type LateAttempt = (trx: Transaction) => Promise<Attempt | null>;
 
 const SEVENTY_TWO_HOURS = 72 * 3600;
 export const toFacts = (rows: StaffRoleAssignmentRow[]): AssignmentFact[] => rows.map((r) => ({
@@ -76,7 +79,7 @@ export class PlatformAdminService {
    * One staff command: the request transaction as the staff member; database refusals become contract errors, and a
    * refusal of authority leaves a `denied` audit row (own transaction, so it survives the rollback).
    */
-  private async staff<T>(e: Elevated, body: Cmd, attempt: Attempt | null, fn: (trx: Transaction, p: Principal, cmd: CommandContext) => Promise<T>): Promise<T> {
+  private async staff<T>(e: Elevated, body: Cmd, attempt: Attempt | LateAttempt | null, fn: (trx: Transaction, p: Principal, cmd: CommandContext) => Promise<T>): Promise<T> {
     const cmd = this.commandContext(e, body);
     try {
       return await this.principals.runAs(e.state, (trx, p) => fn(trx, p, cmd));
@@ -91,8 +94,14 @@ export class PlatformAdminService {
    * The same staff command plumbing for ADM-004's staff-lifecycle slice: request transaction as the staff member,
    * contract errors, and a `denied` audit row for a refusal of authority.
    */
-  staffCommand<T>(e: Elevated, body: Cmd, attempt: Attempt | null, fn: (trx: Transaction, p: Principal, cmd: CommandContext) => Promise<T>): Promise<T> {
+  staffCommand<T>(e: Elevated, body: Cmd, attempt: Attempt | LateAttempt | null, fn: (trx: Transaction, p: Principal, cmd: CommandContext) => Promise<T>): Promise<T> {
     return this.staff(e, body, attempt, fn);
+  }
+
+  /** The person's notice that they now hold a role, however it was assigned. */
+  roleAssignedNotice(trx: Transaction, assignment: { personId: string; assignmentId: string; role: string; scopeKind: string; grantedBy: string }): Promise<void> {
+    const { personId, ...payload } = assignment;
+    return this.notice(trx, { kind: 'person', id: personId }, 'admin.staff_role_assigned', payload);
   }
 
   /** Reads as the staff member (row-level security decides what is visible). */
@@ -114,9 +123,11 @@ export class PlatformAdminService {
     return granting[0] ?? effectiveGrants(assignments, defs, personId, target, this.now).roles[0] ?? null;
   }
 
-  private async recordDenied(e: Elevated, cmd: CommandContext, attempt: Attempt, refusal: ApiError): Promise<void> {
+  private async recordDenied(e: Elevated, cmd: CommandContext, late: Attempt | LateAttempt, refusal: ApiError): Promise<void> {
     const p = e.state.principal as Principal;
     await withPrincipal(this.ctx.pool, { personId: p.personId, authzEpoch: p.authzEpoch }, async (trx) => {
+      const attempt = typeof late === 'function' ? await late(trx) : late;
+      if (!attempt) return;
       const role = await this.ownRoleAt(trx, p.personId, attempt.target, attempt.permission);
       if (!role) return; // no staff role covers the target: nothing this person may be audited as there
       const reason = typeof refusal.details?.reason === 'string' ? refusal.details.reason : refusal.code.replace(/\W/g, '_');
@@ -169,19 +180,18 @@ export class PlatformAdminService {
     });
   }
 
-  /** Separation-of-duties mode of a target; needs `admin.staff.read` there (the count covers people the caller may see). */
+  /** Separation-of-duties mode of a target, as the database enforces it; needs `admin.staff.read` there. */
   sod(state: RequestState, target: StaffTarget) {
     return this.read(state, async (trx) => {
       if (!(await staffAssignments.hasPermission(trx, 'admin.staff.read', target))) throw new ApiError('access.forbidden', 'admin.staff.read is required at this scope', { required: 'permission' });
-      const { assignments, defs } = await this.facts(trx);
-      return { target, ...sodEvaluation(assignments, defs, target, this.now) };
+      return { target, ...(await staffLifecycle.sod(trx, target)), minimumForFull: FULL_SOD_MIN_STAFF };
     });
   }
 
   /**
-   * The full-mode check of a second-person decision, evaluated on the staff directory the approver may read. Without
-   * `admin.staff.read` at the scope the directory is not visible and only the database rules apply (different person,
-   * permission at the scope, digest, expiry); the response says so (`verified: false`).
+   * The full-mode check of a second-person decision outside the staff actions, evaluated on the staff directory the
+   * approver may read. Without `admin.staff.read` at the scope the directory is not visible and only the database rules
+   * apply (different person, permission at the scope, digest, expiry); the response says so (`verified: false`).
    */
   private async sodForDecision(trx: Transaction, approverId: string, approval: SecondPersonApprovalRow): Promise<{ verified: boolean; evaluation: SodEvaluation | null; requesterRoles: HubStaffRole[]; approverRoles: HubStaffRole[] }> {
     const target = scopeOf(approval);
@@ -329,6 +339,13 @@ export class PlatformAdminService {
     return this.staff(e, body, null, async (trx, p, cmd) => {
       const before = await approvals.get(trx, id);
       if (!before) throw new ApiError('access.not_found', 'approval not found');
+      if (DATABASE_ROLE_RULE_ACTIONS.includes(before.action)) {
+        // The database decides the different-role rule and reports the mode it decided under, whoever the approver is.
+        const row = await approvals.decide(trx, cmd, id, 'approve', body.actionDigest, body.validForSeconds ?? SEVENTY_TWO_HOURS);
+        const state = await staffLifecycle.sod(trx, scopeOf(row));
+        await this.notice(trx, { kind: 'person', id: row.requested_by }, 'admin.approval_decided', { approvalId: row.id, action: row.action, decision: 'approve' });
+        return { approval: toApproval(row), sod: { verified: true, mode: state.mode, staffCount: state.staffCount } };
+      }
       const sod = await this.sodForDecision(trx, p.personId, before);
       if (sod.verified && sod.evaluation) {
         const verdict = approverAllowed({ mode: sod.evaluation.mode, requesterId: before.requested_by, approverId: p.personId, requesterRoles: sod.requesterRoles, approverRoles: sod.approverRoles });

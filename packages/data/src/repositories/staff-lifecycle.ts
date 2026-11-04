@@ -33,6 +33,13 @@ export const staffLifecycle = {
     const { rows } = await sql<StaffDirectoryRow>`SELECT * FROM trustwork.staff_directory(${hubId}::uuid)`.execute(trx);
     return rows;
   },
+  /** The scope's separation-of-duties mode and head count as the database enforces them (staff covering the scope). */
+  async sod(trx: Transaction, target: StaffTarget): Promise<{ mode: 'full' | 'reduced'; staffCount: number }> {
+    const s = scopeArgs(target);
+    const { rows } = await sql<{ mode: 'full' | 'reduced'; staff_count: number }>`SELECT mode, staff_count FROM trustwork.staff_sod_state(${s.node}::uuid, ${s.hub}::uuid)`.execute(trx);
+    const row = rows[0]!;
+    return { mode: row.mode, staffCount: row.staff_count };
+  },
   async effectiveAssignments(trx: Transaction, hubId: string, personId: string): Promise<StaffRoleAssignmentRow[]> {
     const { rows } = await sql<StaffRoleAssignmentRow>`SELECT * FROM trustwork.staff_effective_assignments(${hubId}::uuid, ${personId}::uuid)`.execute(trx);
     return rows;
@@ -58,6 +65,13 @@ export const staffLifecycle = {
   async ownInvitations(trx: Transaction): Promise<OwnStaffInvitationRow[]> {
     const { rows } = await sql<OwnStaffInvitationRow>`SELECT * FROM trustwork.staff_invitations_of_self()`.execute(trx);
     return rows;
+  },
+  /** The scope of an invitation for staff covering it, even without `admin.staff.read`; `null` to anyone else. */
+  async invitationScope(trx: Transaction, invitationId: string): Promise<StaffTarget | null> {
+    const { rows } = await sql<{ scope_kind: StaffTarget['kind']; node_id: string | null; hub_id: string | null }>`SELECT * FROM trustwork.staff_invitation_scope(${invitationId}::uuid)`.execute(trx);
+    const row = rows[0];
+    if (!row) return null;
+    return row.scope_kind === 'hub' ? { kind: 'hub', hubId: row.hub_id! } : row.scope_kind === 'node' ? { kind: 'node', nodeId: row.node_id! } : { kind: 'platform' };
   },
   async withdraw(trx: Transaction, ctx: CommandContext, invitationId: string): Promise<StaffInvitationRow> {
     const { rows } = await sql<StaffInvitationRow>`SELECT * FROM trustwork.staff_invitation_withdraw(${ctxJson(ctx)}::jsonb, ${invitationId}::uuid)`.execute(trx);

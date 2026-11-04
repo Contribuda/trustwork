@@ -6,10 +6,10 @@ import { ApiError } from '../../../common/errors.js';
 import type { RequestState } from '../../../common/request.js';
 import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
-import { approverAllowed, effectiveGrants, rolesGranting, sodEvaluation } from '../authority.js';
+import { effectiveGrants } from '../authority.js';
 import { staffAssignments, staffRoleDefinitions, type StaffRoleAssignmentRow } from '../deps.js';
 import { adminRefusal } from '../errors.js';
-import { toDefs, toFacts, type Elevated, type PlatformAdminService } from '../platform-admin.service.js';
+import { toDefs, toFacts, type Elevated, type LateAttempt, type PlatformAdminService } from '../platform-admin.service.js';
 import type { PlainCommandSchema } from '../schemas.js';
 import { scopeOf, toAssignment } from '../views.js';
 import {
@@ -136,15 +136,31 @@ export class StaffLifecycleService {
     }));
   }
 
+  /**
+   * A refused apply or withdraw is audited at the invitation's own scope, known only by reading it. `staff_invitation_scope`
+   * answers for staff covering that scope even without `admin.staff.read`; anyone else is not audited there.
+   */
+  private invitationAttempt(invitationId: string, action: string): LateAttempt {
+    return async (trx) => {
+      const target = await staffLifecycle.invitationScope(trx, invitationId);
+      return target ? { target, permission: 'admin.staff.assign', action, objectType: 'staff_invitation', objectId: invitationId } : null;
+    };
+  }
+
   apply(e: Elevated, invitationId: string, body: z.infer<typeof PlainCommandSchema>) {
-    return this.admin.staffCommand(e, body, null, async (trx, _p, cmd) => {
+    return this.admin.staffCommand(e, body, this.invitationAttempt(invitationId, 'staff.invitation_apply'), async (trx, p, cmd) => {
       const { invitation, outcome } = await staffLifecycle.apply(trx, cmd, invitationId);
+      if (outcome === 'applied') {
+        await this.admin.roleAssignedNotice(trx, { personId: invitation.person_id!, assignmentId: invitation.assignment_id!, role: invitation.role, scopeKind: invitation.scope_kind, grantedBy: p.personId });
+      }
       return { result: { outcome }, invitation: toInvitation(invitation, this.ctx.clock.now()) };
     });
   }
 
   withdraw(e: Elevated, invitationId: string, body: z.infer<typeof PlainCommandSchema>) {
-    return this.admin.staffCommand(e, body, null, async (trx, _p, cmd) => ({ invitation: toInvitation(await staffLifecycle.withdraw(trx, cmd, invitationId), this.ctx.clock.now()) }));
+    return this.admin.staffCommand(e, body, this.invitationAttempt(invitationId, 'staff.invitation_withdrawn'), async (trx, _p, cmd) => ({
+      invitation: toInvitation(await staffLifecycle.withdraw(trx, cmd, invitationId), this.ctx.clock.now()),
+    }));
   }
 
   /** The signed-in person's own open invitations (by verified address); anyone may ask, and sees only their own. */
@@ -193,30 +209,9 @@ export class StaffLifecycleService {
     });
   }
 
-  /**
-   * The second person decides. In full separation-of-duties mode the approver acts through a role the eligibility's
-   * grantor (the requester in ADM-001's terms) does not hold for `admin.staff.assign`, as the approvals inbox requires.
-   */
+  /** The second person decides; the database refuses a same-role approver in full separation-of-duties mode. */
   decideActivation(e: Elevated, activationId: string, body: z.infer<typeof DecideActivationCommandSchema>) {
-    return this.admin.staffCommand(e, body, null, async (trx, p, cmd) => {
-      const before = await staffLifecycle.activation(trx, activationId);
-      if (before && body.decision === 'approve') {
-        const target = scopeOf(before);
-        const [grantor, rows, defs] = await Promise.all([
-          trx.selectFrom('staff_eligible_role').select('granted_by').where('id', '=', before.eligible_role_id).executeTakeFirst(),
-          staffAssignments.list(trx, { activeOnly: true }), staffRoleDefinitions.list(trx),
-        ]);
-        if (grantor && (await staffAssignments.hasPermission(trx, 'admin.staff.read', target))) {
-          const facts = toFacts(rows);
-          const definitions = toDefs(defs);
-          const now = this.ctx.clock.now();
-          const verdict = approverAllowed({
-            mode: sodEvaluation(facts, definitions, target, now).mode, requesterId: grantor.granted_by, approverId: p.personId,
-            requesterRoles: rolesGranting(facts, definitions, grantor.granted_by, ['admin.staff.assign'], target, now), approverRoles: rolesGranting(facts, definitions, p.personId, ['admin.staff.assign'], target, now),
-          });
-          if (!verdict.ok && verdict.reason === 'same_role') throw new ApiError('access.second_approver_required', 'in full separation-of-duties mode the second person acts through a different role', { reason: 'same_role', sodMode: 'full' });
-        }
-      }
+    return this.admin.staffCommand(e, body, null, async (trx, _p, cmd) => {
       const row = await staffLifecycle.decideActivation(trx, cmd, activationId, body.decision);
       return { activation: await this.activationView(trx, row.id) };
     });
@@ -370,11 +365,9 @@ export class StaffLifecycleService {
   private async roleChangePreview(trx: Transaction, request: z.infer<typeof RoleChangePreviewRequestSchema>): Promise<RoleChangePreview> {
     const [canRead, canAssign] = await Promise.all([staffAssignments.hasPermission(trx, 'admin.staff.read', request.scope), staffAssignments.hasPermission(trx, 'admin.staff.assign', request.scope)]);
     if (!canRead || !canAssign) throw new ApiError('access.forbidden', 'admin.staff.read and admin.staff.assign are required at this scope', { required: 'permission' });
-    const [person, all, defs] = await Promise.all([
-      staffAssignments.list(trx, { personId: request.personId }), staffAssignments.list(trx, { activeOnly: true }), staffRoleDefinitions.list(trx),
-    ]);
+    const [person, sod, defs] = await Promise.all([staffAssignments.list(trx, { personId: request.personId }), staffLifecycle.sod(trx, request.scope), staffRoleDefinitions.list(trx)]);
     try {
-      return previewRoleChange(request, person, all, defs, SENSITIVE_HUB_STAFF_ROLES, this.ctx.clock.now());
+      return previewRoleChange(request, person, sod, defs, SENSITIVE_HUB_STAFF_ROLES, this.ctx.clock.now());
     } catch (error) {
       if (error instanceof RoleChangeError) throw new ApiError('validation.schema', error.message, { reason: error.reason });
       throw error;

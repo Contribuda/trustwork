@@ -21,7 +21,7 @@ All mutations: CSRF header, `Idempotency-Key`, and a console command body (`cont
 |---|---|---|
 | `GET /v1/admin/node` | staff | The node anchor (`nodeId`, `label`) |
 | `GET /v1/admin/access` (query `hubId` or `nodeId`) | staff | The caller's materialised grants at the target: roles, permissions, permissions held only through break-glass |
-| `GET /v1/admin/staff/sod` (query `hubId` or `nodeId`) | `admin.staff.read` at the target | Separation-of-duties mode: `reduced` below five distinct staff people covering the target, `full` from five |
+| `GET /v1/admin/staff/sod` (query `hubId` or `nodeId`) | `admin.staff.read` at the target | Separation-of-duties mode as the database enforces it (`staff_sod_state`): `reduced` below five distinct staff people covering the target, `full` from five, whichever rows the reader may see |
 | `GET /v1/admin/staff/definitions`, `GET /v1/admin/staff/assignments`, `GET /v1/admin/staff/conflicts` | staff (rows filtered by row-level security) | Released role definitions; assignments and conflict declarations the caller may see |
 | `POST /v1/admin/staff/assignments` | `admin.staff.assign` at the scope | Assigns a role; sensitive roles need `approvalId` (`staff.assign_sensitive_role`); never to oneself |
 | `POST /v1/admin/staff/assignments/:id/revoke` | `admin.staff.revoke` | Revokes; the person's elevations and grants end with their last role (DATA-002) |
@@ -30,7 +30,7 @@ All mutations: CSRF header, `Idempotency-Key`, and a console command body (`cont
 | `GET/POST /v1/admin/incidents` | `admin.incident.*` | Incidents (break-glass names one) |
 | `POST /v1/admin/approvals` | a permission that executes the action, at its scope | Requests a second person. For `staff.assign_sensitive_role`, `staff.grant_breakglass` and `moderation.apply_sanction_l4` the server computes the digest from the described action; actions of other modules carry the digest their module computes |
 | `GET /v1/admin/approvals`, `GET /v1/admin/approvals/:id` | staff | `forMe` (pending, not mine), `mine`, `decided` |
-| `POST /v1/admin/approvals/:id/approve` | a different person holding an executing permission | Restates the reviewed digest; lasts at most 72 hours. In full mode the approver must act through a role the requester does not hold for that action (checked when the approver may read the staff directory; the response states `sod.verified`) |
+| `POST /v1/admin/approvals/:id/approve` | a different person holding an executing permission | Restates the reviewed digest; lasts at most 72 hours. In full mode the approver must act through a role the requester does not hold for that action. For `staff.assign_sensitive_role` and `staff.grant_breakglass` the database decides it for every approver, when the approval is given and when it is used; for other actions the API checks it when the approver may read the staff directory (the response states `sod.verified`) |
 | `POST /v1/admin/approvals/:id/decline`, `/withdraw` | approver, requester | Decline with reason; the requester withdraws (audited) |
 | `POST /v1/admin/case-grants`, `POST .../:id/decide`, `POST .../:id/revoke` | `admin.support.grant.request`; a different person with `admin.support.grant.approve`; requester or approver | Case access grant inside an open support case, restating the request digest to approve |
 | `GET /v1/admin/case-grants/:id`, `GET /v1/admin/support-cases/:id/case-grants`, `GET /v1/admin/case-grants/coverage`, `GET /v1/admin/access-log` | staff | Grant state (`active` false once expired or revoked), coverage of an object for the caller, the access log |
@@ -59,6 +59,6 @@ Outbox intents (MAIL-001 delivers them; identifiers only): `admin.staff_role_ass
 
 ## Known limits
 
-- The full-mode "different role" rule needs the staff directory; an approver without `admin.staff.read` at the scope cannot read it, so only the database rules apply (different person, executing permission at the scope, digest, expiry) and the response says `sod.verified: false`. Follow-up for the data integrator: a SECURITY DEFINER `admin_sod_mode(node, hub)` and the role check inside `admin_decide_approval`.
+- For second-person actions other than the staff actions the full-mode "different role" rule stays in the API: it needs the staff directory, so an approver without `admin.staff.read` at the scope is checked only by the database rules (different person, executing permission at the scope, digest, expiry), and the response says `sod.verified: false`.
 - The separation-of-duties mode is derived from the staff count (contract: "`reduced` while staff < 5"); an explicit per-hub switch (`staff.switch_sod_mode`) belongs to the versioned hub configuration (HUB-001).
 - Support cases themselves (opening, notes, closing) and reads under a grant are SUP-001; appeals on other modules' decisions are filed by those modules (DATA-002 owner-run path) and decided here.
