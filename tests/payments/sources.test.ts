@@ -12,6 +12,7 @@ import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
 import { seedPersonas, login } from '../backend/helpers/personas.js';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { screenEveryoneClear } from '../screening-gates/helpers.js';
+import { untilDatabaseTimePasses } from '../data/helpers/postgres.js';
 import type { PaymentView } from '../../packages/contracts/src/payments.js';
 import { sourceWorld } from './source-helpers.js';
 import { ok } from './helpers.js';
@@ -226,9 +227,19 @@ test('PAY-001 registered synthetic source through actual API, signed ingress and
     assert.equal(w.fake.calls.length, before);
     assert.equal((await w.q('SELECT id FROM trustwork.payment_intent WHERE agreement_id=$1', [f.payment.agreementId])).length, 1);
   });
-  for (const surface of ['create', 'confirm', 'refund', 'payout', 'connected_account', 'worker'] as const) {
-    await t.test(`signed source deadline passes during actual ${surface} domain wait`, async () => {
-      const f = await w.fresh(buyer, seller, seed.people.petr, seed.people.carl, 3000); await publish(f);
+  /** Only PostgreSQL's clock decides, so the harness clock cannot move this deadline, and it is signed before the setup that must finish inside it. */
+  const SIGNED_DEADLINE_BUDGETS_MS = [3000, 6000, 12000, 24000, 48000];
+  const databaseTimePassed = async (at: string) => (await w.q('SELECT clock_timestamp()>=$1::timestamptz AS passed', [at]))[0]!.passed as boolean;
+  /**
+   * One attempt at the proof, which needs the request waiting in the domain lock before the deadline and released after it.
+   * False means this runner reached the wait too late for the budget: nothing was proved and nothing was asserted, so the caller
+   * tries a longer deadline. A failure while the deadline is still ahead, and every failure after the wait was observed, is a real one.
+   */
+  const deadlineDuringWait = async (surface: 'create' | 'confirm' | 'refund' | 'payout' | 'connected_account' | 'worker', budgetMs: number): Promise<boolean> => {
+    const earliestDeadline = new Date(Date.now() + budgetMs).toISOString();
+    let observed = false;
+    try {
+      const f = await w.fresh(buyer, seller, seed.people.petr, seed.people.carl, budgetMs); await publish(f);
       let payment: PaymentView | undefined;
       if (surface !== 'create') payment = ok(await buyer.post('/v1/payments', f.payment), 201);
       if (surface !== 'create' && surface !== 'worker') {
@@ -241,23 +252,41 @@ test('PAY-001 registered synthetic source through actual API, signed ingress and
       try {
         await blocker.query('BEGIN');
         if (surface === 'worker') {
-          let reached!: () => void;
+          let reached!: () => void, entered = false;
           const ready = new Promise<void>((r) => { reached = r; }), proceed = new Promise<void>((r) => { resume = r; });
-          payments.dispatchGuard = async (...args) => { reached(); await proceed; return original(...args); };
-          run = w.tick(); await ready;
+          payments.dispatchGuard = async (...args) => { entered = true; reached(); await proceed; return original(...args); };
+          // A job refused before the guard ends the tick, and waiting for the guard alone would then wait forever.
+          run = w.tick(); await Promise.race([ready, run]);
+          assert.ok(entered, 'the worker reached its final guard');
           await blocker.query('SELECT connection_id FROM trustwork.payment_rail WHERE connection_id=$1 FOR UPDATE', [w.connectionId]);
           resume!();
         } else {
           await blocker.query('SELECT pg_advisory_xact_lock(827003,1)');
           run = buyer.post(surface === 'create' ? '/v1/payments' : `/v1/payments/${payment!.id}/${surface === 'connected_account' ? 'connected-account' : surface}`, surface === 'create' ? f.payment : {});
         }
-        await wait(async () => (await w.q("SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%payments_%'")).length > 0);
-        await delay(Math.max(0, Date.parse(f.authorization.expiresAt) - Date.now() + 40));
+        // The wait and the deadline are read in one statement: a wait seen here began before the deadline passed.
+        while (!observed) {
+          const [now] = await w.q("SELECT clock_timestamp()>=$1::timestamptz AS passed,EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%payments_%') AS waiting", [f.authorization.expiresAt]);
+          if (now!.passed) return false;
+          observed = now!.waiting as boolean;
+          if (!observed) await delay(10);
+        }
+        await untilDatabaseTimePasses(h.db.admin, new Date(f.authorization.expiresAt), 60000);
         await blocker.query('COMMIT'); const response = await run;
         if (surface !== 'worker') assert.equal((response as { status: number }).status, 403, JSON.stringify(response));
         else assert.deepEqual((await w.q('SELECT r.state,r.effect_pending FROM trustwork.reservation r JOIN trustwork.payment_intent p ON p.reservation_id=r.id WHERE p.id=$1', [payment!.id]))[0], { state: 'reserved', effect_pending: true });
         assert.equal(w.fake.calls.length, before);
+        return true;
       } finally { resume?.(); payments.dispatchGuard = original; await blocker.query('ROLLBACK'); blocker.release(); await run; }
+    } catch (error) {
+      if (observed || !await databaseTimePassed(earliestDeadline)) throw error;
+      return false;
+    }
+  };
+  for (const surface of ['create', 'confirm', 'refund', 'payout', 'connected_account', 'worker'] as const) {
+    await t.test(`signed source deadline passes during actual ${surface} domain wait`, async () => {
+      for (const budgetMs of SIGNED_DEADLINE_BUDGETS_MS) if (await deadlineDuringWait(surface, budgetMs)) return;
+      assert.fail(`the ${surface} request never reached the domain wait inside a ${SIGNED_DEADLINE_BUDGETS_MS.at(-1)} ms deadline`);
     });
   }
 });
