@@ -59,6 +59,5 @@ Outbox intents (MAIL-001 delivers them; identifiers only): `admin.staff_role_ass
 
 ## Known limits
 
-- For second-person actions other than the staff actions the full-mode "different role" rule stays in the API: it needs the staff directory, so an approver without `admin.staff.read` at the scope is checked only by the database rules (different person, executing permission at the scope, digest, expiry), and the response says `sod.verified: false`.
 - The separation-of-duties mode is derived from the staff count (contract: "`reduced` while staff < 5"); an explicit per-hub switch (`staff.switch_sod_mode`) belongs to the versioned hub configuration (HUB-001).
 - Support cases themselves (opening, notes, closing) and reads under a grant are SUP-001; appeals on other modules' decisions are filed by those modules (DATA-002 owner-run path) and decided here.

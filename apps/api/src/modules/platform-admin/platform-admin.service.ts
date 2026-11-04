@@ -7,11 +7,11 @@ import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import {
-  approverAllowed, DATABASE_ROLE_RULE_ACTIONS, effectiveGrants, FULL_SOD_MIN_STAFF, rolesGranting, sodEvaluation, type AssignmentFact, type DefinitionFact, type SodEvaluation, type StaffTarget,
+  effectiveGrants, FULL_SOD_MIN_STAFF, rolesGranting, type AssignmentFact, type DefinitionFact, type StaffTarget,
 } from './authority.js';
 import {
   adminAudit, adminDigests, adminSetup, appeals, approvals, caseGrants, featureFlags, incidents, moderation, staffAssignments, staffConflicts, staffRoleDefinitions,
-  type CommandContext, type ModerationDecision, type SecondPersonApprovalRow, type StaffRoleAssignmentRow, type StaffRoleDefinitionRow,
+  type CommandContext, type ModerationDecision, type StaffRoleAssignmentRow, type StaffRoleDefinitionRow,
 } from './deps.js';
 import { staffLifecycle } from './staff-lifecycle/deps.js';
 import { adminRefusal, isAuthorityRefusal } from './errors.js';
@@ -193,19 +193,6 @@ export class PlatformAdminService {
    * approver may read. Without `admin.staff.read` at the scope the directory is not visible and only the database rules
    * apply (different person, permission at the scope, digest, expiry); the response says so (`verified: false`).
    */
-  private async sodForDecision(trx: Transaction, approverId: string, approval: SecondPersonApprovalRow): Promise<{ verified: boolean; evaluation: SodEvaluation | null; requesterRoles: HubStaffRole[]; approverRoles: HubStaffRole[] }> {
-    const target = scopeOf(approval);
-    if (!(await staffAssignments.hasPermission(trx, 'admin.staff.read', target))) return { verified: false, evaluation: null, requesterRoles: [], approverRoles: [] };
-    const permissions = await this.actionPermissions(trx, approval.action);
-    const { assignments, defs } = await this.facts(trx);
-    const evaluation = sodEvaluation(assignments, defs, target, this.now);
-    return {
-      verified: true, evaluation,
-      requesterRoles: rolesGranting(assignments, defs, approval.requested_by, permissions, target, this.now),
-      approverRoles: rolesGranting(assignments, defs, approverId, permissions, target, this.now),
-    };
-  }
-
   /* ---------- Staff ---------- */
 
   definitions(state: RequestState) {
@@ -339,21 +326,11 @@ export class PlatformAdminService {
     return this.staff(e, body, null, async (trx, p, cmd) => {
       const before = await approvals.get(trx, id);
       if (!before) throw new ApiError('access.not_found', 'approval not found');
-      if (DATABASE_ROLE_RULE_ACTIONS.includes(before.action)) {
-        // The database decides the different-role rule and reports the mode it decided under, whoever the approver is.
-        const row = await approvals.decide(trx, cmd, id, 'approve', body.actionDigest, body.validForSeconds ?? SEVENTY_TWO_HOURS);
-        const state = await staffLifecycle.sod(trx, scopeOf(row));
-        await this.notice(trx, { kind: 'person', id: row.requested_by }, 'admin.approval_decided', { approvalId: row.id, action: row.action, decision: 'approve' });
-        return { approval: toApproval(row), sod: { verified: true, mode: state.mode, staffCount: state.staffCount } };
-      }
-      const sod = await this.sodForDecision(trx, p.personId, before);
-      if (sod.verified && sod.evaluation) {
-        const verdict = approverAllowed({ mode: sod.evaluation.mode, requesterId: before.requested_by, approverId: p.personId, requesterRoles: sod.requesterRoles, approverRoles: sod.approverRoles });
-        if (!verdict.ok && verdict.reason === 'same_role') throw new ApiError('access.second_approver_required', 'in full separation-of-duties mode the second person acts through a different role', { reason: 'same_role', sodMode: 'full' });
-      }
+      // The database decides who may approve, the different-role rule included, and reports the mode it decided under.
       const row = await approvals.decide(trx, cmd, id, 'approve', body.actionDigest, body.validForSeconds ?? SEVENTY_TWO_HOURS);
+      const state = await staffLifecycle.sod(trx, scopeOf(row));
       await this.notice(trx, { kind: 'person', id: row.requested_by }, 'admin.approval_decided', { approvalId: row.id, action: row.action, decision: 'approve' });
-      return { approval: toApproval(row), sod: { verified: sod.verified, mode: sod.evaluation?.mode ?? null, staffCount: sod.evaluation?.staffCount ?? null } };
+      return { approval: toApproval(row), sod: { verified: true, mode: state.mode, staffCount: state.staffCount } };
     }).catch(async (error: unknown) => {
       if (error instanceof ApiError && isAuthorityRefusal(error)) await this.recordApprovalDenied(e, body, id, error);
       throw error;

@@ -32,9 +32,6 @@ export interface DefinitionFact {
 /** What an action applies to: the platform, the node, or one hub (the same shape as a staff scope). */
 export type StaffTarget = StaffScope;
 
-/** The actions whose different-role rule the database decides (`staff_require_different_role`); the API decides the rest. */
-export const DATABASE_ROLE_RULE_ACTIONS: readonly string[] = ['staff.assign_sensitive_role', 'staff.grant_breakglass'];
-
 /** Below this many distinct staff people covering a scope the scope runs in reduced separation-of-duties mode. */
 export const FULL_SOD_MIN_STAFF = 5;
 
@@ -95,26 +92,6 @@ export function rolesGranting(assignments: readonly AssignmentFact[], defs: read
     if (permissions.some((p) => def.permissions.includes(p) && scopeCovers(assignment.scope, target, p))) out.add(assignment.role);
   }
   return [...out].sort();
-}
-
-export interface SodEvaluation { mode: SodMode; staffCount: number; minimumForFull: number }
-
-/** The separation-of-duties mode of a target: `reduced` below five distinct staff people covering it, `full` from five. */
-export function sodEvaluation(assignments: readonly AssignmentFact[], defs: readonly DefinitionFact[], target: StaffTarget, now: Date): SodEvaluation {
-  const people = new Set(assignments.filter((a) => covering([a], defs, a.personId, target, now).length > 0).map((a) => a.personId));
-  return { mode: people.size >= FULL_SOD_MIN_STAFF ? 'full' : 'reduced', staffCount: people.size, minimumForFull: FULL_SOD_MIN_STAFF };
-}
-
-/**
- * The second person of a two-person action. Every mode: a different person (the database enforces it too). Full mode
- * additionally: the approver acts through a role the requester does not hold for that action ("the second with a
- * different role", docs/engine/hub-administration.md).
- */
-export function approverAllowed(input: { mode: SodMode; requesterId: string; approverId: string; requesterRoles: readonly HubStaffRole[]; approverRoles: readonly HubStaffRole[] }): { ok: true } | { ok: false; reason: 'self_approval' | 'same_role' | 'no_role' } {
-  if (input.requesterId === input.approverId) return { ok: false, reason: 'self_approval' };
-  if (!input.approverRoles.length) return { ok: false, reason: 'no_role' };
-  if (input.mode === 'full' && input.approverRoles.every((r) => input.requesterRoles.includes(r))) return { ok: false, reason: 'same_role' };
-  return { ok: true };
 }
 
 /** Hard role conflicts a new assignment would create (a full-mode definition on either side lists the other role). */

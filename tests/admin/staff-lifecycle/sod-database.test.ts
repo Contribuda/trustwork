@@ -134,17 +134,22 @@ test('the database decides the different-role rule (ADM-004)', { skip: db ? fals
     assert.equal((await approve(p.hubOwner, request.id, actionDigest)).status, 'approved');
   });
 
-  await t.test('a break-glass approval carries the rule too; other second-person actions keep what they had', async () => {
+  await t.test('a break-glass approval carries the rule, and so does every other second-person action', async () => {
     const glass = digest();
     await owner((trx) => staffRoleDefinitions.release(trx, { version: 3, role: 'moderator', scopes: ['hub'], permissions: ['admin.staff.breakglass', 'admin.staff.assign', 'admin.moderation.read', 'admin.moderation.decide'],
       caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null }));
     for (const personId of [p.moderator, p.lead]) await as(p.owner, async (trx) => staffAssignments.assign(trx, await elevate(p.owner), { personId, role: 'moderator', scope: hub, definitionVersion: 3 }));
     const request = await ask(p.moderator, 'staff.grant_breakglass', hub, glass);
     await rejects(approve(p.lead, request.id, glass), '42501', 'admin.same_role');
-    // Same role, full mode, an ordinary action: the database asks for a different person, as before.
+    // Same role, full mode, an action that hands out no staff role: refused the same way, without the API in front.
     const actionDigest = digest();
     const ordinary = await ask(p.moderator, 'moderation.apply_sanction_l4', hub, actionDigest);
-    assert.equal((await approve(p.lead, ordinary.id, actionDigest)).status, 'approved');
+    await rejects(approve(p.lead, ordinary.id, actionDigest), '42501', 'admin.same_role');
+    // A second person who acts through another role is approved and the approval is used.
+    await owner((trx) => staffRoleDefinitions.release(trx, { version: 4, role: 'support-lead', scopes: ['hub'], permissions: ['admin.moderation.decide', 'admin.moderation.read'],
+      caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null }));
+    await as(p.owner, async (trx) => staffAssignments.assign(trx, await elevate(p.owner), { personId: p.agent, role: 'support-lead', scope: hub, definitionVersion: 4 }));
+    assert.equal((await approve(p.agent, ordinary.id, actionDigest)).status, 'approved');
     assert.equal((await as(p.moderator, (trx) => approvals.consume(trx, { approvalId: ordinary.id, action: 'moderation.apply_sanction_l4', scope: hub, actionDigest, ref: crypto.randomUUID() }))).status, 'consumed');
   });
 

@@ -5,7 +5,7 @@ import { withMaintenance, withPrincipal, createPool } from '@trustwork/data';
 import type { ConsolePermission, HubStaffRole, StaffScope } from '@trustwork/contracts';
 import { NODE_ONLY_PERMISSIONS } from '@trustwork/contracts';
 import {
-  approverAllowed, assignmentConflicts, effectiveGrants, rolesGranting, scopeCovers, sodEvaluation, FULL_SOD_MIN_STAFF, type AssignmentFact, type DefinitionFact,
+  assignmentConflicts, effectiveGrants, rolesGranting, scopeCovers, type AssignmentFact, type DefinitionFact,
 } from '../../apps/api/src/modules/platform-admin/authority.js';
 import { staffAssignments, staffRoleDefinitions } from '../../packages/data/src/repositories/admin.js';
 import { actors, buildAdminWorld, DEFINITIONS } from '../data/admin/helpers.js';
@@ -55,25 +55,6 @@ test('effective grants: active, definition-scoped, union of permissions, break-g
   for (const person of ['b', 'c', 'd']) assert.deepEqual(effectiveGrants(facts, defs, person, { kind: 'hub', hubId: HUB }, now).roles, [], person);
   assert.deepEqual(rolesGranting(facts, defs, 'a', ['admin.moderation.decide'], { kind: 'hub', hubId: HUB }, now), ['moderator']);
   assert.deepEqual(effectiveGrants(facts, defs, 'a', { kind: 'hub', hubId: OTHER }, now).roles, []);
-});
-
-test('separation-of-duties mode: reduced below five staff people, full from five', () => {
-  const defs = [def('support-agent', ['admin.support.case.create'])];
-  const people = (n: number) => Array.from({ length: n }, (_, i) => held(`p${i}`, 'support-agent', { kind: 'hub', hubId: HUB }));
-  assert.equal(sodEvaluation(people(FULL_SOD_MIN_STAFF - 1), defs, { kind: 'hub', hubId: HUB }, now).mode, 'reduced');
-  assert.equal(sodEvaluation(people(FULL_SOD_MIN_STAFF), defs, { kind: 'hub', hubId: HUB }, now).mode, 'full');
-  assert.equal(sodEvaluation([...people(4), held('p0', 'support-agent', { kind: 'platform' })], defs, { kind: 'hub', hubId: HUB }, now).staffCount, 4, 'people, not assignments');
-  assert.equal(sodEvaluation(people(6), defs, { kind: 'hub', hubId: OTHER }, now).mode, 'reduced', 'staff of another hub do not count');
-});
-
-test('second person: never the requester; in full mode through a different role', () => {
-  const base = { requesterId: 'r', approverId: 'a', requesterRoles: ['staff-admin'] as HubStaffRole[] };
-  assert.deepEqual(approverAllowed({ ...base, mode: 'reduced', approverId: 'r', approverRoles: ['platform-owner'] }), { ok: false, reason: 'self_approval' });
-  assert.deepEqual(approverAllowed({ ...base, mode: 'full', approverId: 'r', approverRoles: ['platform-owner'] }), { ok: false, reason: 'self_approval' });
-  assert.deepEqual(approverAllowed({ ...base, mode: 'reduced', approverRoles: ['staff-admin'] }), { ok: true });
-  assert.deepEqual(approverAllowed({ ...base, mode: 'full', approverRoles: ['staff-admin'] }), { ok: false, reason: 'same_role' });
-  assert.deepEqual(approverAllowed({ ...base, mode: 'full', approverRoles: ['staff-admin', 'hub-owner'] }), { ok: true });
-  assert.deepEqual(approverAllowed({ ...base, mode: 'full', approverRoles: [] }), { ok: false, reason: 'no_role' });
 });
 
 test('hard role conflicts of full-mode definitions, on either side', () => {
