@@ -4,7 +4,9 @@ import { readFileSync } from 'node:fs';
 import { sql } from 'kysely';
 import { withMaintenance, withPrincipal } from '@trustwork/data';
 import { ConsoleCommandResultSchema } from '@trustwork/contracts';
-import { EXTENSION_MANIFEST_KEYS } from '../../packages/contracts/src/agent-extensions.js';
+import { SideEffectSchema } from '../../packages/contracts/src/agent-catalog.js';
+import { CORE_AGENT_MANIFEST } from '../../packages/contracts/src/agents.js';
+import { EXTENSION_MANIFEST_KEYS, PRIVATE_CLASS_EGRESS, SIDE_EFFECT_MANDATE_KINDS } from '../../packages/contracts/src/agent-extensions.js';
 import { agentExtensions, agentExtensionWorker } from '../../packages/data/src/repositories/agent-extensions.js';
 import { hubConfig } from '../../packages/data/src/repositories/hubs.js';
 import { inTransaction } from '@trustwork/worker';
@@ -40,6 +42,14 @@ test('governed extension registry: registration, lifecycle, safety suites and se
   await t.test('the database lists exactly the contract vocabulary', async () => {
     const { rows } = await admin.query<{ k: string[] }>('SELECT trustwork.agent_extensions_manifest_keys() AS k');
     assert.deepEqual(rows[0]!.k, [...EXTENSION_MANIFEST_KEYS]);
+    for (const effect of SideEffectSchema.options) {
+      const r = await admin.query<{ k: string[] | null }>('SELECT trustwork.agent_extensions_side_effect_kinds($1) AS k', [effect]);
+      assert.deepEqual(r.rows[0]!.k, SIDE_EFFECT_MANDATE_KINDS[effect] ?? null, effect);
+    }
+    for (const [name, classes] of Object.entries(PRIVATE_CLASS_EGRESS)) {
+      const r = await admin.query<{ k: string[] }>('SELECT trustwork.agent_extensions_private_class_egress($1) AS k', [name]);
+      assert.deepEqual(r.rows[0]!.k, [...classes], name);
+    }
   });
 
   await t.test('negative: anonymous, participants and staff without extension permissions never reach the registry', async () => {
@@ -59,6 +69,36 @@ test('governed extension registry: registration, lifecycle, safety suites and se
     expectRefusal(await command(staff.owner, `${base}/versions`, { manifest }), 422, 'validation.schema', 'action_without_mandate_kind');
     await rejects(draftInDb(manifest), '23514', 'agents.action_without_mandate_kind');
     await rejects(draftInDb({ ...manifest, actions: [{ ...lookup, mandateKind: 'whatever' }] }), '23514', 'agents.action_without_mandate_kind');
+  });
+
+  await t.test('a declared side effect fixes the mandate kind: research that sends a message is refused, at the API and in the database', async () => {
+    const outbound = manifestOf(uniqueKey('outbound'), { actions: [{ ...lookup, sideEffects: ['external_call', 'outbound_message'] }] });
+    expectRefusal(await command(staff.owner, `${base}/versions`, { manifest: outbound }), 422, 'validation.schema', 'side_effect_needs_mandate_kind');
+    await rejects(draftInDb(outbound), '23514', 'agents.side_effect_needs_mandate_kind');
+    const publishing = manifestOf(uniqueKey('publishing'), { actions: [{ ...lookup, sideEffects: ['external_call', 'publication'] }] });
+    await rejects(draftInDb(publishing), '23514', 'agents.side_effect_needs_mandate_kind');
+    // Under its own kind it meets that kind's floor: a person each time, as the strongest built-in `communicate` asks.
+    const asCommunicate = { ...lookup, mandateKind: 'communicate' as const, sideEffects: ['external_call' as const, 'outbound_message' as const] };
+    const weak = manifestOf(uniqueKey('weak'), { actions: [asCommunicate], requiredMandateKinds: ['communicate'] });
+    expectRefusal(await command(staff.owner, `${base}/versions`, { manifest: weak }), 422, 'validation.schema', 'confirmation_below_built_in');
+    await draftVersion(x, manifestOf(uniqueKey('person'), { actions: [{ ...asCommunicate, confirmation: 'person_each' }], requiredMandateKinds: ['communicate'] }));
+  });
+
+  await t.test('what leaves is declared: an external call without classes, or a private class not sent, is refused', async () => {
+    const silent = manifestOf(uniqueKey('silent'), { actions: [{ ...lookup, dataClassesSent: [] }] });
+    expectRefusal(await command(staff.owner, `${base}/versions`, { manifest: silent }), 422, 'validation.schema', 'data_classes_undeclared');
+    await rejects(draftInDb(silent), '23514', 'agents.data_classes_undeclared');
+    const budgets = { ...lookup, privateDataClasses: ['budgets' as const], kind: 'draft' as const, mandateKind: 'prepare' as const, confirmation: 'none' as const, sideEffects: ['external_call' as const] };
+    const hidden = manifestOf(uniqueKey('hidden'), { actions: [budgets], requiredMandateKinds: ['prepare'] });
+    expectRefusal(await command(staff.owner, `${base}/versions`, { manifest: hidden }), 422, 'validation.schema', 'private_class_not_sent');
+    await rejects(draftInDb(hidden), '23514', 'agents.private_class_not_sent');
+    // Declared honestly it registers, and a public-only route then refuses it at activation.
+    const declared = await testedVersion(x, manifestOf(uniqueKey('declared'), { actions: [{ ...budgets, dataClassesRead: ['company_private'], dataClassesSent: ['company_private'] }], requiredMandateKinds: ['prepare'] }));
+    assert.equal(declared.ref.status, 'tested');
+    await activateRoute(x, declared.ref.extensionId, ['public']);
+    const refusal = await command(staff.officer, `${base}/activations`, { versionIds: [declared.ref.id] });
+    expectRefusal(refusal, 422, 'validation.schema', 'egress_denied');
+    assert.match(JSON.stringify((refusal.body as { details: { items: string[] } }).details.items), /data_class_not_in_route:company_private/);
   });
 
   await t.test('ACCEPTANCE: a guard-rail override or a weaker confirmation is refused, at the API and in the database', async () => {
@@ -270,6 +310,63 @@ test('governed extension registry: registration, lifecycle, safety suites and se
     expectRefusal(await command(staff.officer, `${base}/activations`, { versionIds: [v.ref.id] }), 422, 'validation.schema', 'suite_stale');
     await x.drain();
     ok(await activateVersion(x, [v.ref.id]));
+  });
+
+  await t.test('an engine that raises a built-in confirmation withdraws what is active below it, with or without a new engine number', async () => {
+    // `maintain_records` has no built-in yet, so raising it here touches nothing else in this suite.
+    const records = { ...lookup, mandateKind: 'maintain_records' as const };
+    const v = await testedVersion(x, manifestOf(uniqueKey('floor'), { actions: [records], requiredMandateKinds: ['maintain_records'] }));
+    await activateRoute(x, v.ref.extensionId);
+    ok(await activateVersion(x, [v.ref.id]));
+    const other = await testedVersion(x, manifestOf(uniqueKey('unaffected')));
+    await activateRoute(x, other.ref.extensionId);
+    ok(await activateVersion(x, [other.ref.id]));
+    const capability = { ...CORE_AGENT_MANIFEST.capabilities.find((c) => c.kind === 'commit')!, id: 'synthetic_floor.keep_records', source: { kind: 'module', moduleKey: 'synthetic_floor', moduleVersion: '1.0.0' }, mandateAction: 'maintain_records', confirmation: 'person_each' };
+    const document = { key: 'synthetic_floor', version: '1.0.0', actions: ['maintain_records'], capabilities: [capability] };
+    await withMaintenance(admin, (trx) => sql`INSERT INTO trustwork.agent_engine_manifest (module_key, module_version, document, default_control) VALUES ('synthetic_floor', '1.0.0', ${JSON.stringify(document)}::jsonb, '{}'::jsonb)`.execute(trx));
+
+    await inTransaction(x.runtime.pool, (trx) => agentExtensionWorker.engineTick(trx, ENGINE));
+    const withdrawn = await viewOf(x, v.ref.id);
+    assert.equal(withdrawn.ref.status, 'suspended', 'no suite and no new engine number were needed');
+    assert.match(withdrawn.statusReason ?? '', /agents\.confirmation_below_built_in/);
+    assert.equal((await viewOf(x, other.ref.id)).ref.status, 'active', 'a version the rule does not touch stays');
+
+    // Even a run the worker reports as passed cannot bring it back.
+    const run = ok<{ run: { id: string } }>(await command(staff.owner, `${base}/versions/${v.ref.id}/safety-runs`, { expectedRevision: withdrawn.revision }), 201).run;
+    await x.drain();
+    const after = await viewOf(x, v.ref.id);
+    assert.equal(after.ref.status, 'suspended');
+    assert.equal(after.latestRun?.id, run.id);
+    assert.equal(after.latestRun?.state, 'failed', 'manifest-holds saw the raised built-in');
+  });
+
+  await t.test('a dead suite job does not leave a run open for ever or a version on a stale suite', async () => {
+    const v = await testedVersion(x, manifestOf(uniqueKey('dead')));
+    await activateRoute(x, v.ref.extensionId);
+    ok(await activateVersion(x, [v.ref.id]));
+    const next = '0.3.0';
+    assert.ok(await inTransaction(x.runtime.pool, (trx) => agentExtensionWorker.engineTick(trx, next)) >= 1);
+    const open = (await admin.query<{ id: string }>("SELECT id FROM trustwork.agent_extension_safety_run WHERE version_id = $1 AND state = 'requested'", [v.ref.id])).rows[0]!;
+    await withMaintenance(admin, (trx) => sql`UPDATE trustwork.job SET state = 'dead' WHERE kind = 'agents.extension_safety_run' AND payload ->> 'runId' = ${open.id}`.execute(trx));
+    await inTransaction(x.runtime.pool, (trx) => agentExtensionWorker.engineTick(trx, next));
+    const dead = await viewOf(x, v.ref.id);
+    assert.equal(dead.ref.status, 'suspended');
+    assert.match(dead.statusReason ?? '', /did not finish on engine 0\.3\.0/);
+    assert.equal(dead.latestRun?.state, 'failed');
+    assert.equal((await admin.query("SELECT 1 FROM trustwork.agent_extension_safety_run WHERE version_id = $1 AND state = 'requested'", [v.ref.id])).rowCount, 0, 'the run no longer blocks the next one');
+
+    // A hung job is the same after its deadline; a dead rerun of a version on the current engine costs it nothing.
+    await inTransaction(x.runtime.pool, (trx) => agentExtensionWorker.engineTick(trx, ENGINE));
+    await admin.query("DELETE FROM trustwork.job WHERE state = 'queued' AND kind = 'agents.extension_safety_run'");
+    const healthy = await testedVersion(x, manifestOf(uniqueKey('healthy')));
+    await activateRoute(x, healthy.ref.extensionId);
+    ok(await activateVersion(x, [healthy.ref.id]));
+    const current = await viewOf(x, healthy.ref.id);
+    ok(await command(staff.owner, `${base}/versions/${healthy.ref.id}/safety-runs`, { expectedRevision: current.revision }), 201);
+    await inTransaction(x.runtime.pool, (trx) => agentExtensionWorker.engineTick(trx, ENGINE, 100, 0));
+    const kept = await viewOf(x, healthy.ref.id);
+    assert.equal(kept.latestRun?.state, 'failed', 'the hung run expired');
+    assert.equal(kept.ref.status, 'active', 'its passing suite is from this engine');
   });
 
   await t.test('negative: no writer moves a version around the guards, not even the owner role', async () => {

@@ -74,6 +74,25 @@ LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
     CASE WHEN p_mandate_kind IN ('confirm_execution', 'approve') THEN 2 ELSE 0 END)
 $$;
 
+-- SIDE_EFFECT_MANDATE_KINDS of agent-extensions.ts; NULL when the side effect needs no kind in particular.
+CREATE FUNCTION trustwork.agent_extensions_side_effect_kinds(p_effect text) RETURNS text[]
+LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT CASE p_effect
+    WHEN 'outbound_message' THEN ARRAY['communicate']
+    WHEN 'publication' THEN ARRAY['publish', 'maintain_profile']
+    WHEN 'money_commitment' THEN ARRAY['place_order', 'accept_order', 'register', 'release_payment']
+    WHEN 'reputation_signal' THEN ARRAY['record_evidence', 'confirm_execution'] END::text[]
+$$;
+-- PRIVATE_CLASS_EGRESS of agent-extensions.ts: the egress classes that can carry a party-private class.
+CREATE FUNCTION trustwork.agent_extensions_private_class_egress(p_class text) RETURNS text[]
+LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT CASE p_class
+    WHEN 'negotiation_constraints' THEN ARRAY['deal_party_private']
+    WHEN 'budgets' THEN ARRAY['person_private', 'company_private', 'deal_party_private']
+    WHEN 'private_projects' THEN ARRAY['project_restricted']
+    WHEN 'drafts' THEN ARRAY['person_private', 'company_private'] END::text[]
+$$;
+
 -- hostCountry of agent-extensions.ts: the country-code top-level domain of a host, or NULL for a generic one.
 CREATE FUNCTION trustwork.agent_extensions_host_country(p_host text) RETURNS text
 LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
@@ -97,6 +116,9 @@ DECLARE
   v_tld text;
   v_floor integer;
   v_rank integer;
+  v_effect text;
+  v_needed text[];
+  v_sent text[];
 BEGIN
   IF p_manifest IS NULL OR jsonb_typeof(p_manifest) <> 'object' THEN
     RAISE EXCEPTION 'a manifest is an object' USING ERRCODE = 'invalid_parameter_value', HINT = 'agents.manifest_invalid';
@@ -156,6 +178,21 @@ BEGIN
     IF jsonb_typeof(v_action -> 'endpointHosts') IS DISTINCT FROM 'array' OR EXISTS (SELECT 1 FROM jsonb_array_elements_text(v_action -> 'endpointHosts') h WHERE NOT (h = ANY (v_hosts))) THEN
       RAISE EXCEPTION 'an action calls only declared endpoints' USING ERRCODE = 'check_violation', HINT = 'agents.endpoint_undeclared', DETAIL = v_operation;
     END IF;
+    v_sent := ARRAY(SELECT jsonb_array_elements_text(CASE WHEN jsonb_typeof(v_action -> 'dataClassesSent') = 'array' THEN v_action -> 'dataClassesSent' ELSE '[]'::jsonb END));
+    FOR v_effect IN SELECT jsonb_array_elements_text(CASE WHEN jsonb_typeof(v_action -> 'sideEffects') = 'array' THEN v_action -> 'sideEffects' ELSE '[]'::jsonb END) LOOP
+      v_needed := trustwork.agent_extensions_side_effect_kinds(v_effect);
+      IF v_needed IS NOT NULL AND NOT ((v_action ->> 'mandateKind') = ANY (v_needed)) THEN
+        RAISE EXCEPTION 'a declared side effect needs its mandate kind' USING ERRCODE = 'check_violation', HINT = 'agents.side_effect_needs_mandate_kind', DETAIL = v_operation || ':' || v_effect;
+      END IF;
+      IF v_effect = 'external_call' AND cardinality(v_sent) = 0 THEN
+        RAISE EXCEPTION 'an external call declares what it sends' USING ERRCODE = 'check_violation', HINT = 'agents.data_classes_undeclared', DETAIL = v_operation;
+      END IF;
+    END LOOP;
+    FOR v_effect IN SELECT jsonb_array_elements_text(CASE WHEN jsonb_typeof(v_action -> 'privateDataClasses') = 'array' THEN v_action -> 'privateDataClasses' ELSE '[]'::jsonb END) LOOP
+      IF NOT coalesce(trustwork.agent_extensions_private_class_egress(v_effect) && v_sent, false) THEN
+        RAISE EXCEPTION 'a private data class is declared as sent' USING ERRCODE = 'check_violation', HINT = 'agents.private_class_not_sent', DETAIL = v_operation || ':' || v_effect;
+      END IF;
+    END LOOP;
     IF (v_action #>> '{cost,kind}') = 'per_call' AND (v_action #>> '{cost,amount,minorUnits}')::numeric > 0
        AND ((v_action ->> 'kind') <> 'commit' OR trustwork.assistant_budget_kind(v_action ->> 'mandateKind') IS NULL) THEN
       RAISE EXCEPTION 'a charged action spends a budget' USING ERRCODE = 'check_violation', HINT = 'agents.charge_without_budget', DETAIL = v_operation;
@@ -166,6 +203,21 @@ BEGIN
   IF NOT (v_required <@ v_kinds AND v_kinds <@ v_required) THEN
     RAISE EXCEPTION 'the required mandate kinds are exactly those of the actions' USING ERRCODE = 'check_violation', HINT = 'agents.manifest_invalid', DETAIL = 'requiredMandateKinds';
   END IF;
+END $$;
+
+-- The first rule the engine holds against a stored manifest today, or NULL. A rule can tighten after a version was tested:
+-- an engine manifest can raise a confirmation, a place can become restricted.
+CREATE FUNCTION trustwork.agent_extensions_manifest_refusal(p_hub uuid, p_manifest jsonb) RETURNS text
+LANGUAGE plpgsql STABLE SET search_path = trustwork, pg_temp AS $$
+DECLARE
+  v_hint text;
+  v_detail text;
+BEGIN
+  PERFORM trustwork.agent_extensions_check_manifest(p_hub, p_manifest);
+  RETURN NULL;
+EXCEPTION WHEN check_violation OR invalid_parameter_value THEN
+  GET STACKED DIAGNOSTICS v_hint = PG_EXCEPTION_HINT, v_detail = PG_EXCEPTION_DETAIL;
+  RETURN left(concat_ws(': ', v_hint, nullif(v_detail, '')), 200);
 END $$;
 
 -- 1. Tables ----------------------------------------------------------------------------------------------------------------
@@ -417,12 +469,13 @@ BEGIN
     IF v_engine IS NULL OR v_run.engine_version IS DISTINCT FROM v_engine THEN
       RAISE EXCEPTION 'the suite passed on another engine version; run it again' USING ERRCODE = 'check_violation', HINT = 'agents.suite_stale', DETAIL = v.id::text;
     END IF;
+    -- The world may have changed since the draft (restricted list, hub-added places, engine manifests). This holds for a
+    -- version already active too: a configuration never carries one forward below today's rules.
+    PERFORM trustwork.agent_extensions_check_manifest(p_hub, v.manifest);
     IF v.status = 'tested' THEN
       IF p_approver IS NOT NULL AND p_approver = v.drafted_by THEN
         RAISE EXCEPTION 'the second person is not the drafter of the manifest' USING ERRCODE = 'insufficient_privilege', HINT = 'agents.drafter_cannot_approve', DETAIL = v.id::text;
       END IF;
-      -- The world may have changed since the draft (restricted list, hub-added places, engine manifests).
-      PERFORM trustwork.agent_extensions_check_manifest(p_hub, v.manifest);
       PERFORM trustwork.agent_extensions_check_route(p_hub, v.extension_id, v.manifest);
       PERFORM trustwork.agent_extensions_check_prices(v.manifest);
     END IF;
@@ -617,7 +670,20 @@ DECLARE
   v trustwork.agent_extension_version%ROWTYPE;
 BEGIN
   SELECT * INTO v FROM trustwork.agent_extension_version WHERE id = r.version_id;
-  RETURN jsonb_build_object('runId', r.id, 'state', r.state, 'versionId', v.id, 'extensionId', v.extension_id, 'hubId', v.hub_id, 'manifest', v.manifest, 'manifestDigest', v.manifest_digest);
+  RETURN jsonb_build_object('runId', r.id, 'state', r.state, 'versionId', v.id, 'extensionId', v.extension_id, 'hubId', v.hub_id, 'manifest', v.manifest, 'manifestDigest', v.manifest_digest,
+    -- The built-in confirmations of this engine, so the suite compares against what is shipped now.
+    'builtIn', coalesce((SELECT jsonb_agg(DISTINCT jsonb_build_object('mandateAction', c ->> 'mandateAction', 'confirmation', c ->> 'confirmation'))
+      FROM trustwork.agent_engine_manifest m CROSS JOIN LATERAL jsonb_array_elements(m.document -> 'capabilities') c WHERE c ->> 'mandateAction' IS NOT NULL), '[]'::jsonb));
+END $$;
+
+-- Withdraws a version the engine can no longer vouch for, in the caller's transaction.
+CREATE FUNCTION trustwork.agent_extensions_withdraw(p_version uuid, p_reason text) RETURNS void
+LANGUAGE plpgsql VOLATILE SET search_path = trustwork, pg_temp AS $$
+DECLARE
+  v trustwork.agent_extension_version%ROWTYPE;
+BEGIN
+  UPDATE trustwork.agent_extension_version SET status = 'suspended', status_reason = left(p_reason, 500) WHERE id = p_version RETURNING * INTO v;
+  PERFORM trustwork.agent_extensions_fence(v.hub_id, v.manifest ->> 'key');
 END $$;
 
 -- Records a finished run. A pass makes a draft or a suspended version `tested`; a failure of a tested or active version
@@ -630,6 +696,7 @@ DECLARE
   v_total integer := coalesce(jsonb_array_length(p_report -> 'scenarios'), 0);
   v_failed integer := (SELECT count(*) FROM jsonb_array_elements(coalesce(p_report -> 'scenarios', '[]'::jsonb)) s WHERE s ->> 'status' IS DISTINCT FROM 'passed');
   v_passed boolean;
+  v_refusal text;
 BEGIN
   IF r.state <> 'requested' THEN
     RETURN r.state;
@@ -639,9 +706,11 @@ BEGIN
      OR coalesce(length(p_report ->> 'engineVersion'), 0) NOT BETWEEN 1 AND 40 OR v_total < 1 OR (p_report ->> 'suiteId') IS DISTINCT FROM v.manifest #>> '{safetySuite,suiteId}' THEN
     RAISE EXCEPTION 'a safety report binds this manifest and ran on the fake adapter' USING ERRCODE = 'check_violation', HINT = 'agents.suite_required';
   END IF;
-  v_passed := v_failed = 0 AND (p_report ->> 'passed') = 'true';
+  -- A report cannot outvote the database: a manifest below today's rules fails, whatever the worker measured.
+  v_refusal := trustwork.agent_extensions_manifest_refusal(v.hub_id, v.manifest);
+  v_passed := v_failed = 0 AND (p_report ->> 'passed') = 'true' AND v_refusal IS NULL;
   UPDATE trustwork.agent_extension_safety_run SET state = CASE WHEN v_passed THEN 'passed' ELSE 'failed' END, engine_version = p_report ->> 'engineVersion', report = p_report, report_digest = trustwork.admin_digest(p_report),
-    scenario_count = v_total, failed_count = v_failed, completed_at = now() WHERE id = r.id;
+    scenario_count = v_total, failed_count = CASE WHEN v_passed THEN 0 ELSE greatest(v_failed, 1) END, completed_at = now() WHERE id = r.id;
   INSERT INTO trustwork.agent_extension_engine AS e (id, engine_version) VALUES (true, p_report ->> 'engineVersion')
   ON CONFLICT (id) DO UPDATE SET engine_version = EXCLUDED.engine_version, observed_at = now();
   IF v_passed THEN
@@ -651,26 +720,50 @@ BEGIN
       UPDATE trustwork.agent_extension_version SET passing_run_id = r.id WHERE id = v.id;
     END IF;
   ELSIF v.status IN ('tested', 'active') THEN
-    UPDATE trustwork.agent_extension_version SET status = 'suspended', status_reason = 'safety suite failed on engine ' || (p_report ->> 'engineVersion') WHERE id = v.id;
-    PERFORM trustwork.agent_extensions_fence(v.hub_id, v.manifest ->> 'key');
+    PERFORM trustwork.agent_extensions_withdraw(v.id, concat_ws(': ', 'safety suite failed on engine ' || (p_report ->> 'engineVersion'), v_refusal));
   END IF;
   RETURN CASE WHEN v_passed THEN 'passed' ELSE 'failed' END;
 END $$;
 
--- The worker's scheduled tick: records the engine version it runs and asks a run for every tested or active version whose
--- passing suite is from another engine. Returns how many it asked for.
-CREATE FUNCTION trustwork.agent_extensions_engine_tick(p_engine text, p_limit integer) RETURNS integer
+-- The worker's scheduled tick. It records the engine version it runs, then, in this order:
+--   1. expires a run that cannot finish (its job is gone or dead, or it passed the deadline): an open run otherwise blocks
+--      every later run of that version, so a dead job would leave it running on a stale suite for good. A version whose
+--      passing suite is from another engine is suspended; one on the current engine keeps its valid suite;
+--   2. withdraws every tested or active version below today's rules, whatever its suite says and whatever the engine
+--      version string says: an engine manifest can raise a confirmation without a new release number;
+--   3. asks a run for every remaining version whose passing suite is from another engine. Returns how many it asked for.
+CREATE FUNCTION trustwork.agent_extensions_engine_tick(p_engine text, p_limit integer, p_deadline_seconds integer DEFAULT 3600) RETURNS integer
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
   v trustwork.agent_extension_version%ROWTYPE;
+  r trustwork.agent_extension_safety_run%ROWTYPE;
   v_run uuid;
   v_count integer := 0;
+  v_report jsonb;
+  v_refusal text;
 BEGIN
   IF coalesce(length(p_engine), 0) NOT BETWEEN 1 AND 40 THEN
     RAISE EXCEPTION 'an engine version is required' USING ERRCODE = 'invalid_parameter_value', HINT = 'admin.context_invalid';
   END IF;
   INSERT INTO trustwork.agent_extension_engine AS e (id, engine_version) VALUES (true, p_engine)
   ON CONFLICT (id) DO UPDATE SET engine_version = EXCLUDED.engine_version, observed_at = CASE WHEN e.engine_version = EXCLUDED.engine_version THEN e.observed_at ELSE now() END;
+  FOR r IN SELECT o.* FROM trustwork.agent_extension_safety_run o
+    LEFT JOIN trustwork.job j ON j.kind = 'agents.extension_safety_run' AND j.payload ->> 'runId' = o.id::text
+    WHERE o.state = 'requested' AND (j.id IS NULL OR j.state IN ('failed', 'dead', 'outcome_unknown') OR o.requested_at <= now() - make_interval(secs => p_deadline_seconds))
+    ORDER BY o.id FOR UPDATE OF o SKIP LOCKED LOOP
+    v_report := jsonb_build_object('schema', 'trustwork.agent-safety-report/1', 'expired', true, 'reason', 'suite_job_unfinished', 'engineVersion', p_engine, 'manifestDigest', r.manifest_digest);
+    UPDATE trustwork.agent_extension_safety_run SET state = 'failed', engine_version = p_engine, report = v_report, report_digest = trustwork.admin_digest(v_report), failed_count = 1, completed_at = now() WHERE id = r.id;
+    SELECT * INTO v FROM trustwork.agent_extension_version WHERE id = r.version_id FOR UPDATE;
+    IF v.status IN ('tested', 'active') AND (SELECT p.engine_version FROM trustwork.agent_extension_safety_run p WHERE p.id = v.passing_run_id) IS DISTINCT FROM p_engine THEN
+      PERFORM trustwork.agent_extensions_withdraw(v.id, 'safety suite did not finish on engine ' || p_engine);
+    END IF;
+  END LOOP;
+  FOR v IN SELECT x.* FROM trustwork.agent_extension_version x WHERE x.status IN ('tested', 'active') ORDER BY x.id FOR UPDATE SKIP LOCKED LOOP
+    v_refusal := trustwork.agent_extensions_manifest_refusal(v.hub_id, v.manifest);
+    IF v_refusal IS NOT NULL THEN
+      PERFORM trustwork.agent_extensions_withdraw(v.id, 'below the rules of engine ' || p_engine || ': ' || v_refusal);
+    END IF;
+  END LOOP;
   FOR v IN SELECT x.* FROM trustwork.agent_extension_version x JOIN trustwork.agent_extension_safety_run p ON p.id = x.passing_run_id
     WHERE x.status IN ('tested', 'active') AND p.engine_version IS DISTINCT FROM p_engine
       AND NOT EXISTS (SELECT 1 FROM trustwork.agent_extension_safety_run o WHERE o.version_id = x.id AND o.state = 'requested')
@@ -721,5 +814,5 @@ TO trustwork_app;
 GRANT EXECUTE ON FUNCTION
   trustwork.agent_extensions_load_run(uuid, uuid, bigint),
   trustwork.agent_extensions_record_run(uuid, uuid, bigint, jsonb),
-  trustwork.agent_extensions_engine_tick(text, integer)
+  trustwork.agent_extensions_engine_tick(text, integer, integer)
 TO trustwork_worker;
