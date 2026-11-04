@@ -228,6 +228,19 @@ test('PROV-001 generated images: labelled in the file, gated at release, public 
     assert.deepEqual(await stack.store.list(`provenance/${id}`), []);
   });
 
+  await t.test('a worker that died after storing the bytes leaves none behind when the retry finds the source gone', async () => {
+    const piece = await create();
+    const v = await declare(piece.id);
+    const asset = await upload(piece.id, await png(21));
+    const id = ok<{ imageId: string }>(await petr.post('/v1/provenance/images', body(v, asset.id)), 202).imageId;
+    // What the dead attempt left: the labelled bytes in the store, and the image still pending.
+    await stack.store.put(`provenance/${id}`, await png(21));
+    ok(await petr.post(`/v1/files/${asset.id}/delete`, {}));
+    await stack.drain();
+    assert.deepEqual((await images(piece.id)).map(i => [i.status, i.failure]), [['failed', 'source_unavailable']]);
+    assert.deepEqual(await stack.store.list(`provenance/${id}`), []);
+  });
+
   await t.test('a deletion in flight when the job completes is waited for, and wins', async () => {
     const piece = await create();
     const v = await declare(piece.id);

@@ -52,7 +52,6 @@ export function registerProvenanceImages(registry: HandlerRegistry, runtime: Pro
     parse: (payload) => Payload.parse(payload),
     run: async (context: JobContext<Payload>) => {
       const id = context.payload.imageId;
-      const fail = (failure: string) => inTransaction(pool, (trx) => provenanceWorker.imageFail(trx, id, failure));
       const key = `provenance/${id}`;
       const discard = async () => {
         try {
@@ -61,8 +60,13 @@ export function registerProvenanceImages(registry: HandlerRegistry, runtime: Pro
           storageFailure(error);
         }
       };
+      // An earlier attempt may have stored the labelled bytes and died before completing, so every failure clears them.
+      const fail = async (failure: string) => {
+        await inTransaction(pool, (trx) => provenanceWorker.imageFail(trx, id, failure));
+        await discard();
+      };
       const target = await inTransaction(pool, (trx) => provenanceWorker.imageTarget(trx, id));
-      // A retry after a refused completion: the store was unreachable when the labelled bytes were to go.
+      // A retry after a refused completion or a failure: the store was unreachable when the bytes were to go.
       if (target?.status === 'failed') return void await discard();
       if (!target || target.status !== 'pending') return;
       if (target.storage_key === null || target.asset_id === null) return void await fail('source_unavailable');
