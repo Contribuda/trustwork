@@ -36,6 +36,7 @@ export interface PublicationTable {
   current_version: number | null;
   current_version_id: string | null;
   scheduled_for: Timestamp | null;
+  scheduled_by: string | null;
   first_published_at: Timestamp | null;
   moderation_state: Generated<ModerationStateValue>;
   held_by_case_id: string | null;
@@ -265,7 +266,7 @@ const columns = columnsOf<ContentDatabase>();
 export const TABLE_COLUMNS: TableColumns<ContentDatabase> = {
   publication: columns('publication', [
     'id', 'hub_id', 'format', 'article_format', 'owner_kind', 'owner_person_id', 'owner_company_id', 'status', 'original_language', 'licence', 'requires_review', 'current_version',
-    'current_version_id', 'scheduled_for', 'first_published_at', 'moderation_state', 'held_by_case_id', 'retraction_note', 'retracted_at', 'retracted_by', 'created_by', 'revision',
+    'current_version_id', 'scheduled_for', 'scheduled_by', 'first_published_at', 'moderation_state', 'held_by_case_id', 'retraction_note', 'retracted_at', 'retracted_by', 'created_by', 'revision',
     'created_at', 'updated_at',
   ]),
   publication_version: columns('publication_version', [
