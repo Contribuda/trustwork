@@ -52,6 +52,12 @@ test('PAY-001 registered synthetic source through actual API, signed ingress and
       assert.equal((await w.send({ ...proof.identity, ...patch } as PaymentSourceAssertion)).status, 400, JSON.stringify(patch));
     }
     assert.equal((await w.q('SELECT * FROM trustwork.payment_identity_link_version WHERE challenge_id=$1', [proof.c.id])).length, 0);
+    // Every refusal above can be told apart in the log, on the real path, and the log carries none of the evidence.
+    const reasons = new Set(w.refusals.map((line) => line.reason));
+    assert.ok(reasons.has('invalid_source_signature') && reasons.has('source_challenge_binding_mismatch'), JSON.stringify([...reasons]));
+    assert.ok(!reasons.has('unclassified'), JSON.stringify([...reasons]));
+    const logged = JSON.stringify(w.refusals);
+    for (const value of [proof.identity.verifiedSubjectRef, proof.identity.nonceDigest, proof.identity.personId, proof.identity.sessionId]) assert.ok(!logged.includes(value), 'no evidence in the log');
     assert.equal((await w.send(proof.identity)).status, 204);
     assert.equal((await w.send(proof.identity)).status, 204);
     assert.equal((await w.send({ ...proof.identity, verifiedSubjectRef: 'synthetic-other' } as PaymentSourceAssertion)).status, 400);

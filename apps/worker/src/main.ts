@@ -92,7 +92,7 @@ async function main(): Promise<void> {
   const rescreen: RescreenRuntime = { pool, metrics, log, config: rescreenConfigFromEnv(process.env), screening: screening.config };
   const consultations: ReminderRuntime | null = hubId ? { pool, hubId, render: mail.render, channels: new ReminderChannelFake() } : null;
   const payments: PaymentRuntime = { pool, providers: new PaymentProviders() };
-  const paymentIngress = process.env.PAYMENTS_WEBHOOK_PORT ? await startPaymentIngress(payments, Number(process.env.PAYMENTS_WEBHOOK_PORT)) : null;
+  const paymentIngress = process.env.PAYMENTS_WEBHOOK_PORT ? await startPaymentIngress(payments, Number(process.env.PAYMENTS_WEBHOOK_PORT), log) : null;
   // Step implementations arrive with the packages that own them (source collection, drafting, outreach).
   const pipelineSteps = new PipelineStepRegistry();
   // SRC-002: source collection runs only when the operator names the bot's contact page (the user agent carries it).
