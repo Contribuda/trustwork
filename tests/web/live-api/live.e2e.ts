@@ -2,7 +2,7 @@ import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { WEB_ORIGIN } from './ports.js';
+import { CONTROL_ORIGIN, WEB_ORIGIN } from './ports.js';
 import {
   COUNTRY_OF,
   LANGUAGES,
@@ -25,6 +25,7 @@ import {
  * (stack.ts). Russian interface (non-English screenshots for the pull request); copy comes from the dictionaries.
  */
 const FIXTURES = resolve(import.meta.dirname, '../../../apps/web/fixtures');
+const serving = async (active: boolean) => expect((await fetch(`${CONTROL_ORIGIN}/serving-origin`, { method: 'POST', body: JSON.stringify({ active }) })).status).toBe(200);
 const fixtureNames = [
   (JSON.parse(readFileSync(resolve(FIXTURES, 'companies.json'), 'utf8')) as { companies: Array<{ company: { name: string } }> }).companies[0]!.company.name,
   (JSON.parse(readFileSync(resolve(FIXTURES, 'projects.json'), 'utf8')) as { projects: Array<{ project: { name: string } }> }).projects[0]!.project.name,
@@ -448,6 +449,33 @@ test('with demo mode off, no fixture and no persona reaches any page', async ({ 
     expect(new URL(page.url()).pathname, `${path} stays in the session's workspace`).toBe(path);
     await expect(page.getByText(msg('error.pageTitle')), `${path} renders without the error boundary`).toHaveCount(0);
     for (const name of fixtureNames) await expect(page.getByText(name), `${path}: ${name}`).toHaveCount(0);
+  }
+});
+
+test('an installation with no registered origin serves every page: the person\'s own page, and people as an empty state', async ({ page, browser }) => {
+  // The setup wizard registers no origin (an operator's step), and the API refuses public profiles without one. The stack
+  // of this suite has one, which is why /app/me answering 500 went unseen.
+  await verifiedAccount(page.request, 'Unbound Umida');
+  await serving(false);
+  try {
+    for (const path of ['/app/me', '/app', '/app/company', '/app/projects', '/app/settings']) {
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBeLessThan(400);
+      await expect(page.getByText(msg('error.pageTitle')), `${path} renders without the error boundary`).toHaveCount(0);
+    }
+    await page.goto('/app/me');
+    await expect(page.getByRole('heading', { name: msg('me.decisions') })).toBeVisible();
+    const anonymous = await browser.newContext();
+    const visitor = await anonymous.newPage();
+    for (const path of ['/', '/people']) {
+      const response = await visitor.goto(`${WEB_ORIGIN}${path}`);
+      expect(response?.status(), path).toBeLessThan(400);
+      await expect(visitor.getByText(msg('error.pageTitle')), path).toHaveCount(0);
+    }
+    expect((await visitor.goto(`${WEB_ORIGIN}/people/nobody-here`))?.status(), 'a profile that cannot be served is not found').toBe(404);
+    await anonymous.close();
+  } finally {
+    await serving(true);
   }
 });
 

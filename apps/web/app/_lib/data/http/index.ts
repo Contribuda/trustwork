@@ -29,7 +29,7 @@ import { notificationView } from '@/app/app/notifications/_lib/view';
 import { z } from 'zod';
 import type { DataPort, Handle } from '../port';
 import type { AuthenticatedPrincipal, CompanyDetail, CompanyWorkspaceView, RegisterFactView, HomeView, MeView, OverviewView, Principal, ProjectCard, SettingsView, TopicKey, WorkspaceProjectDetail, WorkspaceProjectRow } from '../types';
-import { createTransport, type Transport } from './transport';
+import { ApiFailure, createTransport, type Transport } from './transport';
 
 /** The public register facts answer (PublicSourcedFactSchema in packages/contracts/src/sourced-facts.ts, REG-001). */
 const PublicSourcedFactsSchema = z.object({
@@ -91,6 +91,13 @@ const ProjectReadSchema = z.discriminatedUnion('projection', [
   z.object({ projection: z.literal('shared_party'), project: ParticipantProjectSchema }),
   z.object({ projection: z.literal('public'), project: PublicProjectSchema }),
 ]);
+
+let originReported = false;
+function reportUnregisteredOrigin(): void {
+  if (originReported) return;
+  originReported = true;
+  console.warn(JSON.stringify({ level: 'warn', event: 'hub.origin_unregistered', message: 'this installation has registered no serving origin (agent_serving_hub): public profiles are not served, so people pages stay empty' }));
+}
 
 function person(principal: Principal): AuthenticatedPrincipal {
   if (principal.kind !== 'person') throw new Error('Workspace data requires a signed-in principal');
@@ -160,8 +167,20 @@ export function createHttpDataPort(transport: Transport, pdfAvailable?: (path: s
     return body === null ? [] : NotificationPageSchema.parse(body).items.map(notificationView);
   });
 
+  /**
+   * An anonymous read. The API serves public profiles only to an installation that registered its origin
+   * (`agent_serving_hub`, an operator's step that the setup wizard does not take), and refuses with
+   * `hub_provenance_unavailable` otherwise. That is a state of the installation and not a failure of the page: the
+   * visitor gets the empty or not-found state, and the operator gets the reason in the log.
+   */
   async function publicGet(path: `/v1/${string}`): Promise<unknown | null> {
-    return transport.get(path, { anonymous: true });
+    try {
+      return await transport.get(path, { anonymous: true });
+    } catch (error) {
+      if (!(error instanceof ApiFailure && error.reason === 'hub_provenance_unavailable')) throw error;
+      reportUnregisteredOrigin();
+      return null;
+    }
   }
 
   async function listCompanies() {
