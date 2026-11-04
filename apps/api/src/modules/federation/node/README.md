@@ -1,0 +1,26 @@
+# Federation node (FED-001)
+
+Node identity, the Ed25519 key chain, the signed manifest, RFC 9421 request and response signatures, the handshake and peering records of the mesh protocol `trustwork-mesh/1` (`docs/engine/federation-protocol.md` sections 4 to 8; ADR 011 decisions 2, 6 and 12). Contracts: `packages/contracts/src/federation.ts`. Data: `packages/data/migrations/federation-node`, `packages/data/src/schema/federation-node.ts`, `packages/data/src/repositories/federation-node.ts`. Tests: `tests/federation/node`.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `crypto.ts` | The only code that touches a private seed: key generation, the `NodeSeed` that never serializes, the `NodeKeySealer` (AES-256-GCM data key wrapped by the KEYS-001 key-encryption key, own additional authenticated data per node and key), the Ed25519 verifier port |
+| `http-signatures.ts` | Signing of the node's own requests and responses, verification of received messages: body digest, coverage, window and clock skew, nonce (replay), key selection against the sender's chain, signature |
+| `federation-node.service.ts` | Use cases: manifest assembly and publication, peer manifest validation and SANC-008 admission on declared, attested and observed evidence, handshake in both directions, double opt-in records, suspension, defederation, refresh (daily, after `federation.key_unknown`, on demand), revocation re-verification, equivocation, flow gates for later packages |
+| `federation-node.controller.ts` | `GET /.well-known/trustwork/manifest.json`, `POST /federation/v1/handshake` (no session, signature-authenticated, signed answers) and the console routes under `/v1/admin/federation` |
+| `federation-node.module.ts` | Wiring; `RawBodyCapture` keeps the exact bytes of `/federation/v1/*` requests for the content digest |
+| `transport.ts` | `PeerTransport` port with the HTTPS adapter (DNS name only; the resolved server address is the initiator's observed evidence and is dropped after the lookup); tests pass a local fake |
+| `schemas.ts`, `views.ts`, `errors.ts`, `deps.ts` | Console commands and approval digests, views, refusal mapping, relative re-exports |
+
+## Rules kept here
+
+- The private seed exists only in the memory of the process that signs; the database holds the sealed seed in a table no runtime role can read, and no endpoint, log line or audit row carries a seed or a signature secret.
+- Every peering record, refusal record, event and manifest is checked for network addresses at the database; nodes are DNS names.
+- A record becomes `active` only with both acceptances and the admission reference, and above `trust_verifications` only with a consumed second-person approval (`federation.raise_peering_level`) of exactly that hub pair and level. Key rotation is the second-person action `ops.rotate_node_key`.
+- Defederation ends the record and never rewrites history; suspension pauses flows without changing the protocol state. The admission check runs again on every manifest or attestation change, before the first delivery of every new deal, and at least daily; a refusal or an expired attestation suspends every flow with the peer, a renewed admission lifts what it caused.
+
+## Ports for later packages
+
+`FederationNodeService.verifyPeerMessage` (FED-002, FED-004: verify a peer's signed request, refreshing its manifest once on an unknown key), `flowAllowed` (the level a feed pull, badge or delivery needs), `admitDealDelivery` (the re-run before a deal's first delivery), `refreshDue` (the worker's daily refresh) and the `ReverificationPort` the replica and deal stores register for published revocations.

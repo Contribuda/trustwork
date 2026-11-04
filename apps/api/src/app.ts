@@ -35,6 +35,7 @@ import { suspensionHook } from './modules/screening/suspension.js';
 import type { ConsultationCommissionPort } from './modules/consultations/ports.js';
 import { ScreeningSelfController } from './modules/screening/screening.controller.js';
 import type { JurisdictionGate } from './modules/jurisdiction/deps.js';
+import type { FederationNodeModuleOptions } from './modules/federation/node/federation-node.module.js';
 
 export interface CreateAppOptions {
   /** Explicit historical task test adapter; production requires governed fee confirmations. */
@@ -74,6 +75,8 @@ export interface CreateAppOptions {
   jurisdictionGate?: JurisdictionGate;
   /** Communications (COMMS-001): channel adapter (fake by default), mandate port and settings overrides; settings default from the environment. */
   communications?: CommunicationsModuleOptions;
+  /** Federation node (FED-001): seal port, peer transport and reverification port overrides (tests pass local fakes). */
+  federation?: FederationNodeModuleOptions;
 }
 export interface CreatedApp {
   app: NestFastifyApplication;
@@ -185,7 +188,7 @@ export async function createApp(options: CreateAppOptions = {}): Promise<Created
   const files = options.files ?? filesOptionsFromEnv(env);
   const app = await NestFactory.create<NestFastifyApplication>(AppModule.forRoot(ctx, services, config,
     (principals, state, subject) => new ScreeningSelfController(principals).status(subject.kind === 'company' ? { companyId: subject.id } : {}, state),
-    files, jurisdictionGate?.mode ?? 'unconfigured', { options: options.communications ?? {}, env }, options.consultationCommission, options.taskFees), adapter, { logger: new NestJsonLogger(logger) });
+    files, jurisdictionGate?.mode ?? 'unconfigured', { options: options.communications ?? {}, env }, options.consultationCommission, options.taskFees, options.federation ?? {}), adapter, { logger: new NestJsonLogger(logger) });
   const fastify = app.getHttpAdapter().getInstance() as unknown as FastifyInstance;
   instrumentHttp(fastify, { config, logger, telemetry });
   // The per-route limit must be attached before @fastify/rate-limit's own onRoute hook reads `config.rateLimit`

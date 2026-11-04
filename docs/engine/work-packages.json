@@ -6214,7 +6214,7 @@
       "id": "FED-001",
       "title": "Node identity, manifest, signatures and peering records",
       "area": "federation",
-      "status": "open",
+      "status": "in_review",
       "dependsOn": [
         "FED-000",
         "HUB-001",

@@ -51,6 +51,7 @@ import type { ConfiguredGateMode } from './modules/jurisdiction/attestation/atte
 import { HubsModule } from './modules/hubs/hubs.module.js';
 import { HubsSetupModule } from './modules/hubs/setup/setup.module.js';
 import { CommunicationsModule, type CommunicationsModuleOptions } from './modules/communications/communications.module.js';
+import { FederationNodeModule, type FederationNodeModuleOptions } from './modules/federation/node/federation-node.module.js';
 import { ConnectionsOAuthModule } from './modules/connections/oauth/oauth.module.js';
 
 @Controller()
@@ -72,7 +73,8 @@ export class HealthController {
 @Module({})
 export class AppModule {
   static forRoot(ctx: AppContext | null, identity: IdentityServices | null, config: ApiConfig, privacyCompliance: PrivacyOwningPorts['compliance'], files: FilesModuleOptions = { store: null }, jurisdictionGateMode: ConfiguredGateMode = 'unconfigured',
-    communications: { options: CommunicationsModuleOptions; env?: NodeJS.ProcessEnv } = { options: {} }, consultationCommission?: ConsultationCommissionPort, taskFees?: TaskFeePort): DynamicModule {
+    communications: { options: CommunicationsModuleOptions; env?: NodeJS.ProcessEnv } = { options: {} }, consultationCommission?: ConsultationCommissionPort, taskFees?: TaskFeePort,
+    federation: FederationNodeModuleOptions = {}): DynamicModule {
     if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
     const store = assistantMandateStore(ctx);
     // AGT-003: one shared authority check for the interface, the agent runtime and (when it lands) MCP.
@@ -115,6 +117,8 @@ export class AppModule {
         AgentsModule.forRoot(ctx, identity, { capabilities, protectionLimits: agentProtectionLimits(capabilities) }),
         AttestationModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode }),
         FeesModule.forRoot(ctx, identity, communications.env),
+        // FED-001: node identity, the signed manifest, handshakes and peering records (KEK from the createApp environment).
+        FederationNodeModule.forRoot(ctx, identity, { ...(communications.env ? { env: communications.env } : {}), ...federation }),
         HubsModule.forRoot(ctx, identity),
         // HUB-004: the setup wizard backend (told the gate mode, the blob store for the install check and the environment).
         HubsSetupModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode, objectStore: files.store, ...(communications.env ? { env: communications.env } : {}) }),
