@@ -32,6 +32,9 @@ export interface DefinitionFact {
 /** What an action applies to: the platform, the node, or one hub (the same shape as a staff scope). */
 export type StaffTarget = StaffScope;
 
+/** The actions whose different-role rule the database decides (`staff_require_different_role`); the API decides the rest. */
+export const DATABASE_ROLE_RULE_ACTIONS: readonly string[] = ['staff.assign_sensitive_role', 'staff.grant_breakglass'];
+
 /** Below this many distinct staff people covering a scope the scope runs in reduced separation-of-duties mode. */
 export const FULL_SOD_MIN_STAFF = 5;
 
