@@ -127,13 +127,28 @@ export function actors(adminPool: DataPool, runtime: DataPool, world: Omit<NodeW
   return { principal, as, elevate, cmd, assign, assignSensitive, approve, createHub, attest, assignRoles };
 }
 
-/** The whole world: roles, the reference hub, the synced kernel and the attestation. */
+/**
+ * A hub fixture at a given lifecycle stage (the HUB-001 lifecycle needs every launch gate, so the suites insert the
+ * launched reference hub as maintenance, like the hubs crash case does): the anchor, its profile and its territories.
+ */
+export async function insertHub(admin: DataPool, input: { nodeId: string; createdBy: string; slug: string; lifecycle: 'draft' | 'preparing' | 'soft_launch' | 'public'; territories?: { level: 'country' | 'region' | 'place'; code: string }[] }): Promise<string> {
+  return withMaintenance(admin, async (trx) => {
+    const hub = await trx.insertInto('hub').values({ slug: input.slug, lifecycle: input.lifecycle }).returning('id').executeTakeFirstOrThrow();
+    await trx.insertInto('hub_profile').values({ hub_id: hub.id, node_id: input.nodeId, name: US_HUB.name, default_locale: 'en', locales: ['en', 'es'], time_zone: US_HUB.timeZone, currency: 'USD', created_by: input.createdBy }).execute();
+    for (const t of input.territories ?? US_HUB.territories) {
+      await trx.insertInto('hub_territory').values({ hub_id: hub.id, level: t.level, code: t.code, place_key: t.level === 'place' ? t.code.split(':')[1] ?? null : null }).execute();
+    }
+    return hub.id;
+  });
+}
+
+/** The whole world: roles, the launched reference hub, the synced kernel and the attestation. */
 export async function buildWorld(admin: DataPool, runtime: DataPool): Promise<{ w: NodeWorld; a: ReturnType<typeof actors> }> {
   await syncKernel(admin);
   const base = await buildNodeWorld(admin);
   const a = actors(admin, runtime, base);
   await a.assignSensitive({ personId: base.people.operator, role: 'node-operator', scope: { kind: 'node', nodeId: base.nodeId } });
-  const hubId = (await a.createHub(HUB_SLUG)).hub_id;
+  const hubId = await insertHub(admin, { nodeId: base.nodeId, createdBy: base.people.operator, slug: HUB_SLUG, lifecycle: 'public' });
   await a.assignSensitive({ personId: base.people.owner, role: 'hub-owner', scope: { kind: 'hub', hubId } });
   await a.assignSensitive({ personId: base.people.officer, role: 'compliance-officer', scope: { kind: 'node', nodeId: base.nodeId } });
   await a.assign({ personId: base.people.moderator, role: 'moderator', scope: { kind: 'hub', hubId } });

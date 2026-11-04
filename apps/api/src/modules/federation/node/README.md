@@ -18,6 +18,7 @@ Node identity, the Ed25519 key chain, the signed manifest, RFC 9421 request and 
 
 - The private seed exists only in the memory of the process that signs; the database holds the sealed seed in a table no runtime role can read, and no endpoint, log line or audit row carries a seed or a signature secret.
 - Every peering record, refusal record, event and manifest is checked for network addresses at the database; nodes are DNS names.
+- Only launched hubs (`soft_launch`, `public`, `suspended`, `closing`) appear in the manifest or can be addressed by a handshake or a request; a `draft` or `preparing` hub is refused like an unknown hub, so the public URL reveals nothing about it (owner default under ADR 025, 2026-11-04).
 - A record becomes `active` only with both acceptances and the admission reference, and above `trust_verifications` only with a consumed second-person approval (`federation.raise_peering_level`) of exactly that hub pair and level. Key rotation is the second-person action `ops.rotate_node_key`.
 - Defederation ends the record and never rewrites history; suspension pauses flows without changing the protocol state. The admission check runs again on every manifest or attestation change, before the first delivery of every new deal, and at least daily; a refusal or an expired attestation suspends every flow with the peer, a renewed admission lifts what it caused.
 

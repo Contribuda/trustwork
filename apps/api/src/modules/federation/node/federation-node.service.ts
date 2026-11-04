@@ -202,7 +202,7 @@ export class FederationNodeService {
     const current = chain.find((k) => k.retiredAt === null);
     if (!current) throw new ApiError('access.not_found', 'the node has no current key', { reason: 'node_not_configured' });
     const hubs = await this.manifestHubs();
-    if (hubs.length === 0) throw new ApiError('access.not_found', 'the node has no hub yet', { reason: 'no_hub' });
+    if (hubs.length === 0) throw new ApiError('access.not_found', 'the node has no launched hub yet', { reason: 'no_hub' });
     const packs = new Map<string, { country: string; version: string }>();
     for (const h of hubs) if (h.pack_code && h.pack_version) packs.set(`${h.pack_code}@${h.pack_version}`, { country: h.pack_code, version: h.pack_version });
     return {
@@ -652,6 +652,8 @@ export class FederationNodeService {
   async requestPeering(e: Elevated, body: RequestPeeringCommand) {
     const identity = await this.requireIdentity();
     if (body.peerNode === identity.host) throw new ApiError('validation.schema', 'a node does not peer with itself', { reason: 'self_peering' });
+    // Only a launched hub asks to connect; an unknown or unlaunched one is refused alike, before any peer is contacted (the database repeats the check).
+    if (!(await this.manifestHubs()).some((h) => h.hub_id === body.localHubId)) throw new ApiError('access.not_found', 'access.not_found');
     const peer = await this.peerForRequest(body.peerNode);
     if (peer.admission_state !== 'admitted') throw new ApiError('access.forbidden', 'the peer is not available for connection', { reason: 'federation.peer_restricted' });
     const theirs = peer.manifest as NodeManifest;

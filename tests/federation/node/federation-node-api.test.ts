@@ -17,7 +17,7 @@ import { Client, SKIP_REASON, startHarness, type Response } from '../../backend/
 import { codeNow } from '../../backend/second-factor/helpers.js';
 import { addLogins, enrolNow, expectRefusal, PASSWORD, signIn } from '../../admin/helpers.js';
 import { attestationSummary, CITY, cityKeyChain, manifest as fixtureManifest, NODE_SIGNERS, publicKeyB64, restricted, RFC8032, signerFor } from '../protocol/fixtures.js';
-import { asManifest, austinPeer, buildWorld, FakePeerTransport, forgedSigner, HUB_SLUG, OUR_HOST, PEER_HOST, PEER_HUB, peerHandshake, RESTRICTED_ADDRESS, SERVED_ADDRESS, setPeerManifest, type Key } from './helpers.js';
+import { asManifest, austinPeer, buildWorld, FakePeerTransport, forgedSigner, HUB_SLUG, insertHub, OUR_HOST, PEER_HOST, PEER_HUB, peerHandshake, RESTRICTED_ADDRESS, SERVED_ADDRESS, setPeerManifest, type Key } from './helpers.js';
 
 // Weight 2: two apps' pools and concurrent handshakes share the file's slot.
 const h = await startHarness('federation_node_api');
@@ -34,7 +34,7 @@ interface Reverified { peer: string; keyId: string; since: string }
 
 test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
-  const { w } = await buildWorld(h.db.admin, h.pool);
+  const { w, a } = await buildWorld(h.db.admin, h.pool);
   await addLogins(h, ([...STAFF, 'outsider'] as const).map((k) => [w.people[k], emailOf(k)]));
   const now = () => h.clock.now();
   const transport = new FakePeerTransport(now);
@@ -129,6 +129,29 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     const view = ok(await clients.operator.get(`${ADMIN}/node`)) as unknown as { identity: { host: string }; manifests: { version: number }[] };
     assert.equal(view.identity.host, OUR_HOST);
     assert.deepEqual(view.manifests.map((m) => m.version), [1]);
+  });
+
+  await t.test('unlaunched hubs: a draft and a preparing hub are absent from the manifest, and a handshake or request naming them is refused like an unknown hub', async () => {
+    const draftId = (await a.createHub('synthetic-sd-draft')).hub_id;
+    const preparingId = await insertHub(h.db.admin, { nodeId: w.nodeId, createdBy: w.people.operator, slug: 'synthetic-sd-preparing', lifecycle: 'preparing' });
+    await a.assignSensitive({ personId: w.people.owner, role: 'hub-owner', scope: { kind: 'hub', hubId: draftId } });
+    const manifest = nodeManifestSchema(restricted).parse((await new Client(app).get(MANIFEST_URL)).body);
+    assert.deepEqual(manifest.hubs.map((x) => x.id), [HUB_SLUG], 'only launched hubs are published');
+    assert.ok(!JSON.stringify(manifest).includes('synthetic-sd-draft') && !JSON.stringify(manifest).includes('synthetic-sd-preparing'));
+    // A handshake naming the draft, the preparing or an unknown slug gets the same answer.
+    const answers = [] as { status: number; code: unknown }[];
+    for (const slug of ['synthetic-sd-draft', 'synthetic-sd-preparing', 'no-such-hub']) {
+      const hs = peerHandshake({ to: OUR_HOST, responderHub: slug, now: now() });
+      const r = await mesh(hs.body, hs.fields);
+      answers.push({ status: r.status, code: r.body.code });
+    }
+    assert.deepEqual(answers, Array.from({ length: 3 }, () => ({ status: 421, code: 'federation.not_addressed' })));
+    assert.equal(await count('SELECT 1 FROM trustwork.peering_record'), 0);
+    // A request from the draft or the preparing hub gets the answer an unknown hub gets.
+    for (const hubId of [draftId, preparingId, randomUUID()]) {
+      expectRefusal(await command('owner', `${ADMIN}/peerings`, { localHubId: hubId, peerNode: PEER_HOST, peerHubId: PEER_HUB, level: 'syndicate', approvalId: null }), 404, 'access.not_found');
+    }
+    assert.equal(await count('SELECT 1 FROM trustwork.peering_record'), 0);
   });
 
   await t.test('handshake: unsigned, forged, replayed, expired, tampered and misaddressed requests are refused with the protocol codes; no record is written', async () => {
