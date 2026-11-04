@@ -11,7 +11,8 @@ import { loadRestrictedPlaces } from '../../jurisdiction/gate.js';
 import { nodeKeySealerFromEnv, type NodeKeySealer } from './crypto.js';
 import { AdminFederationController, FederationMeshController } from './federation-node.controller.js';
 import { FederationNodeService, type ReverificationPort } from './federation-node.service.js';
-import { HttpsPeerTransport, OfflinePeerTransport, type PeerTransport } from './transport.js';
+import { HttpsPeerTransport, MAX_PEER_BODY, OfflinePeerTransport, type PeerTransport } from './transport.js';
+import { MESH_PROTOCOL } from './deps.js';
 
 export interface FederationRefreshOptions {
   /** Default: on exactly when the node reaches peers (the HTTPS transport: production or `TRUSTWORK_FEDERATION_TRANSPORT=https`); tests with a fake transport opt in. */
@@ -45,10 +46,22 @@ export class RawBodyCapture implements OnModuleInit {
   onModuleInit(): void {
     const fastify = this.host.httpAdapter?.getInstance?.() as FastifyInstance | undefined;
     if (!fastify || typeof fastify.addHook !== 'function') return;
-    fastify.addHook('preParsing', async (request: FastifyRequest, _reply: FastifyReply, payload: Readable) => {
+    fastify.addHook('preParsing', async (request: FastifyRequest, reply: FastifyReply, payload: Readable) => {
       if (!request.url.startsWith(RAW_BODY_PREFIX)) return payload;
+      // The limit is enforced before and while buffering: a declared or actual body over the limit is answered 413 and never read further.
+      const tooLarge = () => reply.code(413).header('Cache-Control', 'no-store').type('application/json').send({ protocol: MESH_PROTOCOL, code: 'federation.payload_too_large', message: 'the body exceeds the limit', requestId: String(request.id) });
+      if (Number(request.headers['content-length'] ?? '0') > MAX_PEER_BODY) return tooLarge();
       const chunks: Buffer[] = [];
-      for await (const chunk of payload) chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string));
+      let size = 0;
+      for await (const chunk of payload) {
+        const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string);
+        size += buffer.length;
+        if (size > MAX_PEER_BODY) {
+          payload.destroy();
+          return tooLarge();
+        }
+        chunks.push(buffer);
+      }
       const raw = Buffer.concat(chunks);
       (request as FastifyRequest & { trustworkRawBody?: Buffer }).trustworkRawBody = raw;
       const stream = Readable.from([raw]) as Readable & { receivedEncodedLength?: number };

@@ -12,8 +12,9 @@ import { sha256, verifyEd25519 } from './crypto.js';
  * - `signRequest` and `signResponse` produce the `Content-Digest`, `Signature-Input` and `Signature` fields for the
  *   node's own messages (a request with a body carries a fresh nonce);
  * - `verifySignedMessage` checks a received message: the body matches its digest, the expected components are covered,
- *   the window and clock skew hold, a nonce is present where required and not yet seen, the key label names a key of the
- *   sender's manifest valid at `created` (not retired, not compromised), and the Ed25519 signature verifies.
+ *   the window and clock skew hold, a nonce is present where required, the key label names a key of the sender's manifest
+ *   valid at `created` (not retired, not compromised), the Ed25519 signature verifies, and only then the nonce is recorded
+ *   and a repeat refused.
  *
  * Every refusal is a protocol error code; no address and no signature material is echoed.
  */
@@ -106,10 +107,6 @@ export async function verifySignedMessage(message: ReceivedMessage, keys: readon
   const selected = keyForSignature(keys, parsed.params.keyid, createdAt);
   if (!selected.ok) return refuse(selected.code, selected.code === 'federation.key_unknown' ? 'key_unknown' : 'key_revoked');
   const expiresAt = new Date(parsed.params.expires * 1000);
-  if (!isResponse && parsed.params.nonce !== null && nonces) {
-    const fresh = await nonces(parsed.params.keyid, parsed.params.nonce, expiresAt);
-    if (!fresh) return refuse('federation.replay', 'nonce_seen');
-  }
   let base: string;
   try {
     base = httpSignatureBase({
@@ -121,5 +118,10 @@ export async function verifySignedMessage(message: ReceivedMessage, keys: readon
   }
   const publicKey = Buffer.from(selected.key.publicKey, 'base64url');
   if (!verifyEd25519(new Uint8Array(publicKey), new TextEncoder().encode(base), parsed.signature)) return refuse('federation.signature_invalid', 'signature_mismatch');
+  // The nonce is remembered only for a signature that verified: a forged request cannot poison the sender's nonces.
+  if (!isResponse && parsed.params.nonce !== null && nonces) {
+    const fresh = await nonces(parsed.params.keyid, parsed.params.nonce, expiresAt);
+    if (!fresh) return refuse('federation.replay', 'nonce_seen');
+  }
   return { ok: true, keyId: parsed.params.keyid, nonce: parsed.params.nonce, expiresAt };
 }

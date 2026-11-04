@@ -169,6 +169,8 @@ export interface FakePeer {
   answer: (request: Record<string, unknown>) => Record<string, unknown>;
   /** Manifest fetch outcome override (status) to simulate an unreachable or broken peer. */
   manifestStatus?: number;
+  /** Raw manifest bytes override (an oversized or malformed answer). */
+  manifestBytes?: () => Uint8Array;
 }
 export interface HandshakeCall { host: string; body: Record<string, unknown>; fields: SignedFields }
 
@@ -177,7 +179,17 @@ export class FakePeerTransport implements PeerTransport {
   readonly peers = new Map<string, FakePeer>();
   readonly handshakes: HandshakeCall[] = [];
   readonly manifestFetches: string[] = [];
+  /** Every name resolved, and the address each connection was pinned to (proves a judged address is the one connected to). */
+  readonly resolves: string[] = [];
+  readonly connections: { host: string; address: string }[] = [];
   constructor(private readonly now: () => Date) {}
+
+  async resolve(host: string): Promise<string | null> {
+    const peer = this.peers.get(host);
+    if (!peer) throw new Error(`fake transport: no such peer ${host}`);
+    this.resolves.push(host);
+    return peer.remoteAddress;
+  }
 
   add(peer: FakePeer): FakePeer {
     this.peers.set(peer.host, peer);
@@ -188,16 +200,18 @@ export class FakePeerTransport implements PeerTransport {
     const fields = signResponse({ status, body: bytes, signer: peer.signer, now: this.now() });
     return { status, header: (name) => (fields as Record<string, string>)[name.toLowerCase()] ?? null, body: bytes, remoteAddress: peer.remoteAddress };
   }
-  async fetchManifest(host: string): Promise<PeerResponse> {
+  async fetchManifest(host: string, address: string): Promise<PeerResponse> {
     const peer = this.peers.get(host);
     if (!peer) throw new Error(`fake transport: no such peer ${host}`);
     this.manifestFetches.push(host);
-    const bytes = utf8Encode(canonicalize(peer.manifest()));
-    return { status: peer.manifestStatus ?? 200, header: () => null, body: bytes, remoteAddress: peer.remoteAddress };
+    this.connections.push({ host, address });
+    const bytes = peer.manifestBytes ? peer.manifestBytes() : utf8Encode(canonicalize(peer.manifest()));
+    return { status: peer.manifestStatus ?? 200, header: () => null, body: bytes, remoteAddress: address };
   }
-  async postHandshake(host: string, body: Uint8Array, fields: SignedFields): Promise<PeerResponse> {
+  async postHandshake(host: string, address: string, body: Uint8Array, fields: SignedFields): Promise<PeerResponse> {
     const peer = this.peers.get(host);
     if (!peer) throw new Error(`fake transport: no such peer ${host}`);
+    this.connections.push({ host, address });
     const request = JSON.parse(Buffer.from(body).toString('utf8')) as Record<string, unknown>;
     this.handshakes.push({ host, body: request, fields });
     const answer = peer.answer(request);

@@ -93,9 +93,18 @@ export const nodeKeys = {
   chain(runner: Runner): Promise<NodeKeyRow[]> {
     return rows(runner, sql<NodeKeyRow>`SELECT * FROM trustwork.node_key ORDER BY position`);
   },
-  /** The sealed material of the current key (or the named one); runtime process only, opened in memory, never returned. */
+  /**
+   * The sealed material of the current key (or the named one), for the signer path: the transaction-local marker
+   * `trustwork.federation_signer` is set in the same transaction the definer reads it in, so no other query of the runtime
+   * role reaches the material. Ciphertext only; the KEK and the plaintext never enter the database.
+   */
   async signingMaterial(runner: Runner, keyId: string | null = null): Promise<SigningMaterialRow | null> {
-    return (await rows(runner, sql<SigningMaterialRow>`SELECT * FROM trustwork.federation_node_signing_material(${keyId}::text)`))[0] ?? null;
+    const read = async (trx: Transaction) => {
+      await sql`SELECT set_config('trustwork.federation_signer', 'on', true)`.execute(trx);
+      return (await rows(trx, sql<SigningMaterialRow>`SELECT * FROM trustwork.federation_node_signing_material(${keyId}::text)`))[0] ?? null;
+    };
+    if (runner instanceof Kysely) return read(runner);
+    return executor(runner).transaction().execute(read);
   },
 };
 

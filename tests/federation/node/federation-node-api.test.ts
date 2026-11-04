@@ -8,6 +8,7 @@ import { FederationNodeService, REFRESH_LOCK } from '../../../apps/api/src/modul
 import { FederationRefreshTimer } from '../../../apps/api/src/modules/federation/node/federation-node.module.js';
 import { federationPeers } from '../../../packages/data/src/repositories/federation-node.js';
 import { signRequest, verifySignedMessage } from '../../../apps/api/src/modules/federation/node/http-signatures.js';
+import { MAX_PEER_BODY, PeerUnreachableError } from '../../../apps/api/src/modules/federation/node/transport.js';
 import { keyRotationDigestInput, peeringLevelDigestInput } from '../../../apps/api/src/modules/federation/node/schemas.js';
 import { canonicalize } from '../../../packages/contracts/src/common/canonical.js';
 import { utf8Encode } from '../../../packages/contracts/src/common/encoding.js';
@@ -158,14 +159,22 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
 
   await t.test('handshake: unsigned, forged, replayed, expired, tampered and misaddressed requests are refused with the protocol codes; no record is written', async () => {
     const good = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now() });
-    // Unsigned.
+    // Unsigned: answered and counted, nothing fetched, nothing written.
+    const fetchesBefore = transport.manifestFetches.length;
+    const refusalsBefore = await count('SELECT 1 FROM trustwork.admission_refusal');
     const unsigned = await mesh(good.body, { 'content-type': 'application/json' });
     assert.equal(unsigned.status, 401);
     assert.equal(unsigned.body.code, 'federation.signature_invalid');
     assert.ok(unsigned.header('signature-input'), 'our refusal is signed with the node key');
-    // Forged: another key under the peer's label.
-    const forged = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now(), signer: forgedSigner });
+    assert.equal(transport.manifestFetches.length, fetchesBefore, 'an unsigned request fetches nothing');
+    // Forged: another key under the peer's label. The trust anchor is the peer's own well-known manifest, so the forgery fails
+    // against the real chain, and its nonce is not remembered: the peer's genuine request with the same nonce is no replay.
+    const nonce = randomBytes(24).toString('base64url');
+    const forged = peerHandshake({ to: OUR_HOST, responderHub: 'no-such-hub', now: now(), signer: forgedSigner, nonce });
     assert.equal((await mesh(forged.body, forged.fields)).body.code, 'federation.signature_invalid');
+    const genuine = peerHandshake({ to: OUR_HOST, responderHub: 'no-such-hub', now: now(), nonce });
+    assert.equal((await mesh(genuine.body, genuine.fields)).body.code, 'federation.not_addressed', 'the forged request did not poison the nonce');
+    assert.equal((await mesh(genuine.body, genuine.fields)).body.code, 'federation.replay');
     // Expired: signed ten minutes ago.
     const stale = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: new Date(now().getTime() - 10 * 60_000) });
     const expired = await mesh(stale.body, stale.fields);
@@ -182,29 +191,37 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     const noHub = peerHandshake({ to: OUR_HOST, responderHub: 'no-such-hub', now: now() });
     assert.equal((await mesh(noHub.body, noHub.fields)).body.code, 'federation.not_addressed');
     assert.equal(await count('SELECT 1 FROM trustwork.peering_record'), 0);
-    assert.equal(await count('SELECT 1 FROM trustwork.federation_peer'), 0);
+    assert.equal(await count('SELECT 1 FROM trustwork.admission_refusal'), refusalsBefore, 'no refusal is written against a peer by an unverified request');
+    // The only peer row came from the peer's own origin (trust on first use), never from a request body.
+    assert.equal((await h.db.admin.query<{ d: string }>('SELECT manifest_digest AS d FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]?.d, computeDigest(fixtureManifest({ node: CITY })).value);
   });
 
   await t.test('handshake: a peer declaring a restricted place, an expired attestation or connecting from a restricted place is refused with 451 and only a refusal record', async () => {
+    const refusalsBefore = await count('SELECT 1 FROM trustwork.admission_refusal');
+    // Declared: the peer's own origin serves a manifest naming a restricted jurisdiction. Judged on the fetched manifest.
+    setPeerManifest(austin, fixtureManifest({ node: CITY, jurisdiction: 'RU' }));
+    await assert.rejects(service.refreshPeer(CITY, 'refresh'), (e: Error & { code?: string }) => e.code === 'federation.peer_restricted');
+    // A handshake carrying that manifest is refused as well; the body is never the trust anchor and nothing more is written.
     const restrictedManifest = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now(), manifest: fixtureManifest({ node: CITY, jurisdiction: 'RU' }) });
     const refused = await mesh(restrictedManifest.body, restrictedManifest.fields);
-    assert.equal(refused.status, 451, JSON.stringify(refused.body));
-    assert.equal(refused.body.code, 'federation.peer_restricted');
+    assert.ok([451, 422].includes(refused.status), JSON.stringify(refused.body));
     assert.ok(!JSON.stringify(refused.body).includes('RU'), 'no finding is echoed');
-    const expiredAttestation = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now(), manifest: fixtureManifest({ node: CITY, attestation: EXPIRED_ATTESTATION }) });
-    const lapsed = await mesh(expiredAttestation.body, expiredAttestation.fields);
-    assert.equal(lapsed.status, 451, JSON.stringify(lapsed.body));
+    // Attested: an expired attestation in the served manifest.
+    setPeerManifest(austin, fixtureManifest({ node: CITY, attestation: EXPIRED_ATTESTATION }));
+    assert.equal((await service.refreshPeer(CITY, 'refresh')).admission_state, 'refused');
+    setPeerManifest(austin, fixtureManifest({ node: CITY }));
+    assert.equal((await service.refreshPeer(CITY, 'refresh')).admission_state, 'admitted');
     // Observed: the connection comes from a restricted documentation range (the service judges it after the door; the door itself refuses too).
     const fromRestricted = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now() });
     const observed = await service.receiveHandshake({ method: 'POST', url: HANDSHAKE_URL, header: (name) => fromRestricted.fields[name] ?? null, body: JSON.parse(Buffer.from(fromRestricted.body).toString()), rawBody: fromRestricted.body, address: RESTRICTED_ADDRESS, requestId: 'req-observed' });
     assert.equal(observed.status, 451, JSON.stringify(observed.body));
     assert.ok(observed.fields?.signature, 'the refusal is signed');
-    const refusals = (await h.db.admin.query<{ subject: string; findings: { reason: string; source: string | null; place: string | null; dataset: string | null }[] }>('SELECT subject, findings FROM trustwork.admission_refusal ORDER BY created_at')).rows;
-    assert.ok(refusals.length >= 3);
+    const refusals = (await h.db.admin.query<{ subject: string; findings: { reason: string; source: string | null; place: string | null; dataset: string | null }[] }>('SELECT subject, findings FROM trustwork.admission_refusal ORDER BY created_at')).rows.slice(refusalsBefore);
+    assert.equal(refusals.length, 3);
     assert.ok(refusals.every((r) => r.subject === CITY));
     assert.ok(refusals[0]!.findings.some((f) => f.reason === 'restricted_place' && f.source === 'manifest_jurisdiction' && f.place === 'RU' && f.dataset === 'declared'));
     assert.ok(refusals[1]!.findings.some((f) => f.reason === 'attestation_expired'));
-    assert.ok(refusals.some((r) => r.findings.some((f) => f.source === 'observed_location' && f.dataset === 'fake')));
+    assert.ok(refusals[2]!.findings.some((f) => f.source === 'observed_location' && f.dataset === 'fake'));
     assert.ok(!JSON.stringify(refusals).includes(RESTRICTED_ADDRESS) && !JSON.stringify(refusals).includes(SERVED_ADDRESS), 'refusal records hold no address');
     assert.equal(await count('SELECT 1 FROM trustwork.peering_record'), 0);
     // Compliance readers see the records; hub staff without the permission do not.
@@ -322,6 +339,23 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.deepEqual(await service.flowAllowed(CITY, 'deal_routing'), { ok: false, code: 'federation.not_peered' }, 'nothing flows until the peer\'s person accepts');
   });
 
+  await t.test('a self-signed genesis manifest for the peer\'s name does not take the peer over: the request fails against the chain fetched from the peer\'s origin and the pending record stays pending', async () => {
+    const genesis: NodeKey = { keyId: 'a1', algorithm: 'ed25519', publicKey: publicKeyB64(RFC8032.test1), validFrom: '2026-01-01T00:00:00.000Z', retiredAt: null, revocation: null, rotation: null };
+    const forgedUnsigned: Record<string, unknown> = { ...(fixtureManifest({ node: CITY }) as NodeManifest), keys: { current: 'a1', chain: [genesis] }, issuedAt: '2026-11-02T00:00:00.000Z' };
+    delete forgedUnsigned['signature'];
+    const forgedManifest = signDocument('manifest', forgedUnsigned, 'a1', signerFor(RFC8032.test1)) as unknown as Record<string, unknown>;
+    assert.ok(verifyManifestSignatures(asManifest(forgedManifest), verifyEd25519), 'the forgery is self-consistent');
+    const before = (await h.db.admin.query<{ manifest_digest: string; refresh_due_at: Date }>('SELECT manifest_digest, refresh_due_at FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!;
+    const takeover = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, level: 'deal_routing', now: now(), manifest: forgedManifest, signer: { keyId: 'a1', sign: signerFor(RFC8032.test1) } });
+    const answer = await mesh(takeover.body, takeover.fields);
+    assert.equal(answer.status, 401, JSON.stringify(answer.body));
+    assert.equal(answer.body.code, 'federation.signature_invalid');
+    const after = (await h.db.admin.query<{ manifest_digest: string; refresh_due_at: Date }>('SELECT manifest_digest, refresh_due_at FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!;
+    assert.deepEqual(after, before, 'the held chain is untouched');
+    const record = (await h.db.admin.query<{ state: string; phase: string }>('SELECT state, phase FROM trustwork.peering_record WHERE id = $1', [outgoingId])).rows[0]!;
+    assert.deepEqual(record, { state: 'pending_approval', phase: 'awaiting_peer' });
+  });
+
   await t.test('the peer\'s acceptance arrives as a handshake from the accepting node: the outgoing record activates at deal_routing on both acceptances', async () => {
     const acceptance = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, level: 'deal_routing', now: now() });
     const response = await mesh(acceptance.body, acceptance.fields);
@@ -340,6 +374,23 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.equal(lowered.record.level, 'trust_verifications');
     expectRefusal(await command('owner', `${ADMIN}/peerings/${outgoingId}/lower`, { expectedRevision: lowered.record.revision, level: 'deal_routing' }), 409, 'validation.revision_conflict', 'invalid_transition');
     assert.deepEqual(await service.flowAllowed(CITY, 'deal_routing'), { ok: false, code: 'federation.level_insufficient' });
+  });
+
+  await t.test('nothing unauthenticated changes peer state: an unsigned or forged request carrying the peer\'s manifest with a restricted place suspends nothing, writes no refusal and moves no refresh', async () => {
+    const snapshot = () => h.db.admin.query<{ manifest_digest: string; refresh_due_at: Date; admission_state: string }>('SELECT manifest_digest, refresh_due_at, admission_state FROM trustwork.federation_peer WHERE peer_node = $1', [CITY]).then((r) => r.rows[0]!);
+    const before = await snapshot();
+    const refusalsBefore = await count('SELECT 1 FROM trustwork.admission_refusal');
+    const fetches = transport.manifestFetches.length;
+    const poisoned = fixtureManifest({ node: CITY, jurisdiction: 'RU' });
+    const anonymous = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now(), manifest: poisoned });
+    assert.equal((await mesh(anonymous.body, { 'content-type': 'application/json' })).status, 401);
+    const forged = peerHandshake({ to: OUR_HOST, responderHub: HUB_SLUG, now: now(), manifest: poisoned, signer: forgedSigner });
+    assert.equal((await mesh(forged.body, forged.fields)).status, 401);
+    assert.deepEqual(await snapshot(), before, 'the peer row is untouched');
+    assert.equal(await count('SELECT 1 FROM trustwork.admission_refusal'), refusalsBefore, 'no false refusal against the victim');
+    assert.equal(transport.manifestFetches.length, fetches, 'the attacker cannot make us fetch');
+    assert.equal((await h.db.admin.query<{ suspended_at: Date | null; state: string }>('SELECT suspended_at, state FROM trustwork.peering_record WHERE id = $1', [outgoingId])).rows[0]!.suspended_at, null, 'the active record is not suspended');
+    assert.deepEqual(await service.flowAllowed(CITY, 'syndicate'), { ok: true });
   });
 
   await t.test('re-admission: a changed peer manifest with an expired attestation suspends every flow; a renewed admission lifts it; a restricted territory refuses and suspends', async () => {
@@ -390,7 +441,7 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.deepEqual(keyChainProblems(CITY, chain, 'a2', verifyEd25519), []);
     const rotatedManifest = (overrides: Partial<NodeManifest> = {}) => {
       const base = fixtureManifest({ node: CITY }) as NodeManifest;
-      const unsigned: Record<string, unknown> = { ...base, ...overrides, keys: { current: 'a2', chain: overrides.keys?.chain ?? chain }, issuedAt: '2026-11-01T12:00:00.000Z' };
+      const unsigned: Record<string, unknown> = { ...base, ...overrides, keys: { current: 'a2', chain: overrides.keys?.chain ?? chain }, issuedAt: overrides.issuedAt ?? '2026-11-01T12:00:00.000Z' };
       delete unsigned['signature'];
       return signDocument('manifest', unsigned, 'a2', signerFor(RFC8032.test1)) as unknown as Record<string, unknown>;
     };
@@ -413,16 +464,27 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     const held = (await h.db.admin.query<{ manifest: NodeManifest }>('SELECT manifest FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!.manifest;
     assert.equal(FederationNodeService.keyFor(held.keys.chain, 'a1', '2026-10-01T00:00:00.000Z').ok, true);
     assert.deepEqual(FederationNodeService.keyFor(held.keys.chain, 'a1', '2026-10-20T00:00:00.000Z'), { ok: false, code: 'federation.key_revoked' });
+    const heldDigest = (await h.db.admin.query<{ d: string }>('SELECT manifest_digest AS d FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!.d;
+    // Rollback: an older manifest (the genesis-only one) is refused and the held one kept.
+    setPeerManifest(austin, fixtureManifest({ node: CITY }));
+    await assert.rejects(service.refreshPeer(CITY, 'refresh'), /older than the one held/);
+    // A dropped revocation: a later manifest whose chain forgets that a1 was compromised is refused and the held one kept.
+    setPeerManifest(austin, rotatedManifest({ issuedAt: '2026-11-01T13:00:00.000Z' } as Partial<NodeManifest>));
+    await assert.rejects(service.refreshPeer(CITY, 'refresh'), /drops a published revocation/);
+    assert.equal((await h.db.admin.query<{ d: string }>('SELECT manifest_digest AS d FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!.d, heldDigest);
+    assert.equal(await count("SELECT 1 FROM trustwork.peer_key_revocation WHERE peer_node = $1", [CITY]), 1);
     // Equivocation: a different successor of a1 suspends every flow and stops trusting the node's new signatures.
     const otherA2: NodeKey = { ...a2Unsigned, keyId: 'a2-other', publicKey: publicKeyB64(RFC8032.test2) };
     const otherStatement = signDocument('key_rotation', rotationStatementFor(CITY, { ...a1, retiredAt: rotatedAt }, otherA2), 'a1', signerFor(RFC8032.test3));
-    const forkedChain: NodeKey[] = [{ ...a1, retiredAt: rotatedAt }, { ...otherA2, rotation: { previousKeyId: 'a1', signature: otherStatement.signature } }];
+    const forkedChain: NodeKey[] = [revokedChain[0]!, { ...otherA2, rotation: { previousKeyId: 'a1', signature: otherStatement.signature } }];
     const forkedUnsigned: Record<string, unknown> = { ...(fixtureManifest({ node: CITY }) as NodeManifest), keys: { current: 'a2-other', chain: forkedChain }, issuedAt: '2026-11-01T12:30:00.000Z' };
     delete forkedUnsigned['signature'];
     setPeerManifest(austin, signDocument('manifest', forkedUnsigned, 'a2-other', signerFor(RFC8032.test2)) as unknown as Record<string, unknown>);
     await assert.rejects(service.refreshPeer(CITY, 'refresh'), /two successors/);
     assert.equal((await h.db.admin.query<{ suspension_reason: string }>('SELECT suspension_reason FROM trustwork.peering_record WHERE id = $1', [outgoingId])).rows[0]!.suspension_reason, 'equivocation');
     assert.ok((await h.db.admin.query<{ equivocation_at: Date | null }>('SELECT equivocation_at FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!.equivocation_at);
+    assert.deepEqual(await service.flowAllowed(CITY, 'syndicate'), { ok: false, code: 'federation.peer_restricted' }, 'a chain break closes every flow until the operator confirms the chain');
+    setPeerManifest(austin, rotatedManifest({ keys: { current: 'a2', chain: revokedChain } }));
   });
 
   await t.test('our key rotation: a second person (ops.rotate_node_key), the hand-over signed by the retiring key, a new manifest version that verifies and keeps the old one verifiable', async () => {
@@ -453,9 +515,7 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
   });
 
   await t.test('before the first delivery of a new deal the admission runs again; a lapsed admission stops new deliveries without rewriting history', async () => {
-    // Back to a clean peer manifest (the equivocation finding stands; a fresh admission still records the outcome).
-    setPeerManifest(austin, fixtureManifest({ node: CITY }));
-    austin.signer = { keyId: 'a1', sign: signerFor(RFC8032.test3) };
+    // The equivocation finding stands; a fresh admission still records the outcome.
     const beforeRows = await count('SELECT 1 FROM trustwork.peering_record');
     const refused = await service.admitDealDelivery(CITY, 'deal-0001', { address: RESTRICTED_ADDRESS, header: () => null }, w.hubId);
     assert.deepEqual(refused, { ok: false, code: 'federation.peer_restricted' });
@@ -464,7 +524,7 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.equal(await count('SELECT 1 FROM trustwork.peering_record'), beforeRows, 'history is not rewritten');
     assert.deepEqual(await service.flowAllowed(CITY, 'syndicate'), { ok: false, code: 'federation.peer_restricted' });
     const admitted = await service.admitDealDelivery(CITY, 'deal-0002', { address: SERVED_ADDRESS, header: () => null }, w.hubId);
-    assert.deepEqual(admitted, { ok: false, code: 'federation.not_peered' }, 'the admission passes again but the equivocation suspension stands until the operator confirms the chain');
+    assert.deepEqual(admitted, { ok: false, code: 'federation.peer_restricted' }, 'the admission passes again but the equivocation finding stands until the operator confirms the chain');
     assert.equal((await h.db.admin.query<{ admission_state: string; admission_trigger: string }>('SELECT admission_state, admission_trigger FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!.admission_trigger, 'deal_delivery');
   });
 
@@ -484,6 +544,8 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     const finding = (await h.db.admin.query<{ findings: { source: string; dataset: string }[] }>('SELECT findings FROM trustwork.admission_refusal ORDER BY created_at DESC LIMIT 1')).rows[0]!.findings;
     assert.ok(finding.some((f) => f.source === 'observed_location' && f.dataset === 'fake'));
     assert.equal(await count("SELECT 1 FROM trustwork.peering_record WHERE peer_node = 'houston.example.org'"), 0);
+    assert.ok(transport.resolves.includes('houston.example.org') && !transport.manifestFetches.includes('houston.example.org') && transport.connections.every((c) => c.host !== 'houston.example.org'), 'a restricted address is judged before any connection and never contacted');
+    assert.ok(transport.connections.filter((c) => c.host === CITY).every((c) => c.address === SERVED_ADDRESS), 'every connection goes to the judged address');
     // Daily refresh: a peer whose manifest is older than a day is fetched again.
     await h.db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '1 minute' WHERE peer_node = $1", [CITY]);
     const fetches = transport.manifestFetches.length;
@@ -502,6 +564,7 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     const houstonManifest = asManifest(transport.peers.get('houston.example.org')!.manifest());
     await federationPeers.record(h.pool, { peerNode: 'houston.example.org', manifest: houstonManifest, manifestDigest: computeDigest(houstonManifest).value, manifestIssuedAt: new Date(houstonManifest.issuedAt), currentKeyId: 'a1', attestationExpiresAt: new Date(houstonManifest.deploymentAttestation.expiresAt), admitted: true, judged: ['declared', 'attested', 'observed'], trigger: 'manual' });
     transport.peers.get('houston.example.org')!.manifestStatus = 500;
+    transport.peers.get('houston.example.org')!.remoteAddress = SERVED_ADDRESS;
     await h.db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '2 minutes' WHERE peer_node = 'houston.example.org'");
     await h.db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '1 minute' WHERE peer_node = $1", [CITY]);
     const locked = await service.refreshDueLocked();
@@ -535,6 +598,29 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     await sleep(400);
     assert.equal(transport.manifestFetches.length, afterClose, 'no tick after shutdown');
     await service.refreshDue();
+  });
+
+  await t.test('limits and a hijacked origin: an oversized body is refused before it is read, an oversized peer answer is dropped, and a peer whose origin starts serving another genesis key is marked and closed', async () => {
+    const big = Buffer.alloc(MAX_PEER_BODY + 1, 0x20);
+    const tooLarge = await app.fastify.inject({ method: 'POST', url: HANDSHAKE_URL, headers: { 'content-type': 'application/json' }, payload: big, remoteAddress: SERVED_ADDRESS });
+    assert.equal(tooLarge.statusCode, 413);
+    assert.equal((JSON.parse(tooLarge.body) as { code: string }).code, 'federation.payload_too_large');
+    const houston = transport.peers.get('houston.example.org')!;
+    houston.manifestStatus = 200;
+    houston.manifestBytes = () => new Uint8Array(MAX_PEER_BODY + 1);
+    await assert.rejects(service.refreshPeer('houston.example.org', 'manual'), (e: unknown) => e instanceof PeerUnreachableError && /too large/.test(String((e.cause as Error).message)));
+    delete houston.manifestBytes;
+    // Hijacked origin: Houston's well-known URL starts serving a manifest with another genesis key.
+    const genesis: NodeKey = { keyId: 'a1', algorithm: 'ed25519', publicKey: publicKeyB64(RFC8032.test1), validFrom: '2026-01-01T00:00:00.000Z', retiredAt: null, revocation: null, rotation: null };
+    const hijackedUnsigned: Record<string, unknown> = { ...asManifest(houston.manifest()), keys: { current: 'a1', chain: [genesis] }, issuedAt: '2026-11-03T00:00:00.000Z' };
+    delete hijackedUnsigned['signature'];
+    const heldDigest = (await h.db.admin.query<{ d: string }>("SELECT manifest_digest AS d FROM trustwork.federation_peer WHERE peer_node = 'houston.example.org'")).rows[0]!.d;
+    houston.manifest = () => signDocument('manifest', hijackedUnsigned, 'a1', signerFor(RFC8032.test1)) as unknown as Record<string, unknown>;
+    await assert.rejects(service.refreshPeer('houston.example.org', 'refresh'), /another genesis key/);
+    const row = (await h.db.admin.query<{ d: string; e: Date | null }>("SELECT manifest_digest AS d, equivocation_at AS e FROM trustwork.federation_peer WHERE peer_node = 'houston.example.org'")).rows[0]!;
+    assert.equal(row.d, heldDigest, 'the held chain is kept');
+    assert.ok(row.e, 'recorded for staff');
+    assert.deepEqual(await service.flowAllowed('houston.example.org', 'syndicate'), { ok: false, code: 'federation.peer_restricted' });
   });
 
   await t.test('no federation record carries a network address', async () => {
