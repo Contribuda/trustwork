@@ -18,6 +18,7 @@ export const unavailableConsolePort: ConsoleDataPort = {
   staff: async () => null,
   effectiveAccess: async () => null,
   roleCatalogue: async () => [],
+  staffInvitations: async () => null,
   overview: async () => null,
   approvals: async () => ({ requests: [], decisions: [] }),
   legal: async () => ({ operator: null, documents: [] }),

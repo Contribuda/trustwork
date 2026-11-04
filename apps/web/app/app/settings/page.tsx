@@ -8,6 +8,8 @@ import { DEFAULT_PASSWORD_POLICY } from '@trustwork/contracts/client';
 import { DATA_SOURCE, data } from '@/app/_lib/data';
 import { SecurityPanel, type LiveSession } from './_components/SecurityPanel';
 import { SecondFactorPanel } from './_components/SecondFactorPanel';
+import { DEMO_INVITATION, hasSecondFactor, myStaffInvitations } from './staff-invitations/_data';
+import { invitationResult, StaffInvitations } from './staff-invitations/StaffInvitations';
 import { hrefFor, requirePrincipal, type PageSearchParams } from '@/app/_lib/principal';
 import { longDate, t } from '@/app/_lib/i18n';
 import { typo } from '@/app/_lib/typo';
@@ -31,12 +33,22 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pag
   const principal = await requirePrincipal(searchParams, '/app/settings');
   const s = await data.getSettings(principal);
   const live = DATA_SOURCE === 'api';
+  // A failing read of the invitations never takes the settings page down with it.
+  // Like a real person with no open invitation, the demo shows no section unless the staff screen's link asks for the example.
+  const query = await searchParams;
+  const [invitations, secondFactor] = live ? await Promise.all([myStaffInvitations().catch(() => []), hasSecondFactor().catch(() => false)]) : [query.invitation === 'demo' ? [DEMO_INVITATION] : [], true];
+  const invitationAnswer = invitationResult(query.invitation);
   const liveSessions: LiveSession[] = s.sessions.flatMap((x) => (x.id ? [{ id: x.id, device: x.device, location: x.location, lastSeen: x.lastSeen, isCurrent: x.isCurrent }] : []));
   return (
     <>
       <PageHeader title={t('settings.title')} lede={t('settings.lede')} />
       <div className="ws-settings">
         <nav className="ws-settings__nav" aria-label={t('settings.nav.label')}>
+          {invitations.length ? (
+            <a href="#staff-invitations" className="ws-settings__link" data-testid="staff-invitations-link">
+              {t('settings.staffInvitations.linkOpen', { count: invitations.length })}
+            </a>
+          ) : null}
           {SECTIONS.map((key) => (
             <a key={key} href={`#${key}`} className="ws-settings__link">
               {t(`settings.nav.${key}`)}
@@ -48,6 +60,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pag
           </NextLink>
         </nav>
         <div className="ws-section" style={{ gap: 24, maxWidth: '52rem' }}>
+          <StaffInvitations invitations={invitations} secondFactor={secondFactor} result={invitationAnswer} demo={!live} />
           <section id="account" aria-labelledby="s-account" className="ws-card">
             <h2 id="s-account" className="ws-h2">
               <Mail size={18} strokeWidth={2} aria-hidden="true" />

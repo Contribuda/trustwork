@@ -140,6 +140,28 @@
       "body": "Xodimlar amallari uchun kengaytirilgan seans kerak. Autentifikator ilovasidagi kodni kiriting.",
       "recoveryBody": "Zaxira kodlaringizdan birini kiriting. Har bir kod faqat bir marta ishlaydi.",
       "enrolFirst": "Avval xavfsizlik sozlamalarida ikki bosqichli tasdiqlashni yoqing."
+    },
+    "staffInvitations": {
+      "title": "Xodim takliflari",
+      "lede": "Xab jamoasi sizni xodim roliga taklif qilishi mumkin. Shu yerda qabul qiling yoki rad eting; taklif qilgan kishi uni qoʻllamaguncha hech narsa oʻzgarmaydi.",
+      "linkOpen": "Xodim takliflari ({count})",
+      "empty": "Ochiq xodim takliflaringiz yoʻq.",
+      "scopeHub": "Bu oʻrnatmadagi xab",
+      "answerBy": "Javob muddati",
+      "accept": "Qabul qilish",
+      "decline": "Rad etish",
+      "secondFactorNeeded": "Qabul qilish uchun ikki bosqichli tasdiqlash kerak, chunki xodimlar oʻz ishini u bilan tasdiqlaydi. Avval uni sozlang. Rad etish uchun u shart emas.",
+      "secondFactorLink": "Ikki bosqichli tasdiqlashni sozlash",
+      "secondFactorReady": "Ikki bosqichli tasdiqlash yoqilgan, shuning uchun qabul qilishingiz mumkin.",
+      "after": "Qabul qilganingizdan soʻng rolni taklif qilgan kishi qoʻllaydi. Nozik rol uchun ikkinchi xodim ham kerak.",
+      "demoNote": "Demo: sintetik taklif. Qabul qilish va rad etish faqat ulangan oʻrnatmada ishlaydi.",
+      "result": {
+        "accepted": "Qabul qildingiz. Endi rolni taklif qilgan kishi qoʻllaydi.",
+        "declined": "Bu taklifni rad etdingiz.",
+        "second_factor": "Avval ikki bosqichli tasdiqlashni sozlang, soʻng qabul qiling.",
+        "gone": "Bu taklif endi ochiq emas.",
+        "failed": "Boʻlmadi. Qayta urinib koʻring."
+      }
     }
   }
 }

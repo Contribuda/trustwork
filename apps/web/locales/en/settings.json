@@ -140,6 +140,28 @@
       "body": "Staff actions need an elevated session. Enter the code from your authenticator app.",
       "recoveryBody": "Enter one of your recovery codes. Each code works only once.",
       "enrolFirst": "Set up two-step verification in the security settings first."
+    },
+    "staffInvitations": {
+      "title": "Staff invitations",
+      "lede": "A hub team can invite you to a staff role. Accept or decline here; nothing changes until the person who invited you applies it.",
+      "linkOpen": "Staff invitations ({count})",
+      "empty": "You have no open staff invitations.",
+      "scopeHub": "A hub of this installation",
+      "answerBy": "Answer by",
+      "accept": "Accept",
+      "decline": "Decline",
+      "secondFactorNeeded": "Accepting needs two-step verification, because staff confirm their work with it. Set it up first. You can decline without it.",
+      "secondFactorLink": "Set up two-step verification",
+      "secondFactorReady": "Two-step verification is on, so you can accept.",
+      "after": "After you accept, the person who invited you applies the role. A sensitive role also needs a second person.",
+      "demoNote": "Demo: a synthetic invitation. Accepting and declining work only in a connected installation.",
+      "result": {
+        "accepted": "You accepted. The person who invited you applies the role next.",
+        "declined": "You declined this invitation.",
+        "second_factor": "Set up two-step verification first, then accept.",
+        "gone": "This invitation is no longer open.",
+        "failed": "That did not work. Try again."
+      }
     }
   }
 }

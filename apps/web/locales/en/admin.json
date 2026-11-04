@@ -329,7 +329,12 @@
       "preview_missing": "Activation requires a stored preview. Create and review the preview first.",
       "self_grant": "Nobody grants a staff role to themselves; another staff administrator does.",
       "sensitive_role": "This role is sensitive: it is granted through an invitation that a second person approves.",
-      "role_held": "This person already holds this role at this hub."
+      "role_held": "This person already holds this role at this hub.",
+      "invitation_open": "This address already has an open invitation to this role.",
+      "invitation_expired": "This invitation has expired; invite the person again.",
+      "invitation_closed": "This invitation is already closed.",
+      "not_inviter": "Only the person who invited applies this invitation.",
+      "second_person_pending": "A second person has not decided yet."
     },
     "details": {
       "demo_data_only_before_soft_launch": "demo data is allowed only before soft launch",
@@ -2347,7 +2352,41 @@
       "role": "Role",
       "addRoleSubmit": "Add the role",
       "nothingToAdd": "There is nobody else on this hub's staff to give a role to yet.",
-      "sensitiveNote": "Sensitive roles ({roles}) are granted through an invitation that a second person approves."
+      "sensitiveNote": "Sensitive roles ({roles}) are granted through an invitation that a second person approves.",
+      "invite": "Invite someone",
+      "inviteHelp": "Invite an e-mail address to one role at this hub. Nothing is mailed: tell the person to open Staff invitations in their settings. They accept with a second factor, and you then apply the invitation. An unused invitation expires after seven days.",
+      "inviteEmail": "E-mail address",
+      "inviteDays": "Role ends after (days)",
+      "inviteDaysHelp": "Optional: 1 to 366 days from the day the role takes effect. Leave empty for no end.",
+      "inviteSubmit": "Create the invitation",
+      "nothingToInvite": "No released role can be held at a hub yet.",
+      "invitations": "Invitations",
+      "invitationsEmpty": "No invitations yet.",
+      "invitation": {
+        "stage": {
+          "response": "Waiting for an answer",
+          "apply": "Accepted: ready to apply",
+          "second_person": "Waiting for a second person",
+          "approved": "Approved: ready to apply",
+          "expired": "Expired",
+          "declined": "Declined",
+          "applied": "Applied",
+          "withdrawn": "Withdrawn"
+        },
+        "sensitiveRole": "{role} (needs a second person)",
+        "scope": "Where",
+        "length": "Length of the role",
+        "noEnd": "No end date",
+        "forHours": "{count, plural, one {# hour} other {# hours}}",
+        "invitedBy": "Invited by",
+        "openUntil": "Open until",
+        "waitingSecondPerson": "A second person decides in Approvals; apply the invitation again once they approve.",
+        "apply": "Apply this invitation",
+        "applySubmit": "Apply",
+        "withdraw": "Withdraw this invitation",
+        "withdrawSubmit": "Withdraw"
+      },
+      "inviteeView": "See what the invited person sees"
     }
   }
 }

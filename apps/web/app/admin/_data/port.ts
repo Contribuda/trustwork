@@ -1,5 +1,5 @@
 import type { ConsolePermission, HubStaffRole, StaffScopeKind } from '@trustwork/contracts/client';
-import type { StaffDirectory } from '../../../../../packages/contracts/src/staff-lifecycle.js';
+import type { StaffDirectory, StaffInvitationView } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import type { CommandInput, CommandOutcome, ReadyApproval, WaitingActivation } from './commands.js';
 import type { ConsoleRequest } from './personas.js';
 import type {
@@ -59,6 +59,11 @@ export interface ConsoleDataPort {
   effectiveAccess(hubId: string, personId: string): Promise<{ roles: HubStaffRole[]; permissions: ConsolePermission[] } | null>;
   /** The released role definitions a staff admin may assign: the latest version of each role with its scopes. */
   roleCatalogue(): Promise<Array<{ role: HubStaffRole; version: number; scopes: StaffScopeKind[] }>>;
+  /**
+   * Invitations of the hub, the node and the platform (ADM-004 part 2), newest first, with their addresses: the API shows
+   * them to readers with `admin.staff.read` at their scope. Null when not readable.
+   */
+  staffInvitations(hubId: string): Promise<StaffInvitationView[] | null>;
   overview(hubId: string): Promise<Overview | null>;
   /**
    * Requests and decisions; the live adapter also lists the viewer's approved changes that wait to be applied (`ready`)

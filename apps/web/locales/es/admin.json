@@ -329,7 +329,12 @@
       "preview_missing": "La activación requiere una vista previa guardada. Créela y revísela primero.",
       "self_grant": "Nadie se asigna un rol de personal a sí mismo; lo hace otro administrador del personal.",
       "sensitive_role": "Este rol es sensible: se concede mediante una invitación que aprueba una segunda persona.",
-      "role_held": "Esta persona ya tiene este rol en este hub."
+      "role_held": "Esta persona ya tiene este rol en este hub.",
+      "invitation_open": "Esta dirección ya tiene una invitación abierta a este rol.",
+      "invitation_expired": "Esta invitación ha vencido; invite de nuevo a la persona.",
+      "invitation_closed": "Esta invitación ya está cerrada.",
+      "not_inviter": "Solo quien invitó aplica esta invitación.",
+      "second_person_pending": "Una segunda persona aún no ha decidido."
     },
     "details": {
       "demo_data_only_before_soft_launch": "los datos de demostración solo se permiten antes del lanzamiento preliminar",
@@ -2347,7 +2352,41 @@
       "role": "Rol",
       "addRoleSubmit": "Añadir el rol",
       "nothingToAdd": "Todavía no hay nadie más en el personal de este hub a quien dar un rol.",
-      "sensitiveNote": "Los roles sensibles ({roles}) se conceden mediante una invitación que aprueba una segunda persona."
+      "sensitiveNote": "Los roles sensibles ({roles}) se conceden mediante una invitación que aprueba una segunda persona.",
+      "invite": "Invitar a alguien",
+      "inviteHelp": "Invite una dirección de correo a un rol de este hub. No se envía ningún correo: dígale a la persona que abra Invitaciones de personal en su configuración. Acepta con un segundo factor y después usted aplica la invitación. Una invitación sin usar vence a los siete días.",
+      "inviteEmail": "Dirección de correo",
+      "inviteDays": "El rol termina a los (días)",
+      "inviteDaysHelp": "Opcional: de 1 a 366 días desde el día en que el rol entra en vigor. Déjelo vacío si no tiene fin.",
+      "inviteSubmit": "Crear la invitación",
+      "nothingToInvite": "Aún no hay ningún rol publicado que pueda ejercerse en un hub.",
+      "invitations": "Invitaciones",
+      "invitationsEmpty": "Aún no hay invitaciones.",
+      "invitation": {
+        "stage": {
+          "response": "A la espera de respuesta",
+          "apply": "Aceptada: lista para aplicar",
+          "second_person": "A la espera de una segunda persona",
+          "approved": "Aprobada: lista para aplicar",
+          "expired": "Vencida",
+          "declined": "Rechazada",
+          "applied": "Aplicada",
+          "withdrawn": "Retirada"
+        },
+        "sensitiveRole": "{role} (requiere una segunda persona)",
+        "scope": "Dónde",
+        "length": "Duración del rol",
+        "noEnd": "Sin fecha de fin",
+        "forHours": "{count, plural, one {# hora} other {# horas}}",
+        "invitedBy": "Invitó",
+        "openUntil": "Abierta hasta",
+        "waitingSecondPerson": "Una segunda persona decide en Aprobaciones; aplique la invitación de nuevo cuando la apruebe.",
+        "apply": "Aplicar esta invitación",
+        "applySubmit": "Aplicar",
+        "withdraw": "Retirar esta invitación",
+        "withdrawSubmit": "Retirar"
+      },
+      "inviteeView": "Ver lo que ve la persona invitada"
     }
   }
 }

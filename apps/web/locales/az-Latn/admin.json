@@ -329,7 +329,12 @@
       "preview_missing": "Aktivləşdirmə üçün saxlanmış önbaxış tələb olunur. Əvvəlcə onu yaradın və yoxlayın.",
       "self_grant": "Heç kim özünə əməkdaş rolu vermir; bunu başqa heyət administratoru edir.",
       "sensitive_role": "Bu rol həssasdır: o, ikinci şəxsin təsdiqlədiyi dəvətlə verilir.",
-      "role_held": "Bu şəxsin bu habda artıq bu rolu var."
+      "role_held": "Bu şəxsin bu habda artıq bu rolu var.",
+      "invitation_open": "Bu ünvanın bu rola artıq açıq dəvəti var.",
+      "invitation_expired": "Bu dəvətin müddəti bitib; şəxsi yenidən dəvət edin.",
+      "invitation_closed": "Bu dəvət artıq bağlıdır.",
+      "not_inviter": "Bu dəvəti yalnız dəvət edən şəxs tətbiq edir.",
+      "second_person_pending": "İkinci şəxs hələ qərar verməyib."
     },
     "details": {
       "demo_data_only_before_soft_launch": "nümayiş məlumatlarına yalnız yumşaq başlanğıca qədər icazə verilir",
@@ -2347,7 +2352,41 @@
       "role": "Rol",
       "addRoleSubmit": "Rolu əlavə et",
       "nothingToAdd": "Bu habın heyətində rol veriləcək başqa kimsə hələ yoxdur.",
-      "sensitiveNote": "Həssas rollar ({roles}) ikinci şəxsin təsdiqlədiyi dəvətlə verilir."
+      "sensitiveNote": "Həssas rollar ({roles}) ikinci şəxsin təsdiqlədiyi dəvətlə verilir.",
+      "invite": "Kimisə dəvət et",
+      "inviteHelp": "E-poçt ünvanını bu habda bir rola dəvət edin. Məktub göndərilmir: şəxsə öz parametrlərində “Heyət dəvətləri”ni açmasını deyin. O, ikinci amillə razılaşır, sonra dəvəti siz tətbiq edirsiniz. İstifadə olunmayan dəvətin müddəti yeddi gündə bitir.",
+      "inviteEmail": "E-poçt ünvanı",
+      "inviteDays": "Rol bitir (gündən sonra)",
+      "inviteDaysHelp": "İstəyə bağlı: rolun qüvvəyə mindiyi gündən 1-dən 366 günə qədər. Bitmə tarixi yoxdursa, boş saxlayın.",
+      "inviteSubmit": "Dəvəti yarat",
+      "nothingToInvite": "Habda tutula bilən buraxılmış rol hələ yoxdur.",
+      "invitations": "Dəvətlər",
+      "invitationsEmpty": "Hələ dəvət yoxdur.",
+      "invitation": {
+        "stage": {
+          "response": "Cavab gözlənilir",
+          "apply": "Qəbul edilib: tətbiqə hazırdır",
+          "second_person": "İkinci şəxs gözlənilir",
+          "approved": "Təsdiqlənib: tətbiqə hazırdır",
+          "expired": "Müddəti bitib",
+          "declined": "İmtina edilib",
+          "applied": "Tətbiq edilib",
+          "withdrawn": "Geri götürülüb"
+        },
+        "sensitiveRole": "{role} (ikinci şəxs lazımdır)",
+        "scope": "Harada",
+        "length": "Rolun müddəti",
+        "noEnd": "Bitmə tarixi yoxdur",
+        "forHours": "{count, plural, one {# saat} other {# saat}}",
+        "invitedBy": "Dəvət edən",
+        "openUntil": "Bu vaxtadək açıqdır",
+        "waitingSecondPerson": "İkinci şəxs Təsdiqlərdə qərar verir; təsdiqdən sonra dəvəti yenidən tətbiq edin.",
+        "apply": "Bu dəvəti tətbiq et",
+        "applySubmit": "Tətbiq et",
+        "withdraw": "Bu dəvəti geri götür",
+        "withdrawSubmit": "Geri götür"
+      },
+      "inviteeView": "Dəvət olunan şəxsin nə gördüyünə baxın"
     }
   }
 }

@@ -10,6 +10,7 @@ import { engagedOutboundSwitch, HUBS, NODE, OVERVIEWS } from '../_fixtures/hubs.
 import { SETUP_RUNS, sha256 } from '../_fixtures/setup.js';
 import { STAFF, STAFF_PERSONAS } from '../_fixtures/staff.js';
 import { APPROVAL_DECISIONS, APPROVAL_REQUESTS } from '../hubs/[hub]/approvals/_fixtures.js';
+import { STAFF_INVITATIONS } from '../hubs/[hub]/staff/_fixtures.js';
 import { BRAND_CHECKS } from '../hubs/[hub]/hub/identity/_fixtures.js';
 import { LEGAL_DOCUMENTS, OPERATORS } from '../hubs/[hub]/hub/legal/_fixtures.js';
 import { RESIDENCY } from '../hubs/[hub]/hub/residency/_fixtures.js';
@@ -96,6 +97,9 @@ export const fixtureConsolePort: ConsoleDataPort = {
     for (const d of STAFF.definitions) if ((latest.get(d.role)?.version ?? 0) < d.version) latest.set(d.role, d);
     return [...latest.values()].map((d) => ({ role: d.role, version: d.version, scopes: d.scopes }));
   },
+  async staffInvitations(hubId) {
+    return HUBS.some((h) => h.hub.id === hubId) ? STAFF_INVITATIONS.filter((i) => i.scope.kind !== 'hub' || i.scope.hubId === hubId) : null;
+  },
   async overview(hubId) {
     return OVERVIEWS.find((o) => o.hubId === hubId) ?? null;
   },
@@ -143,7 +147,9 @@ export const fixtureConsolePort: ConsoleDataPort = {
       isRestricted,
       product: hub ? productFor(hub.hub.id) : null,
       staff: hub && input.command.startsWith('staff.') ? await this.staff(hub.hub.id, true) : null,
-      catalogue: input.command === 'staff.assign' ? await this.roleCatalogue() : [],
+      catalogue: input.command === 'staff.assign' || input.command === 'staff.invite' ? await this.roleCatalogue() : [],
+      invitations: hub && input.command.startsWith('staff.') ? (await this.staffInvitations(hub.hub.id)) ?? [] : [],
+      decisions: hub ? APPROVAL_DECISIONS.filter((d) => d.hubId === hub.hub.id) : [],
     });
   },
 };

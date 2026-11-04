@@ -140,6 +140,28 @@
       "body": "Las acciones del personal requieren una sesión elevada. Escriba el código de su aplicación de autenticación.",
       "recoveryBody": "Escriba uno de sus códigos de recuperación. Cada código funciona una sola vez.",
       "enrolFirst": "Primero configure la verificación en dos pasos en la configuración de seguridad."
+    },
+    "staffInvitations": {
+      "title": "Invitaciones de personal",
+      "lede": "El equipo de un hub puede invitarle a un rol de personal. Acepte o rechace aquí; nada cambia hasta que quien le invitó lo aplique.",
+      "linkOpen": "Invitaciones de personal ({count})",
+      "empty": "No tiene invitaciones de personal abiertas.",
+      "scopeHub": "Un hub de esta instalación",
+      "answerBy": "Responda antes de",
+      "accept": "Aceptar",
+      "decline": "Rechazar",
+      "secondFactorNeeded": "Para aceptar se necesita la verificación en dos pasos, porque el personal confirma su trabajo con ella. Configúrela primero. Puede rechazar sin ella.",
+      "secondFactorLink": "Configurar la verificación en dos pasos",
+      "secondFactorReady": "La verificación en dos pasos está activada, así que puede aceptar.",
+      "after": "Cuando acepte, quien le invitó aplica el rol. Un rol sensible también necesita una segunda persona.",
+      "demoNote": "Demo: una invitación sintética. Aceptar y rechazar solo funcionan en una instalación conectada.",
+      "result": {
+        "accepted": "Ha aceptado. A continuación, quien le invitó aplica el rol.",
+        "declined": "Ha rechazado esta invitación.",
+        "second_factor": "Configure primero la verificación en dos pasos y después acepte.",
+        "gone": "Esta invitación ya no está abierta.",
+        "failed": "No ha funcionado. Inténtelo de nuevo."
+      }
     }
   }
 }
