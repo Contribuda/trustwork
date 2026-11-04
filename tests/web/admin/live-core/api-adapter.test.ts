@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createApiConsolePort, type ConsoleApi } from '../../../../apps/web/app/admin/_data/api-adapter.js';
+import { invitationStage } from '../../../../apps/web/app/admin/_data/commands.js';
 import { SECTIONS } from '../../../../apps/web/app/admin/_data/sections.js';
 import { HUBS } from '../../../../apps/web/app/admin/_fixtures/hubs.js';
 
@@ -542,4 +543,178 @@ test('staff.revoke: only a role held at this hub, through its own route; node ro
   assert.equal(sent.length, 1);
   const denied = staffPort(['admin.staff.read']);
   assert.equal(((await denied.port.command(live, settings('staff.revoke', { assignmentId: ASSIGNMENT }, null))) as { code: string }).code, 'denied');
+});
+
+/* ---------- HC-150 staff invitations (ADM-004 part 2) ---------- */
+
+const INVITATION = '99999999-9999-4999-8999-999999999991';
+const SENSITIVE = '99999999-9999-4999-8999-999999999992';
+const WAITING = '99999999-9999-4999-8999-999999999993';
+const SOMEONE_ELSES = '99999999-9999-4999-8999-999999999994';
+const NODE_INVITATION = '99999999-9999-4999-8999-999999999995';
+const CLOSED = '99999999-9999-4999-8999-999999999996';
+const LATE = '99999999-9999-4999-8999-999999999997';
+const APPROVAL = '55555555-5555-4555-8555-555555555556';
+const invitation = (overrides: Record<string, unknown> = {}) => ({
+  id: INVITATION, email: 'new-editor@example.invalid', role: 'editor', scope: { kind: 'hub', hubId: HUB_ID }, definitionVersion: 3, validForSeconds: null, sensitive: false, status: 'accepted', expired: false,
+  personId: OTHER, invitedBy: STAFF, reason: 'A second editor', expiresAt: '2026-11-05T09:00:00.000Z', respondedAt: '2026-11-01T09:00:00.000Z', approvalId: null, assignmentId: null, revision: 2, ...overrides,
+});
+const invitationList = [
+  invitation(),
+  invitation({ id: SENSITIVE, email: 'second-compliance@example.invalid', role: 'compliance-officer', definitionVersion: 1, sensitive: true }),
+  invitation({ id: WAITING, status: 'pending', personId: null, respondedAt: null, revision: 1 }),
+  invitation({ id: SOMEONE_ELSES, email: 'other@example.invalid', invitedBy: OTHER, personId: STAFF }),
+  invitation({ id: NODE_INVITATION, scope: { kind: 'node', nodeId: NODE } }),
+  invitation({ id: CLOSED, email: 'closed@example.invalid', status: 'applied', assignmentId: ASSIGNMENT }),
+  invitation({ id: LATE, email: 'late@example.invalid', expired: true }),
+];
+function invitationPort(permissions: string[], answers: Array<{ status: number; code: string | null; body?: unknown }> = [], extra: Routes = {}) {
+  const api = fakeApi(staffRoutes({
+    [`/v1/admin/access?hubId=${HUB_ID}`]: { personId: STAFF, roles: ['hub-owner'], permissions, breakglassOnly: [] },
+    [`/v1/admin/staff/invitations?hubId=${HUB_ID}`]: { invitations: invitationList },
+    '/v1/admin/staff/definitions': { definitions: [
+      { role: 'editor', version: 1, scopes: ['hub'], permissions: ['admin.notifications.read'] }, { role: 'editor', version: 3, scopes: ['hub'], permissions: ['admin.notifications.read'] },
+      { role: 'compliance-officer', version: 2, scopes: ['hub'], permissions: ['admin.audit.read'] }, { role: 'ops-engineer', version: 1, scopes: ['node'], permissions: ['admin.jobs.read'] },
+    ] },
+    ...extra,
+  }));
+  const sent: Sent[] = [];
+  let i = 0;
+  let k = 0;
+  const withPost: ConsoleApi = { get: api.get, async post(path, body, key) { sent.push({ path, body, key }); return answers[i++] ?? { status: 200, code: null, body: { result: { outcome: 'applied' } } }; } };
+  return { sent, port: createApiConsolePort({ api: withPost, siteHost: () => 'sandiego.example.org', engineVersion: '0.1.0', now: () => NOW, newKey: () => `key-${++k}` }) };
+}
+const refusedCode = (o: { status: string; code?: string }) => (o.status === 'rejected' ? o.code : o.status);
+const invite = (fields: Record<string, string>) => settings('staff.invite', fields, null);
+
+test('invitations: read from the API; a refused read is absent, never invented', async () => {
+  const { port: p } = invitationPort(['admin.staff.read']);
+  assert.deepEqual((await p.staffInvitations(HUB_ID))?.map((i) => i.email)[0], 'new-editor@example.invalid');
+  const refused = port(staffRoutes({ [`/v1/admin/staff/invitations?hubId=${HUB_ID}`]: () => { throw new Failure(403); } }));
+  assert.equal(await refused.port.staffInvitations(HUB_ID), null);
+  const hidden = port(staffRoutes());
+  assert.equal(await hidden.port.staffInvitations(HUB_ID), null, 'a not-found hub reads as nothing');
+  await assert.rejects(port(staffRoutes({ [`/v1/admin/staff/invitations?hubId=${HUB_ID}`]: () => { throw new Failure(500); } })).port.staffInvitations(HUB_ID), /API 500/);
+});
+
+test('staff.invite: an address, a hub role from its latest definition and an optional length, through the invitation route', async () => {
+  const { sent, port: p } = invitationPort(['admin.staff.assign', 'admin.staff.read'], [{ status: 201, code: null, body: { invitation: invitationList[0] } }, { status: 201, code: null, body: {} }]);
+  assert.deepEqual(await p.command(live, invite({ email: ' New.Person@Example.invalid ', role: 'editor', validForDays: '' })), { status: 'applied' });
+  assert.equal(sent[0]!.path, '/v1/admin/staff/invitations');
+  assert.deepEqual([sent[0]!.body.email, sent[0]!.body.role, sent[0]!.body.scope, sent[0]!.body.definitionVersion, sent[0]!.body.validForSeconds, sent[0]!.body.reason],
+    ['New.Person@Example.invalid', 'editor', { kind: 'hub', hubId: HUB_ID }, 3, null, 'Synthetic settings change']);
+  assert.equal(sent[0]!.body.idempotencyKey, sent[0]!.key);
+  // A sensitive role is offered through the invitation: the second person comes at apply.
+  assert.deepEqual(await p.command(live, invite({ email: 'owner@example.invalid', role: 'compliance-officer', validForDays: '30' })), { status: 'applied' });
+  assert.deepEqual([sent[1]!.body.role, sent[1]!.body.definitionVersion, sent[1]!.body.validForSeconds], ['compliance-officer', 2, 30 * 86_400]);
+});
+
+test('staff.invite: nothing leaves the console for a bad address, role, length, a duplicate or without the right to assign', async () => {
+  const code = async (fields: Record<string, string>, permissions = ['admin.staff.assign', 'admin.staff.read']) => {
+    const r = invitationPort(permissions);
+    const outcome = await r.port.command(live, invite(fields));
+    assert.deepEqual(r.sent, [], JSON.stringify(fields));
+    return refusedCode(outcome as never);
+  };
+  assert.equal(await code({ email: 'not-an-address', role: 'editor' }), 'invalid');
+  assert.equal(await code({ email: 'a@example.invalid', role: 'hub-owner' }), 'invalid', 'a role without a released definition');
+  assert.equal(await code({ email: 'a@example.invalid', role: 'ops-engineer' }), 'invalid', 'a role not held at a hub');
+  for (const validForDays of ['0', '367', '1.5', 'seven']) assert.equal(await code({ email: 'a@example.invalid', role: 'editor', validForDays }), 'invalid', validForDays);
+  assert.equal(await code({ email: 'NEW-EDITOR@example.invalid', role: 'editor' }), 'invitation_open', 'one open invitation per address and role');
+  assert.equal(await code({ email: 'a@example.invalid', role: 'editor' }, ['admin.staff.read']), 'denied');
+  // An expired or closed invitation no longer blocks a new one.
+  const again = invitationPort(['admin.staff.assign', 'admin.staff.read'], [{ status: 201, code: null, body: {} }, { status: 201, code: null, body: {} }]);
+  assert.deepEqual(await again.port.command(live, invite({ email: 'late@example.invalid', role: 'editor' })), { status: 'applied' });
+  assert.deepEqual(await again.port.command(live, invite({ email: 'closed@example.invalid', role: 'editor' })), { status: 'applied' });
+});
+
+test('staff.invite: the API has the last word; its reasons reach the person in their own words', async () => {
+  const reason = (status: number, code: string, r: string) => ({ status, code, body: { code, details: { reason: r } } });
+  const outcome = async (answer: { status: number; code: string | null; body?: unknown }) => {
+    const { port: p } = invitationPort(['admin.staff.assign', 'admin.staff.read'], [answer]);
+    return refusedCode(await p.command(live, invite({ email: 'a@example.invalid', role: 'editor' })) as never);
+  };
+  assert.equal(await outcome(reason(403, 'access.forbidden', 'self_grant')), 'self_grant', 'only the API knows the inviter\'s own addresses');
+  assert.equal(await outcome(reason(409, 'validation.revision_conflict', 'invitation_open')), 'invitation_open', 'a concurrent invitation');
+  assert.equal(await outcome({ status: 403, code: 'access.forbidden', body: { code: 'access.forbidden' } }), 'denied');
+  assert.equal(await outcome({ status: 404, code: 'access.not_found', body: null }), 'not_found');
+  assert.equal(await outcome({ status: 503, code: null, body: null }), 'invalid');
+});
+
+test('staff.invitation_apply: the inviter applies; a sensitive role answers pending_second_person first and the same call assigns once approved', async () => {
+  const { sent, port: p } = invitationPort(['admin.staff.assign', 'admin.staff.read'], [{ status: 200, code: null, body: { result: { outcome: 'applied' }, invitation: invitationList[0] } }]);
+  assert.deepEqual(await p.command(live, settings('staff.invitation_apply', { invitationId: INVITATION }, null)), { status: 'applied' });
+  assert.equal(sent[0]!.path, `/v1/admin/staff/invitations/${INVITATION}/apply`);
+  assert.deepEqual(Object.keys(sent[0]!.body).sort(), ['contractVersion', 'idempotencyKey', 'reason']);
+
+  const first = invitationPort(['admin.staff.assign', 'admin.staff.read'], [{ status: 200, code: null, body: { result: { outcome: 'pending_second_person' }, invitation: invitationList[1] } }]);
+  assert.deepEqual(await first.port.command(live, settings('staff.invitation_apply', { invitationId: SENSITIVE }, null)), { status: 'pending_second_person', secondPerson: 'staff.assign_sensitive_role' });
+
+  const open = approval({ id: APPROVAL, action: 'staff.assign_sensitive_role', requestedBy: STAFF });
+  const asked = invitation({ id: SENSITIVE, role: 'compliance-officer', sensitive: true, approvalId: APPROVAL });
+  const waiting = invitationPort(['admin.staff.assign', 'admin.staff.read'], [], {
+    [`/v1/admin/staff/invitations?hubId=${HUB_ID}`]: { invitations: [asked] }, [`/v1/admin/approvals?hubId=${HUB_ID}`]: { forMe: [], mine: [open], decided: [] },
+  });
+  assert.equal(refusedCode(await waiting.port.command(live, settings('staff.invitation_apply', { invitationId: SENSITIVE }, null)) as never), 'second_person_pending');
+  assert.deepEqual(waiting.sent, [], 'no second call while a second person decides');
+
+  const approved = invitationPort(['admin.staff.assign', 'admin.staff.read'], [{ status: 200, code: null, body: { result: { outcome: 'applied' } } }], {
+    [`/v1/admin/staff/invitations?hubId=${HUB_ID}`]: { invitations: [asked] },
+    [`/v1/admin/approvals?hubId=${HUB_ID}`]: { forMe: [], mine: [], decided: [approval({ id: APPROVAL, action: 'staff.assign_sensitive_role', requestedBy: STAFF, status: 'approved', approvedBy: OTHER, approvedAt: '2026-11-01T11:00:00.000Z', expiresAt: '2026-11-01T23:00:00.000Z' })] },
+  });
+  assert.deepEqual(await approved.port.command(live, settings('staff.invitation_apply', { invitationId: SENSITIVE }, null)), { status: 'applied' });
+  assert.equal(approved.sent.length, 1);
+});
+
+test('staff.invitation_apply: refused before the API for anyone but the inviter, an unanswered, closed or expired invitation; node invitations are not found here', async () => {
+  const code = async (invitationId: string, permissions = ['admin.staff.assign', 'admin.staff.read']) => {
+    const r = invitationPort(permissions);
+    const outcome = await r.port.command(live, settings('staff.invitation_apply', { invitationId }, null));
+    assert.deepEqual(r.sent, [], invitationId);
+    return refusedCode(outcome as never);
+  };
+  assert.equal(await code(SOMEONE_ELSES), 'not_inviter');
+  assert.equal(await code(WAITING), 'invalid', 'nobody applies what the person has not accepted');
+  assert.equal(await code(CLOSED), 'invitation_closed');
+  assert.equal(await code(LATE), 'invitation_expired');
+  assert.equal(await code(NODE_INVITATION), 'not_found');
+  assert.equal(await code('99999999-9999-4999-8999-000000000000'), 'not_found');
+  assert.equal(await code(INVITATION, ['admin.staff.read']), 'denied');
+  const reason = (status: number, code: string, r: string) => ({ status, code, body: { code, details: { reason: r } } });
+  const refused = async (answer: { status: number; code: string; body: unknown }) => {
+    const { port: p } = invitationPort(['admin.staff.assign', 'admin.staff.read'], [answer]);
+    return refusedCode(await p.command(live, settings('staff.invitation_apply', { invitationId: INVITATION }, null)) as never);
+  };
+  assert.equal(await refused(reason(403, 'access.approval_required', 'not_requester')), 'not_inviter');
+  assert.equal(await refused(reason(403, 'access.approval_required', 'approval_not_approved')), 'second_person_pending');
+  assert.equal(await refused(reason(409, 'validation.revision_conflict', 'invalid_transition')), 'invitation_closed', 'withdrawn in the meantime');
+});
+
+test('staff.invitation_withdraw: any open invitation at this hub through its route; closed ones and other scopes are not', async () => {
+  const { sent, port: p } = invitationPort(['admin.staff.assign', 'admin.staff.read']);
+  assert.deepEqual(await p.command(live, settings('staff.invitation_withdraw', { invitationId: SOMEONE_ELSES }, null)), { status: 'applied' }, 'not only the inviter');
+  assert.equal(sent[0]!.path, `/v1/admin/staff/invitations/${SOMEONE_ELSES}/withdraw`);
+  assert.equal(refusedCode(await p.command(live, settings('staff.invitation_withdraw', { invitationId: CLOSED }, null)) as never), 'invitation_closed');
+  assert.equal(refusedCode(await p.command(live, settings('staff.invitation_withdraw', { invitationId: NODE_INVITATION }, null)) as never), 'not_found');
+  assert.equal(sent.length, 1);
+  const denied = invitationPort(['admin.staff.read']);
+  assert.equal(refusedCode(await denied.port.command(live, settings('staff.invitation_withdraw', { invitationId: INVITATION }, null)) as never), 'denied');
+  assert.deepEqual(denied.sent, []);
+});
+
+test('invitationStage: what the staff screen says about each invitation', () => {
+  const stage = (overrides: Record<string, unknown>, requests: unknown[] = [], decisions: unknown[] = []) => invitationStage(invitation(overrides) as never, requests as never, decisions as never, NOW);
+  assert.equal(stage({ status: 'pending' }), 'response');
+  assert.equal(stage({ status: 'pending', expired: true }), 'expired');
+  assert.equal(stage({ status: 'accepted' }), 'apply');
+  assert.equal(stage({ status: 'accepted', expired: true }), 'expired');
+  for (const status of ['declined', 'applied', 'withdrawn']) assert.equal(stage({ status }), status);
+  const request = { id: APPROVAL, state: 'pending', expiresAt: '2026-11-02T00:00:00.000Z' };
+  assert.equal(stage({ approvalId: APPROVAL }, [request]), 'second_person');
+  assert.equal(stage({ approvalId: APPROVAL }, [{ ...request, expiresAt: '2026-11-01T00:00:00.000Z' }]), 'apply', 'an expired request is asked again');
+  const decided = (expiresAt: string, revokedAt: string | null = null) => ({ requestId: APPROVAL, decision: 'approve', approval: { expiresAt, revokedAt } });
+  assert.equal(stage({ approvalId: APPROVAL }, [], [decided('2026-11-02T00:00:00.000Z')]), 'approved');
+  assert.equal(stage({ approvalId: APPROVAL }, [], [decided('2026-11-01T00:00:00.000Z')]), 'apply', 'an approval that lapsed asks again');
+  assert.equal(stage({ approvalId: APPROVAL }, [], [decided('2026-11-02T00:00:00.000Z', '2026-11-01T01:00:00.000Z')]), 'apply');
+  assert.equal(stage({ approvalId: APPROVAL }), 'apply', 'a declined request asks again');
 });

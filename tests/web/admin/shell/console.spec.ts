@@ -210,6 +210,71 @@ test.describe('hub console in English', () => {
     await expect(page.locator('#change').getByRole('button', { name: 'Save as a new version' })).toBeDisabled();
   });
 
+  test('staff invitations: every state on fixtures; apply is the inviter\'s, a sensitive role names the second person, and nothing is saved', async ({ page }) => {
+    await page.goto(at(`${US}/staff`, 'staff-admin'));
+    await hydrated(page.locator('#invite form'));
+    const list = page.locator('#invitations');
+    const stages = await list.locator('li[data-stage]').evaluateAll((rows) => rows.map((r) => r.getAttribute('data-stage')));
+    expect(stages).toEqual(['response', 'apply', 'apply', 'second_person', 'expired', 'declined']);
+    const invite = page.locator('#invite form');
+    await expect(invite.locator('select[name="f.role"] option', { hasText: 'Hub owner (needs a second person)' })).toHaveCount(1);
+    await invite.getByLabel('E-mail address').fill('new-editor@example.invalid');
+    await invite.locator('select[name="f.role"]').selectOption('editor');
+    await invite.getByLabel('Reason').fill('Synthetic invitation');
+    await invite.getByRole('button', { name: 'Create the invitation' }).click();
+    await expect(invite.locator('.admin-form__result')).toHaveText('This address already has an open invitation to this role.');
+    await invite.getByLabel('E-mail address').fill('someone-new@example.invalid');
+    await invite.getByLabel('Role ends after (days)').fill('367');
+    await invite.getByRole('button', { name: 'Create the invitation' }).click();
+    await expect(invite.locator('.admin-form__result')).not.toHaveText('Demo: changes are not saved.');
+    await invite.getByLabel('Role ends after (days)').fill('30');
+    await invite.getByRole('button', { name: 'Create the invitation' }).click();
+    await expect(invite.locator('.admin-form__result')).toHaveText('Demo: changes are not saved.');
+
+    const apply = async (id: string) => {
+      const row = page.getByTestId(`invitation-${id}`);
+      const disclosure = row.locator('details', { hasText: 'Apply this invitation' });
+      await disclosure.locator('summary').click();
+      await disclosure.getByLabel('Reason').fill('Synthetic apply');
+      await disclosure.getByRole('button', { name: 'Apply', exact: true }).click();
+      return disclosure.locator('.admin-form__result');
+    };
+    await expect(await apply('inv-accepted')).toHaveText('Demo: changes are not saved.');
+    await expect(await apply('inv-sensitive')).toContainText('second-person request');
+    await expect(page.getByTestId('invitation-inv-second-person').locator('details', { hasText: 'Apply this invitation' })).toHaveCount(0);
+    await expect(page.getByTestId('invitation-inv-second-person').getByRole('link', { name: 'Open approvals' })).toBeVisible();
+    await expect(page.getByTestId('invitation-inv-declined').locator('details')).toHaveCount(0);
+    await expect(page.getByTestId('invitation-inv-expired').locator('details')).toHaveCount(0);
+    await page.reload();
+    await expect(list.locator('li[data-stage]')).toHaveCount(6);
+
+    // A reader without the right to assign sees the same list, read only; only the inviter applies.
+    await page.goto(at(`${US}/staff`, 'hub-owner'));
+    await expect(page.locator('#invite form input[name="f.email"]')).toBeDisabled();
+    await expect(page.getByTestId('invitation-inv-accepted')).toContainText('Only the person who invited applies this invitation.');
+    await expect(page.getByTestId('invitation-inv-accepted').locator('details', { hasText: 'Apply this invitation' })).toHaveCount(0);
+    await expect(page.getByTestId('invitation-inv-declined')).not.toContainText('Open until');
+  });
+
+  test('workspace: no invitation section unless asked for; the staff screen opens a labelled synthetic example with disabled controls', async ({ page }) => {
+    await page.goto('/app/settings?persona=mixed');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.locator('#staff-invitations')).toHaveCount(0);
+    await expect(page.getByTestId('staff-invitations-link')).toHaveCount(0);
+    await page.goto(at(`${US}/staff`, 'staff-admin'));
+    await page.getByRole('link', { name: 'See what the invited person sees' }).click();
+    await expect(page).toHaveURL(/invitation=demo#staff-invitations$/);
+    await expect(page.getByTestId('staff-invitations-link')).toBeVisible();
+    const section = page.locator('#staff-invitations');
+    await expect(section.getByRole('heading', { level: 2 })).toHaveText('Staff invitations');
+    await expect(section.getByText('Demo: a synthetic invitation.')).toBeVisible();
+    const card = page.getByTestId('my-invitation-demo-invitation');
+    await expect(card.getByRole('heading', { level: 3 })).toHaveText('Editor');
+    await expect(card.getByRole('button', { name: 'Accept' })).toBeDisabled();
+    await expect(card.getByRole('button', { name: 'Decline' })).toBeDisabled();
+    await axe(page);
+  });
+
   test('scenarios: elevation gate, offline, maintenance, engaged kill switch and the error boundary', async ({ page }) => {
     await page.goto(at(US, 'hub-owner', 'scenario=elevation-required'));
     await expect(page.getByTestId('admin-elevation')).toContainText('Confirm it is you');

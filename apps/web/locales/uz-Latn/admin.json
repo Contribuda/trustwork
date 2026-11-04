@@ -329,7 +329,12 @@
       "preview_missing": "Faollashtirish uchun saqlangan oldindan ko‘rish kerak. Avval uni yarating va tekshiring.",
       "self_grant": "Hech kim oʻziga xodim rolini bermaydi; buni boshqa xodimlar administratori qiladi.",
       "sensitive_role": "Bu rol nozik: u ikkinchi xodim tasdiqlaydigan taklif orqali beriladi.",
-      "role_held": "Bu shaxsda ushbu xabda bu rol allaqachon bor."
+      "role_held": "Bu shaxsda ushbu xabda bu rol allaqachon bor.",
+      "invitation_open": "Bu manzil uchun bu rolga ochiq taklif allaqachon bor.",
+      "invitation_expired": "Bu taklifning muddati tugagan; shaxsni qayta taklif qiling.",
+      "invitation_closed": "Bu taklif allaqachon yopilgan.",
+      "not_inviter": "Bu taklifni faqat taklif qilgan kishi qoʻllaydi.",
+      "second_person_pending": "Ikkinchi xodim hali qaror qilmagan."
     },
     "details": {
       "demo_data_only_before_soft_launch": "namunaviy maʼlumotlarga faqat yumshoq ishga tushirishgacha ruxsat beriladi",
@@ -2347,7 +2352,41 @@
       "role": "Rol",
       "addRoleSubmit": "Rolni qoʻshish",
       "nothingToAdd": "Bu xab xodimlari orasida rol beriladigan boshqa kishi hali yoʻq.",
-      "sensitiveNote": "Nozik rollar ({roles}) ikkinchi xodim tasdiqlaydigan taklif orqali beriladi."
+      "sensitiveNote": "Nozik rollar ({roles}) ikkinchi xodim tasdiqlaydigan taklif orqali beriladi.",
+      "invite": "Kimnidir taklif qilish",
+      "inviteHelp": "Elektron pochta manzilini bu xabdagi bitta rolga taklif qiling. Xat yuborilmaydi: shaxsga oʻz sozlamalarida “Xodim takliflari”ni ochishni ayting. U ikkinchi omil bilan rozi boʻladi, soʻng taklifni siz qoʻllaysiz. Ishlatilmagan taklif yetti kunda tugaydi.",
+      "inviteEmail": "Elektron pochta manzili",
+      "inviteDays": "Rol tugaydi (kundan keyin)",
+      "inviteDaysHelp": "Ixtiyoriy: rol kuchga kirgan kundan boshlab 1 dan 366 kungacha. Tugash muddati boʻlmasa, boʻsh qoldiring.",
+      "inviteSubmit": "Taklifni yaratish",
+      "nothingToInvite": "Xabda egallash mumkin boʻlgan chiqarilgan rol hali yoʻq.",
+      "invitations": "Takliflar",
+      "invitationsEmpty": "Hozircha takliflar yoʻq.",
+      "invitation": {
+        "stage": {
+          "response": "Javob kutilmoqda",
+          "apply": "Qabul qilingan: qoʻllashga tayyor",
+          "second_person": "Ikkinchi xodim kutilmoqda",
+          "approved": "Tasdiqlangan: qoʻllashga tayyor",
+          "expired": "Muddati tugagan",
+          "declined": "Rad etilgan",
+          "applied": "Qoʻllangan",
+          "withdrawn": "Qaytarib olingan"
+        },
+        "sensitiveRole": "{role} (ikkinchi xodim kerak)",
+        "scope": "Qayerda",
+        "length": "Rol muddati",
+        "noEnd": "Tugash sanasisiz",
+        "forHours": "{count, plural, one {# soat} other {# soat}}",
+        "invitedBy": "Taklif qilgan",
+        "openUntil": "Ochiq muddat",
+        "waitingSecondPerson": "Ikkinchi xodim Tasdiqlashlar boʻlimida qaror qiladi; tasdiqlangach, taklifni yana qoʻllang.",
+        "apply": "Bu taklifni qoʻllash",
+        "applySubmit": "Qoʻllash",
+        "withdraw": "Bu taklifni qaytarib olish",
+        "withdrawSubmit": "Qaytarib olish"
+      },
+      "inviteeView": "Taklif qilingan shaxs nimani koʻrishini koʻrish"
     }
   }
 }

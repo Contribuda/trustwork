@@ -14,8 +14,8 @@ import {
 } from '@trustwork/contracts/client';
 import { isRestricted } from '@trustwork/country-packs';
 import { ResidencyConfigPayloadSchema } from '../../../../../packages/contracts/src/hub-core.js';
-import { EffectiveAccessSchema, StaffDirectorySchema } from '../../../../../packages/contracts/src/staff-lifecycle.js';
-import { evaluateCommand, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
+import { EffectiveAccessSchema, StaffDirectorySchema, StaffInvitationViewSchema } from '../../../../../packages/contracts/src/staff-lifecycle.js';
+import { evaluateCommand, invitationSeconds, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { ConsoleRequest } from './personas.js';
 import { OverviewSchema, QUEUE_IDS, ResidencySchema, type Overview, type QueueId, type Residency } from './read-models.js';
@@ -92,6 +92,11 @@ const CommandAnswerSchema = z.object({
   result: z.object({ outcome: z.enum(['applied', 'pending_second_person', 'queued']), objectId: z.string(), revision: z.number().int() }),
   version: z.object({ id: z.string(), revision: z.number().int(), activation: z.object({ secondPersonAction: z.string() }).nullable().optional() }).optional(),
 });
+/** `GET /v1/admin/staff/invitations` and the answer of apply (`applied`, or `pending_second_person` when a second person is asked first). */
+const InvitationsViewSchema = z.object({ invitations: z.array(StaffInvitationViewSchema) });
+const InvitationApplySchema = z.object({ result: z.object({ outcome: z.enum(['applied', 'pending_second_person']) }) });
+/** The machine reason a refusal carries in its envelope (ADM-001 `adminRefusal`). */
+const RefusalSchema = z.object({ details: z.object({ reason: z.string() }) });
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** `GET /v1/admin/hubs/:hubId/legal`: one version per document kind and language, with the counsel approvals. */
 const LegalViewSchema = z.object({
@@ -374,8 +379,8 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
 
   /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
   const LIVE_COMMANDS = new Set<CommandInput['command']>([
-    'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request', 'launch.mark_passed', 'residency.request_change',
-    'legal.draft',
+    'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'staff.invite', 'staff.invitation_apply', 'staff.invitation_withdraw', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request',
+    'launch.mark_passed', 'residency.request_change', 'legal.draft',
   ]);
 
   /** An API refusal as a console reject code (the API decides; the console only words it). */
@@ -388,18 +393,32 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     return as('invalid');
   }
 
+  /** A refused invitation command: the specific reason when the envelope names one the console has words for. */
+  function invitationRefusal(answer: { status: number; code: string | null; body?: unknown }): CommandOutcome {
+    const as = (code: RejectCode): CommandOutcome => ({ status: 'rejected', code, field: null, detail: [] });
+    const reason = RefusalSchema.safeParse(answer.body).data?.details.reason;
+    if (reason === 'invitation_open') return { status: 'rejected', code: 'invitation_open', field: 'email', detail: [] };
+    if (reason === 'self_grant') return { status: 'rejected', code: 'self_grant', field: 'email', detail: [] };
+    if (reason === 'invitation_expired') return as('invitation_expired');
+    if (reason === 'invalid_transition') return as('invitation_closed');
+    if (reason === 'not_requester') return as('not_inviter');
+    if (reason === 'approval_not_approved') return as('second_person_pending');
+    return refusal(answer.status, answer.code);
+  }
+
   async function command(request: ConsoleRequest, input: CommandInput): Promise<CommandOutcome> {
     if (request.demo || !LIVE_COMMANDS.has(input.command) || !api.post) return { status: 'not_found' };
     const v = await viewer(request);
     const hub = v && input.hubSlug ? (await hubs(request)).find((h) => h.hub.slug === input.hubSlug) ?? null : null;
     if (!v || !hub) return { status: 'not_found' };
     const acc = await access(v, { nodeId: hub.hub.nodeId, hubId: hub.hub.id });
-    const { requests, ready, waiting } = await approvals(hub.hub.id, v.person.id);
+    const { requests, decisions, ready, waiting } = await approvals(hub.hub.id, v.person.id);
     const staffCommand = input.command === 'staff.assign' || input.command === 'staff.revoke';
     const staffView = staffCommand ? await port.staff(hub.hub.id, true) : null;
-    const catalogue = input.command === 'staff.assign' ? await port.roleCatalogue() : [];
+    const catalogue = input.command === 'staff.assign' || input.command === 'staff.invite' ? await port.roleCatalogue() : [];
+    const invitations = input.command.startsWith('staff.invit') ? (await port.staffInvitations(hub.hub.id)) ?? [] : [];
     // The same checks as everywhere in the console first (role, elevation, reason, own request, digest); the API repeats them as the authority.
-    const checked = evaluateCommand(input, { viewer: v, access: acc, hub, now: now(), offline: false, requests, documents: [], setup: null, isRestricted, ready, waiting, staff: staffView, catalogue });
+    const checked = evaluateCommand(input, { viewer: v, access: acc, hub, now: now(), offline: false, requests, documents: [], setup: null, isRestricted, ready, waiting, staff: staffView, catalogue, invitations, decisions });
     if (checked.status !== 'demo_not_saved') return checked;
     const f = input.fields;
     const newKey = options.newKey ?? (() => crypto.randomUUID());
@@ -433,6 +452,23 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     }
     if (input.command === 'staff.revoke') {
       return settled(await send(`/v1/admin/staff/assignments/${encodeURIComponent(f.assignmentId ?? '')}/revoke`, {}));
+    }
+    if (input.command === 'staff.invite') {
+      // One role at this hub, from its latest released definition, for an address; the API refuses the inviter's own address.
+      const definition = catalogue.find((d) => d.role === f.role)!;
+      const answer = await send('/v1/admin/staff/invitations', { email: (f.email ?? '').trim(), role: definition.role, scope: { kind: 'hub', hubId: hub.hub.id }, definitionVersion: definition.version,
+        validForSeconds: invitationSeconds(f.validForDays) });
+      return answer.status >= 200 && answer.status < 300 ? { status: 'applied' } : invitationRefusal(answer);
+    }
+    if (input.command === 'staff.invitation_apply') {
+      // The first apply of a sensitive role asks a second person; once approved, the same call assigns the role.
+      const answer = await send(`/v1/admin/staff/invitations/${encodeURIComponent(f.invitationId ?? '')}/apply`, {});
+      if (answer.status < 200 || answer.status >= 300) return invitationRefusal(answer);
+      return InvitationApplySchema.safeParse(answer.body).data?.result.outcome === 'pending_second_person' ? { status: 'pending_second_person', secondPerson: 'staff.assign_sensitive_role' } : { status: 'applied' };
+    }
+    if (input.command === 'staff.invitation_withdraw') {
+      const answer = await send(`/v1/admin/staff/invitations/${encodeURIComponent(f.invitationId ?? '')}/withdraw`, {});
+      return answer.status >= 200 && answer.status < 300 ? { status: 'applied' } : invitationRefusal(answer);
     }
     if (input.command === 'approvals.request_activation') {
       // Activation without an approval by someone other than the drafter: the API opens the second-person request.
@@ -535,6 +571,10 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       const latest = new Map<string, { role: HubStaffRole; version: number; scopes: Array<'platform' | 'node' | 'hub'> }>();
       for (const d of view.data.definitions) if ((latest.get(d.role)?.version ?? 0) < d.version) latest.set(d.role, { role: d.role, version: d.version, scopes: d.scopes });
       return [...latest.values()];
+    },
+    async staffInvitations(hubId) {
+      const view = InvitationsViewSchema.safeParse(await orNothing(api.get(`/v1/admin/staff/invitations?hubId=${encodeURIComponent(hubId)}`)));
+      return view.success ? view.data.invitations : null;
     },
     overview,
     approvals,

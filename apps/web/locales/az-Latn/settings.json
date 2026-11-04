@@ -140,6 +140,28 @@
       "body": "Əməkdaş əməliyyatları üçün yüksəldilmiş seans lazımdır. Autentifikator tətbiqindəki kodu daxil edin.",
       "recoveryBody": "Ehtiyat kodlarınızdan birini daxil edin. Hər kod yalnız bir dəfə işləyir.",
       "enrolFirst": "Əvvəlcə təhlükəsizlik ayarlarında iki mərhələli yoxlamanı aktivləşdirin."
+    },
+    "staffInvitations": {
+      "title": "Heyət dəvətləri",
+      "lede": "Hab komandası sizi heyət roluna dəvət edə bilər. Burada qəbul edin və ya imtina edin; sizi dəvət edən şəxs tətbiq edənədək heç nə dəyişmir.",
+      "linkOpen": "Heyət dəvətləri ({count})",
+      "empty": "Açıq heyət dəvətiniz yoxdur.",
+      "scopeHub": "Bu quraşdırmanın habı",
+      "answerBy": "Cavab müddəti",
+      "accept": "Qəbul et",
+      "decline": "İmtina et",
+      "secondFactorNeeded": "Qəbul etmək üçün iki mərhələli yoxlama lazımdır, çünki heyət işini onunla təsdiqləyir. Əvvəlcə onu qurun. İmtina etmək üçün lazım deyil.",
+      "secondFactorLink": "İki mərhələli yoxlamanı qur",
+      "secondFactorReady": "İki mərhələli yoxlama açıqdır, ona görə qəbul edə bilərsiniz.",
+      "after": "Qəbul etdikdən sonra rolu sizi dəvət edən şəxs tətbiq edir. Həssas rol üçün ikinci şəxs də lazımdır.",
+      "demoNote": "Demo: sintetik dəvət. Qəbul və imtina yalnız qoşulmuş quraşdırmada işləyir.",
+      "result": {
+        "accepted": "Qəbul etdiniz. Növbəti addımda rolu sizi dəvət edən şəxs tətbiq edir.",
+        "declined": "Bu dəvətdən imtina etdiniz.",
+        "second_factor": "Əvvəlcə iki mərhələli yoxlamanı qurun, sonra qəbul edin.",
+        "gone": "Bu dəvət artıq açıq deyil.",
+        "failed": "Alınmadı. Yenidən cəhd edin."
+      }
     }
   }
 }

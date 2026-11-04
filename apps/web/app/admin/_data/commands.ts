@@ -22,12 +22,12 @@ import {
   type RestrictedPredicate,
   type StaffScopeKind,
 } from '@trustwork/contracts/client';
-import type { StaffDirectory } from '../../../../../packages/contracts/src/staff-lifecycle.js';
+import type { StaffDirectory, StaffInvitationView } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import type { ConsoleAccess, StaffViewer } from './port.js';
 // HUBC-005: commands of the agent product, product modules, billing and communications live with their screens.
 import { evaluateProductCommand, isProductCommand, PRODUCT_COMMAND_PERMISSIONS, PRODUCT_COMMANDS, PRODUCT_REJECT_CODES } from '../hubs/[hub]/modules/_kit/commands.js';
 import type { HubProduct } from '../hubs/[hub]/modules/_kit/schemas.js';
-import { LEGAL_DOCUMENT_KINDS, TAXONOMY_KINDS, type ApprovalRequest, type HubRecord, type LegalDocument, type SetupRun } from './schemas.js';
+import { LEGAL_DOCUMENT_KINDS, TAXONOMY_KINDS, type ApprovalDecision, type ApprovalRequest, type HubRecord, type LegalDocument, type SetupRun } from './schemas.js';
 
 /**
  * Console commands (ADM-002): one pure evaluation shared by every adapter. It authorizes (role on the hub, the
@@ -40,7 +40,8 @@ import { LEGAL_DOCUMENT_KINDS, TAXONOMY_KINDS, type ApprovalRequest, type HubRec
 
 export const COMMANDS = [
   'identity.save', 'modes.save', 'lifecycle.request', 'modules.toggle', 'legal.draft', 'legal.request_activation', 'residency.request_change',
-  'country.add_addition', 'taxonomy.add_term', 'launch.mark_passed', 'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'killswitch.engage', 'setup.save',
+  'country.add_addition', 'taxonomy.add_term', 'launch.mark_passed', 'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke',
+  'staff.invite', 'staff.invitation_apply', 'staff.invitation_withdraw', 'killswitch.engage', 'setup.save',
   ...PRODUCT_COMMANDS,
 ] as const;
 export type CommandId = (typeof COMMANDS)[number];
@@ -68,6 +69,9 @@ export const COMMAND_PERMISSIONS: Record<Exclude<CommandId, 'setup.save'>, 'staf
   'approvals.request_activation': 'staff',
   'staff.assign': ['admin.staff.assign'],
   'staff.revoke': ['admin.staff.revoke'],
+  'staff.invite': ['admin.staff.assign'],
+  'staff.invitation_apply': ['admin.staff.assign'],
+  'staff.invitation_withdraw': ['admin.staff.assign'],
   'killswitch.engage': ['admin.providers.kill', 'admin.agents.kill'],
   ...PRODUCT_COMMAND_PERMISSIONS,
 };
@@ -113,6 +117,7 @@ export const REJECT_CODES = [
   'denied', 'elevation_required', 'offline', 'reason_required', 'stale', 'invalid', 'territory_restricted', 'transition_not_allowed', 'gates_open',
   'modes_violation', 'module_requires', 'module_required_by', 'counsel_missing', 'language_missing', 'own_request', 'not_own_request', 'request_void',
   'request_expired', 'digest_mismatch', 'setup_blocked', 'second_factor_required', 'self_grant', 'sensitive_role', 'role_held',
+  'invitation_open', 'invitation_expired', 'invitation_closed', 'not_inviter', 'second_person_pending',
   ...PRODUCT_REJECT_CODES,
 ] as const;
 export type RejectCode = (typeof REJECT_CODES)[number];
@@ -159,6 +164,9 @@ export type CommandContext = {
   /** HC-150: the staff covering the hub (with roles) and the released role catalogue; absent where a caller has none. */
   staff?: StaffDirectory | null;
   catalogue?: ReadonlyArray<{ role: HubStaffRole; version: number; scopes: readonly StaffScopeKind[] }>;
+  /** HC-150: the invitations the viewer may read and the hub's decided second-person requests; absent where a caller has none. */
+  invitations?: readonly StaffInvitationView[];
+  decisions?: readonly ApprovalDecision[];
 };
 
 /** An approved request of the viewer and the change it unlocks: a configuration version or a legal document version. */
@@ -297,6 +305,33 @@ export function requestedProfile(input: CommandInput, hub: HubRecord): HubProfil
   const sameNames = Object.keys(name).length === Object.keys(h.name).length && Object.entries(name).every(([k, v]) => h.name[k] === v);
   const changed = !sameNames || locales.join() !== h.locales.join() || defaultLocale !== h.defaultLocale || timeZone !== h.timeZone || currency !== h.currency;
   return { name, locales, defaultLocale, timeZone, currency, changed };
+}
+
+/**
+ * Where an invitation stands (ADM-004 part 2):
+ * - `response`: the invited person has not answered;
+ * - `apply`: accepted, the inviter applies it next (for a sensitive role that first asks a second person);
+ * - `second_person`: a second person has not decided yet;
+ * - `approved`: approved, the same apply now assigns the role;
+ * - `expired`: nobody acted in time; `declined`, `applied`, `withdrawn`: closed.
+ */
+export type InvitationStage = 'response' | 'apply' | 'second_person' | 'approved' | 'expired' | 'declined' | 'applied' | 'withdrawn';
+
+export function invitationStage(invitation: StaffInvitationView, requests: readonly ApprovalRequest[], decisions: readonly ApprovalDecision[], now: Date): InvitationStage {
+  if (invitation.status !== 'pending' && invitation.status !== 'accepted') return invitation.status;
+  if (invitation.expired) return 'expired';
+  if (invitation.status === 'pending') return 'response';
+  if (!invitation.approvalId) return 'apply';
+  const open = requests.find((r) => r.id === invitation.approvalId && r.state === 'pending');
+  if (open) return Date.parse(open.expiresAt) > now.getTime() ? 'second_person' : 'apply';
+  const decision = decisions.find((d) => d.requestId === invitation.approvalId && d.decision === 'approve');
+  return decision?.approval && decision.approval.revokedAt === null && Date.parse(decision.approval.expiresAt) > now.getTime() ? 'approved' : 'apply';
+}
+
+/** The role's length in seconds for the days typed on the invitation form; null when left empty (no end). */
+export function invitationSeconds(days: string | undefined): number | null {
+  const value = (days ?? '').trim();
+  return value ? Number(value) * 86_400 : null;
 }
 
 /** Evaluates one console command for a viewer on a hub. Pure: no clock, no I/O, no randomness beyond the context. */
@@ -461,6 +496,32 @@ export function evaluateCommand(input: CommandInput, ctx: CommandContext): Comma
       const held = ctx.staff?.entries.flatMap((e) => (e.roles ?? []).map((r) => ({ ...r, personId: e.personId }))).find((r) => r.assignmentId === f.assignmentId);
       if (!held || held.scope.kind !== 'hub' || held.scope.hubId !== hub.hub.id) return NOT_FOUND;
       return accepted();
+    }
+    case 'staff.invite': {
+      // An address, one hub role and an optional length; the API refuses the inviter's own address (only it knows them).
+      const email = (f.email ?? '').trim().toLowerCase();
+      if (email.length < 3 || email.length > 254 || !/^[^@\s]+@[^@\s]+$/.test(email)) return reject('invalid', 'email');
+      const definition = (ctx.catalogue ?? []).find((d) => d.role === f.role);
+      if (!definition || !definition.scopes.includes('hub')) return reject('invalid', 'role');
+      const days = (f.validForDays ?? '').trim();
+      if (days && (!/^[0-9]{1,3}$/.test(days) || Number(days) < 1 || Number(days) > 366)) return reject('invalid', 'validForDays');
+      const open = (ctx.invitations ?? []).some((i) => i.email === email && i.role === definition.role && i.scope.kind === 'hub' && i.scope.hubId === hub.hub.id
+        && (i.status === 'pending' || i.status === 'accepted') && !i.expired);
+      return open ? reject('invitation_open', 'email') : accepted();
+    }
+    case 'staff.invitation_apply':
+    case 'staff.invitation_withdraw': {
+      // Only an invitation to this hub; invitations to the node or the platform are managed in the node console.
+      const item = (ctx.invitations ?? []).find((i) => i.id === f.invitationId);
+      if (!item || item.scope.kind !== 'hub' || item.scope.hubId !== hub.hub.id) return NOT_FOUND;
+      if (item.status !== 'pending' && item.status !== 'accepted') return reject('invitation_closed');
+      if (input.command === 'staff.invitation_withdraw') return accepted();
+      if (item.invitedBy !== viewer.person.id) return reject('not_inviter');
+      const stage = invitationStage(item, ctx.requests, ctx.decisions ?? [], ctx.now);
+      if (stage === 'expired') return reject('invitation_expired');
+      if (stage === 'second_person') return reject('second_person_pending');
+      if (stage === 'response') return reject('invalid', 'invitationId');
+      return accepted(item.sensitive && stage === 'apply' ? 'staff.assign_sensitive_role' : null);
     }
     case 'approvals.withdraw': {
       const request = ctx.requests.find((r) => r.id === f.requestId && r.hubId === hub.hub.id);

@@ -25,6 +25,8 @@ Every route needs a signed-in person whose session is elevated (`ElevationGuard`
 3. **Apply.** The inviter, in an elevated session, turns the accepted invitation into the staff assignment, audited with their elevation. For a sensitive role the first call asks a second person for exactly that assignment (`staff.assign_sensitive_role`, digest over the person, role, scope, definition and validity); the approver differs from the inviter and the invitee; after approval the same call consumes it and assigns.
 4. **Withdraw.** Any open invitation can be withdrawn; an approval it asked for is revoked.
 
+In the console the staff screen (HC-150) offers the invitation, its list, apply and withdraw; the invited person answers in the workspace settings (`/app/settings#staff-invitations`, HUBC-007). The invitation itself is not mailed yet.
+
 The design sketch in the console design (section 4.2) asked for the approval before acceptance. The approval binds the exact assignment digest, which names the person, and an invitation names only an address until it is accepted; so the approval is asked after acceptance, and nothing takes effect before it.
 
 ## Rules
