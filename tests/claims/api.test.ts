@@ -20,10 +20,11 @@ test('CLM-001 claim routes', { skip: h ? false : SKIP_REASON }, async (t) => {
   if (!h) return;
   const world = await claimsWorld(h);
   t.after(async () => { await world.w.close(); await h.close(); });
-  const { w, hubId, otherHubId, reviewer, second, page, claimant, submit, decide, statusOf, roleOf, notices } = world;
+  const { w, hubId, otherHubId, reviewer, second, recipes, page, claimant, submit, decide, decideOnly, freshChecks, bind, statusOf, roleOf, notices } = world;
   const base = world.console;
   const admin = h.db.admin;
   const count = async (sqlText: string, params: unknown[]) => (await admin.query(sqlText, params)).rowCount ?? 0;
+  const cooledClaims = (companyId: string) => withMaintenance(admin, (trx) => trx.updateTable('company_handover').set({ cooling_until: new Date(Date.now() - 60_000), created_at: new Date(Date.now() - 8 * 86_400_000) }).where('company_id', '=', companyId).execute());
 
   await t.test('the API vocabularies equal the database vocabularies', async () => {
     const { rows } = await admin.query<{ def: string }>("SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conrelid = 'trustwork.company_claim'::regclass AND conname IN ('company_claim_level_check', 'company_claim_state_check') ORDER BY conname");
@@ -192,6 +193,74 @@ test('CLM-001 claim routes', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.deepEqual([await statusOf(companyId), await roleOf(challenger.id, companyId)], ['verified', 'administrator']);
     assert.ok((await notices(holder.client)).some((n) => n.params.stage === 'handed_over'));
     assert.ok((await notices(challenger.client)).some((n) => n.params.outcome === 'approved'));
+  });
+
+  await t.test('a page its founder runs is protected like a handed-over one: verified level, waiting period, a notice; the founder does not wait for themselves', async () => {
+    const companyId = await page('Synthetic Founded Builders');
+    const founder = await claimant('Synthetic Founder', 'founder@founded.synthetic.invalid');
+    await withMaintenance(admin, (trx) => trx.insertInto('membership').values({ person_id: founder.id, company_id: companyId, role: 'administrator', permissions: ['company.page.edit', 'company.members.manage'], status: 'active', valid_from: new Date('2026-10-01T09:00:00Z') }).execute());
+    const stranger = await claimant('Synthetic Founder Challenger', 'stranger@elsewhere4.synthetic.invalid');
+    expectRefusal(await submit(stranger.client, companyId, 'claimed'), 422, 'validation.schema', 'verified_level_required');
+    const waiting = ok<{ claim: Claim }>(await submit(stranger.client, companyId, 'verified')).claim;
+    assert.equal(waiting.state, 'waiting');
+    const told = await notices(founder.client);
+    assert.deepEqual(told.map((n) => n.params.stage), ['claim_opened']);
+    assert.ok(!JSON.stringify(told).includes('Challenger'));
+    expectRefusal(await decide(reviewer, waiting), 422, 'validation.schema', 'waiting_period');
+    assert.deepEqual([await statusOf(companyId), await roleOf(stranger.id, companyId), await roleOf(founder.id, companyId)], ['unclaimed', null, 'administrator']);
+    ok(await stranger.client.post(`/v1/claims/${waiting.id}/withdraw`, {}));
+    assert.equal(ok<{ claim: Claim }>(await submit(founder.client, companyId, 'verified')).claim.state, 'open', 'a founder claiming their own page takes nothing from anyone');
+  });
+
+  await t.test('a decision counts only checks bound to this claim and recorded after it was submitted', async () => {
+    const companyId = await page('Synthetic Evidence Builders');
+    const holder = await claimant('Synthetic Evidence Holder', 'holder@evidence.synthetic.invalid');
+    const held = ok<{ claim: Claim }>(await submit(holder.client, companyId, 'verified')).claim;
+    const heldChecks = await freshChecks(companyId, recipes.verified);
+    ok(await bind(reviewer, held.id, heldChecks));
+    ok(await decideOnly(reviewer, held));
+    await cooledClaims(companyId);
+
+    // The outgoing holder's results still pass the company's standing, and prove nothing for a challenger.
+    const challenger = await claimant('Synthetic Evidence Challenger', 'challenger@elsewhere5.synthetic.invalid');
+    const waiting = ok<{ claim: Claim }>(await submit(challenger.client, companyId, 'verified')).claim;
+    await withMaintenance(admin, (trx) => trx.updateTable('company_claim').set({ waiting_until: new Date(Date.now() - 60_000) }).where('id', '=', waiting.id).execute());
+    expectRefusal(await decideOnly(reviewer, waiting), 422, 'validation.schema', 'evidence_required');
+    expectRefusal(await bind(reviewer, waiting.id, heldChecks), 422, 'validation.schema', 'evidence_mismatch');
+    const other = await page('Synthetic Other Evidence Builders');
+    expectRefusal(await bind(reviewer, waiting.id, await freshChecks(other, recipes.verified)), 422, 'validation.schema', 'evidence_mismatch');
+    expectRefusal(await bind(reviewer, waiting.id, await freshChecks(companyId, recipes.claimed)), 422, 'validation.schema', 'evidence_mismatch');
+    assert.equal((await bind(w.clients.moderator, waiting.id, heldChecks)).status, 404);
+    assert.equal((await bind(w.clients.employee, waiting.id, heldChecks)).status, 403);
+    assert.deepEqual([await statusOf(companyId), await roleOf(challenger.id, companyId)], ['verified', null]);
+
+    // Half of the recipe is not enough; the claim's own complete evidence is.
+    const fresh = await freshChecks(companyId, recipes.verified);
+    ok(await bind(reviewer, waiting.id, fresh.slice(0, 1)));
+    expectRefusal(await decideOnly(reviewer, waiting), 422, 'validation.schema', 'evidence_required');
+    ok(await bind(reviewer, waiting.id, fresh));
+    assert.deepEqual(ok<{ claim: { evidence: string[] } }>(await reviewer.get(`${base}/claims/requests/${waiting.id}`)).claim.evidence.sort(), [...fresh].sort());
+    ok(await decideOnly(reviewer, waiting));
+    assert.equal(await roleOf(challenger.id, companyId), 'administrator');
+    expectRefusal(await bind(reviewer, waiting.id, fresh), 409, 'validation.revision_conflict', 'invalid_transition');
+    await assert.rejects(withMaintenance(admin, (trx) => trx.deleteFrom('company_claim_evidence').where('claim_id', '=', waiting.id).execute()), 'the evidence of a decision stays on record');
+  });
+
+  await t.test('a claimant who is also staff reads their own case as a claimant, whatever else they hold', async () => {
+    const companyId = await page('Synthetic Staff Claimant Builders');
+    const rival = await claimant('Synthetic Staff Claimant Rival', 'rival@staffclaimant.synthetic.invalid');
+    const own = ok<{ claim: Claim }>(await submit(second, companyId, 'verified')).claim;
+    const rivalClaim = ok<{ claim: Claim }>(await submit(rival.client, companyId, 'verified')).claim;
+    const mine = ok<{ claim: Record<string, unknown> }>(await second.get(`${base}/claims/requests/${own.id}`)).claim;
+    const listed = ok<{ claims: Array<Record<string, unknown>>; disputes: Array<{ companyId: string }> }>(await second.get(`${base}/claims`));
+    const inList = listed.claims.find((c) => c.id === own.id) as Record<string, unknown>;
+    for (const view of [mine, inList]) for (const hidden of ['decidedBy', 'decisionNote', 'disputeId', 'claimantId', 'domainTieDomain', 'evidence']) assert.ok(!(hidden in view), `${hidden} through the console`);
+    assert.ok(!listed.claims.some((c) => c.id === rivalClaim.id), 'the other claim of the dispute is not listed');
+    assert.ok(!listed.disputes.some((d) => d.companyId === companyId), 'nor the dispute');
+    assert.equal((await second.get(`${base}/claims/requests/${rivalClaim.id}`)).status, 404);
+    assert.ok('disputeId' in ok<{ claim: Record<string, unknown> }>(await reviewer.get(`${base}/claims/requests/${own.id}`)).claim, 'another reviewer sees the whole record');
+    ok(await second.post(`/v1/claims/${own.id}/withdraw`, {}));
+    ok(await rival.client.post(`/v1/claims/${rivalClaim.id}/withdraw`, {}));
   });
 
   await t.test('a holder asking for the verified level does not wait for themselves; the same level is refused', async () => {

@@ -5,7 +5,7 @@ import { Body, Params, Query } from '../../../common/zod.js';
 import { Elevation, ElevationGuard } from '../../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import {
-  ClaimListQuerySchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, HandoverListQuerySchema, ProposeDisputeCommandSchema, RecipeListQuerySchema,
+  BindEvidenceCommandSchema, ClaimListQuerySchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, HandoverListQuerySchema, ProposeDisputeCommandSchema, RecipeListQuerySchema,
   RevokeHandoverCommandSchema, SubmitClaimCommandSchema, WithdrawClaimCommandSchema,
 } from './commands.js';
 import { ClaimsService, type Elevated } from './claims.service.js';
@@ -53,6 +53,11 @@ export class AdminClaimsController {
   @Post('requests/:claimId/decide') @HttpCode(200) @Idempotent('claims.decide', 'claimId')
   decide(@Params(ClaimParams) p: P<typeof ClaimParams>, @Body(DecideClaimCommandSchema) body: P<typeof DecideClaimCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
     return this.service.decide(elevated(state, e, r), p.hubId, p.claimId, body);
+  }
+
+  @Post('requests/:claimId/evidence') @HttpCode(200) @Idempotent('claims.evidence_bind', 'claimId')
+  bindEvidence(@Params(ClaimParams) p: P<typeof ClaimParams>, @Body(BindEvidenceCommandSchema) body: P<typeof BindEvidenceCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.service.bindEvidence(elevated(state, e, r), p.hubId, p.claimId, body);
   }
 
   @Post('disputes/:disputeId/propose') @HttpCode(200) @Idempotent('claims.dispute_propose', 'disputeId')

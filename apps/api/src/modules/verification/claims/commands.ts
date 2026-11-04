@@ -27,6 +27,7 @@ export const DecideClaimCommandSchema = consoleCommand({
 export const ProposeDisputeCommandSchema = consoleCommand({ expectedRevision: Revision, winnerClaimId: Id.nullable(), note: z.string().trim().min(10).max(1000) });
 export const ConfirmDisputeCommandSchema = consoleCommand({ expectedRevision: Revision });
 export const RevokeHandoverCommandSchema = consoleCommand({ revocationReason: z.string().trim().min(10).max(1000) });
+export const BindEvidenceCommandSchema = consoleCommand({ checkIds: z.array(Id).min(1).max(12) });
 export const ClaimSettingsCommandSchema = consoleCommand({ waitingDays: z.int().min(1).max(30), coolingDays: z.int().min(1).max(30) });
 
 export const ClaimListQuerySchema = z.strictObject({ state: z.enum(CLAIM_STATES).optional() });
