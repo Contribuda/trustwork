@@ -44,6 +44,12 @@ export const PublicPriceSchema = z.strictObject({
     creditPack: z.strictObject({ creditMinor: Minor, validityDays: z.int().positive().nullable(), expiryNoticeDays: z.int().positive().nullable(), refundPolicyVersion: z.string().min(1) }).nullable().optional(),
     /** `effectiveTo` above is the effective end; `digest` covers the signed end, kept here so it stays verifiable. */
     supersededBy: z.strictObject({ versionId: Id, at: Timestamp, signedEffectiveTo: Timestamp.nullable() }).nullable().optional(),
+    /** Agent usage price (AGT-004): `amountMinor` is the price of `perUnits` units; no cost field exists here. */
+    metered: z.strictObject({
+      key: z.string().min(1), direction: z.enum(['input', 'output']).nullable(), meter: z.string().min(1),
+      unit: z.enum(['thousand_tokens', 'action', 'deliverable', 'api_call']), perUnits: z.int().positive(),
+      salePerUnitMinor: z.string().regex(/^(0|[1-9][0-9]*)(\.[0-9]{1,6})?$/),
+    }).optional(),
   }).optional(),
 });
 export type PublicPrice = z.infer<typeof PublicPriceSchema>;

@@ -90,6 +90,7 @@ export interface MandateUseTable {
   approved: Generated<boolean>;
   used_at: GeneratedTimestamp;
   voided_at: Timestamp | null;
+  metered_step_id: string | null;
 }
 export interface ParticipantStopTable {
   id: GeneratedUuid;
@@ -283,7 +284,7 @@ export const TABLE_COLUMNS: TableColumns<AssistantDatabase> = {
   mandate_proposal: columns('mandate_proposal', [
     'id', 'principal_person_id', 'mandate_id', 'basis_revision', 'origin_kind', 'origin', 'proposed', 'digest', 'status', 'created_at', 'decided_at', 'decided_by_person_id',
   ]),
-  mandate_use: columns('mandate_use', ['id', 'mandate_id', 'mandate_revision', 'action_intent_id', 'action', 'amount_minor', 'currency', 'approved', 'used_at', 'voided_at']),
+  mandate_use: columns('mandate_use', ['id', 'mandate_id', 'mandate_revision', 'action_intent_id', 'action', 'amount_minor', 'currency', 'approved', 'used_at', 'voided_at', 'metered_step_id']),
   participant_stop: columns('participant_stop', ['id', 'scope_kind', 'person_id', 'state', 'engaged_by', 'engaged_at', 'released_at']),
   run: columns('run', [
     'id', 'principal_person_id', 'mandate_id', 'goal_id', 'kind', 'state', 'checkpoint', 'cost_counters', 'started_at', 'ended_at', 'ended_reason', 'revision', 'created_at', 'updated_at',

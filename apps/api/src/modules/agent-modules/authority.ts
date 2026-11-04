@@ -3,12 +3,12 @@ import { connectionMayInvoke, type AgentCapability, type AgentModuleManifest, ty
 import type { Transaction } from '../../deps/data.js';
 import { ApiError } from '../../common/errors.js';
 import {
-  AgentPolicyDocumentSchema, capabilityRefusal, engineDefaultPolicy, moduleCapabilities, REFUSAL_MESSAGE_KEYS,
+  AgentPolicyDocumentSchema, capabilityRefusal, DEFAULT_PLAN_KEY, engineDefaultPolicy, moduleCapabilities, REFUSAL_MESSAGE_KEYS,
   type AgentPolicyDraft, type AgentPrincipalKind, type CapabilityAvailability, type CapabilityPrincipal, type CapabilityRefusalReason, type ModuleRegistry,
 } from './contracts.js';
 import { agentAuthority, agentPolicies, type DispatchRefusal } from './deps.js';
 import { loadRegistry, ENGINE_MANIFESTS, FreePlanEntitlements, NoExtensions, type EntitlementPort, type ExtensionCatalogPort } from './ports.js';
-import { NON_PURCHASABLE_CAPABILITIES } from './authority-boundaries.js';
+import { NON_PURCHASABLE_CAPABILITIES, PLAN_BLIND_ACTIONS } from './authority-boundaries.js';
 
 /** Who the agent acts for in one check. The surface (interface, agent runtime, MCP) is deliberately not an input. */
 export interface AgentActor {
@@ -95,7 +95,7 @@ export class CapabilityAuthority {
     const company = actor.representativeOf ?? actor.onBehalfCompanyId;
     return {
       kind: kindOf(actor),
-      planKey: await this.entitlements.planKey(trx, { personId: actor.personId, companyId: company }),
+      planKey: await this.entitlements.planKey(trx, { personId: actor.personId, companyId: company }, this.hubId),
       companyVerified: company !== null && await agentAuthority.companyVerified(trx, company),
     };
   }
@@ -111,8 +111,14 @@ export class CapabilityAuthority {
       if (canonical && (action === null || action === canonical.mandateAction)) return this.afterKillSwitches(trx, actor, capabilityId, moduleKey, action ?? canonical.mandateAction);
     }
     const { document } = await this.policy(trx, registry);
-    const policyReason = capabilityRefusal(document, registry, capabilityId, await this.principalOf(trx, actor));
+    const principal = await this.principalOf(trx, actor);
+    const canonicalAction = registry.manifests.flatMap((m) => m.capabilities).find((c) => c.id === capabilityId)?.mandateAction;
+    const planBlind = canonicalAction !== null && canonicalAction !== undefined && PLAN_BLIND_ACTIONS.has(canonicalAction);
+    const policyReason = capabilityRefusal(document, registry, capabilityId, planBlind ? { ...principal, planKey: DEFAULT_PLAN_KEY } : principal);
     if (policyReason !== null) return { allowed: false, capabilityId, moduleKey, reason: policyReason, messageKey: REFUSAL_MESSAGE_KEYS[policyReason], blockedBy: null };
+    if (!planBlind && this.entitlements.moduleAllowed && !await this.entitlements.moduleAllowed(trx, { personId: actor.personId, companyId: actor.representativeOf ?? actor.onBehalfCompanyId }, moduleKey, this.hubId)) {
+      return { allowed: false, capabilityId, moduleKey, reason: 'capability.off_for_plan', messageKey: REFUSAL_MESSAGE_KEYS['capability.off_for_plan'], blockedBy: null };
+    }
     const enabled = document.policy.enabledModules.find((m) => m.moduleKey === moduleKey);
     const capability = enabled ? moduleCapabilities(registry, moduleKey, enabled.moduleVersion, document.policy.activeExtensionVersionIds).find((c) => c.id === capabilityId) : undefined;
     if (!capability || (action !== null && action !== capability.mandateAction)) {

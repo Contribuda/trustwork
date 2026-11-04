@@ -43,7 +43,9 @@ export class FixedExtensions implements ExtensionCatalogPort {
  * capabilities are available; protection limits, ranking, matching and reputation never depend on it.
  */
 export interface EntitlementPort {
-  planKey(trx: Transaction, actor: { personId: string; companyId: string | null }): Promise<string>;
+  planKey(trx: Transaction, actor: { personId: string; companyId: string | null }, hubId?: string | null): Promise<string>;
+  /** False when the hub sells this module, it has no free quota and the plan does not include it. Absent: every module. */
+  moduleAllowed?(trx: Transaction, actor: { personId: string; companyId: string | null }, moduleKey: string, hubId: string): Promise<boolean>;
 }
 /** Default until AGT-004: everyone is on the free plan. */
 export class FreePlanEntitlements implements EntitlementPort {

@@ -64,5 +64,10 @@
     "empty": "Hozircha ishga tushirishlar boʻlmagan",
     "log": "Harakatlar jurnali",
     "outcomeUnknownExplain": "Tashqi tizim javob bermadi. Natijani solishtirmoqdamiz; harakat avtomatik takrorlanmaydi."
+  },
+  "assistant": {
+    "overlay": {
+      "quotaReached": "Agentingiz kiritilgan kvotaga yetib to'xtadi. Davom etish uchun platforma byudjetini ko'rsating yoki keyingi davrni kuting."
+    }
   }
 }

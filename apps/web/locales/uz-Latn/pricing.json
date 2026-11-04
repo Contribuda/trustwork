@@ -202,6 +202,18 @@
         "termsLanguage": "Bu shartlar ushbu tilda e’lon qilinmagan. Ular xab e’lon qilgan tilda ko‘rsatilgan.",
         "none": "Bu xabda tavsiya dasturi yo‘q."
       },
+      "meteredUnit": "{count} × {unit} narxi",
+      "meteredRounding": "Foydalanish aniq qo'shib boriladi va har kalendar oyida bir marta yuqoriga yaxlitlanadi.",
+      "units": {
+        "thousand_tokens": "ming token",
+        "action": "amal",
+        "deliverable": "tayyor natija",
+        "api_call": "API chaqiruvi"
+      },
+      "direction": {
+        "input": "Kirish tokenlari",
+        "output": "Chiqish tokenlari"
+      },
       "perUnits": "{units} × {meter} uchun",
       "creditValue": "Kiritilgan kreditlar: {amount}",
       "creditValidDays": "Kreditlar xarid qilingan kundan boshlab {count} kun amal qiladi",

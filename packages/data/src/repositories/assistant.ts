@@ -67,7 +67,7 @@ export const mandates = {
   async facts(trx: Transaction, mandate: Pick<MandateRow, 'id' | 'revision'>, ceilingCurrency: string | null, windowHours: number | null): Promise<MandateFacts> {
     const { rows } = await sql<{ committed: string | null; in_window: number; approvals: number }>`
       SELECT (SELECT coalesce(sum(amount_minor), 0)::text FROM trustwork.mandate_use WHERE mandate_id = ${mandate.id}::uuid AND voided_at IS NULL AND currency IS NOT DISTINCT FROM ${ceilingCurrency}) AS committed,
-             (SELECT count(*)::int FROM trustwork.mandate_use WHERE mandate_id = ${mandate.id}::uuid AND voided_at IS NULL
+             (SELECT count(*)::int FROM trustwork.mandate_use WHERE mandate_id = ${mandate.id}::uuid AND voided_at IS NULL AND metered_step_id IS NULL
                 AND ${windowHours}::integer IS NOT NULL AND used_at > clock_timestamp() - make_interval(hours => ${windowHours}::integer)) AS in_window,
              (SELECT count(*)::int FROM trustwork.mandate_use WHERE mandate_id = ${mandate.id}::uuid AND mandate_revision = ${mandate.revision}::integer AND approved AND voided_at IS NULL) AS approvals`.execute(trx);
     const row = rows[0];

@@ -202,6 +202,18 @@
         "termsLanguage": "Estas condiciones no están publicadas en este idioma. Se muestran en un idioma publicado por el hub.",
         "none": "Este hub no tiene ningún programa de referidos."
       },
+      "meteredUnit": "Precio por {count} × {unit}",
+      "meteredRounding": "El uso se suma de forma exacta y se redondea al alza una vez por mes natural.",
+      "units": {
+        "thousand_tokens": "mil tokens",
+        "action": "acción",
+        "deliverable": "entregable",
+        "api_call": "llamada a la API"
+      },
+      "direction": {
+        "input": "Tokens de entrada",
+        "output": "Tokens de salida"
+      },
       "perUnits": "Por {units} × {meter}",
       "creditValue": "Créditos incluidos: {amount}",
       "creditValidDays": "Los créditos son válidos durante {count} días desde la compra",

@@ -4263,7 +4263,7 @@
       "id": "AGT-004",
       "title": "Agent metering, quotas, agent plans and usage statistics",
       "area": "billing",
-      "status": "open",
+      "status": "in_review",
       "dependsOn": [
         "AGT-003",
         "BILL-001"

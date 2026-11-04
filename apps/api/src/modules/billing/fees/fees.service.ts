@@ -6,6 +6,7 @@ import type { RequestState } from '../../../common/request.js';
 import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
 import { hubsRefusal } from '../../hubs/errors.js';
+import { publicMeteredPrices } from '../agent-metering/prices.service.js';
 import { billingFees, billingReferrals, billingSalePrices, feePricingReaders, SubscriptionPlanVersionSchema, PublicPriceSchema, PublicPricingSchema, type ActivateFeeSchema, type ActivateReferralSchema, type ActivateSalePriceSchema, type CommandContext, type DraftFeeSchema, type DraftReferralSchema, type DraftSalePriceSchema, type PublicPricing, type WithdrawReferralSchema } from './deps.js';
 
 /** Governed public prices only. Missing modules are unavailable; they are never quoted as free. */
@@ -106,10 +107,12 @@ export class FeesService {
           for (const binding of bindings) {
             const payload = SubscriptionPlanVersionSchema.parse(binding.payload);
             // The immutable draft payload retains its draft status; activation belongs to the row.
-            if (binding.status !== 'active' || !['draft', 'active'].includes(payload.status) || payload.id !== binding.id || payload.version !== binding.version ||
+            const row = rows.find(r => r.id === binding.price_version_id && r.offer_id === binding.offer_id);
+            // AGT-004: a superseded version stays published only for the rest of its own end-dated price interval.
+            if (binding.status === 'superseded' && (!row || row.effective_to === null)) continue;
+            if (!['active', 'superseded'].includes(binding.status) || !['draft', 'active'].includes(payload.status) || payload.id !== binding.id || payload.version !== binding.version ||
               payload.offerId !== binding.offer_id || payload.priceVersionId !== binding.price_version_id || payload.payerKind !== binding.payer_kind ||
               byPrice.has(binding.price_version_id)) throw new Error('Invalid active plan binding');
-            const row = rows.find(r => r.id === binding.price_version_id && r.offer_id === binding.offer_id);
             if (!row) throw new Error('Unavailable active plan price');
             byPrice.set(binding.price_version_id, binding);
           }
@@ -136,6 +139,11 @@ export class FeesService {
         sections[section] = 'available';
       } catch { sections[section] = 'error'; }
     }
+    // AGT-004: agent usage prices. A row is published only with the section that reports it.
+    try {
+      const metered = await publicMeteredPrices(this.ctx.pool, hubId, at);
+      prices.push(...metered.filter(row => sections[row.kind === 'model' ? 'models' : row.kind === 'capability' ? 'capabilities' : 'services'] === 'available'));
+    } catch { sections.models = 'error'; sections.capabilities = 'error'; }
     // A hub closed during the reads must not leave a published sibling section behind.
     if (!await available()) return empty();
     return PublicPricingSchema.parse({ hubId, fees, prices, referrals, unavailable: unavailable(), coverage: { generatedAt: at.toISOString(), sections } });

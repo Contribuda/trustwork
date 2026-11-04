@@ -64,5 +64,10 @@
     "empty": "No runs yet",
     "log": "Action log",
     "outcomeUnknownExplain": "The external system did not answer. We are reconciling the outcome; the action is not retried automatically."
+  },
+  "assistant": {
+    "overlay": {
+      "quotaReached": "Your agent stopped at its included quota. Name a platform budget or wait for the next window to continue."
+    }
   }
 }
