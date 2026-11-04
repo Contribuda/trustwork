@@ -1,6 +1,7 @@
 import { sql, type RawBuilder } from 'kysely';
 import type { Transaction } from '../pool.js';
 import type { ClaimDisputeRow, ClaimLevel, ClaimState, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow, CompanyIdentifierRow, CompanyProfileRow, CompanyVerificationRow } from '../schema/claims.js';
+import type { CompanyCountryCorrection } from '../schema/directory.js';
 import type { CommandContext } from './admin.js';
 import type { PlannedDelivery } from './communications.js';
 import '../schema/claims.js';
@@ -12,7 +13,9 @@ import '../schema/claims.js';
  *   address of the claimant's own verified logins) and withdraw it; read their own claims and hand-overs.
  * - **Staff** with a `CommandContext`: decide a claim against its recipe (`admin.claims.decide`), propose and confirm
  *   a dispute outcome (two different reviewers), revoke a hand-over (`admin.claims.revoke`), set the waiting and
- *   cooling periods (`admin.claims.policy.edit`). Each command writes the admin audit row in the same transaction.
+ *   cooling periods (`admin.claims.policy.edit`), correct a company's country (`admin.claims.authority.decide`). Each
+ *   command writes the admin audit row in the same transaction. Claim review stays inside the hub's territories: the
+ *   database refuses a hub that does not cover the company's country, and a company with no country.
  */
 const ctxJson = (ctx: CommandContext): string => JSON.stringify(ctx);
 
@@ -128,6 +131,14 @@ export const claims = {
   },
   get(trx: Transaction, claimId: string): Promise<CompanyClaimRow | undefined> {
     return trx.selectFrom('company_claim').selectAll().where('id', '=', claimId).executeTakeFirst();
+  },
+  /** The trusted country a reviewer sees on a claim; null on a company older than the rule. */
+  async companyCountry(trx: Transaction, companyId: string): Promise<string | null> {
+    return (await trx.selectFrom('company').select('country_code').where('id', '=', companyId).executeTakeFirst())?.country_code ?? null;
+  },
+  /** `from` restates the country the reviewer saw. Hints: `directory.country_changed`, `directory.outside_territory`, `directory.country_refused`. */
+  correctCompanyCountry(trx: Transaction, ctx: CommandContext, hubId: string, companyId: string, from: string | null, to: string): Promise<CompanyCountryCorrection> {
+    return one(sql<CompanyCountryCorrection>`SELECT * FROM trustwork.directory_correct_company_country(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${companyId}::uuid, ${from}, ${to})`, trx, 'directory_correct_company_country');
   },
   own(trx: Transaction, personId: string): Promise<CompanyClaimRow[]> {
     return trx.selectFrom('company_claim').selectAll().where('claimant_id', '=', personId).orderBy('created_at').execute();

@@ -293,6 +293,8 @@
       "title": "Create a company page",
       "body": "You become its administrator. The page starts as registered: claims and verification are separate steps.",
       "name": "Company name",
+      "country": "Country of registration",
+      "countryHint": "Claims on this page are reviewed by the hub of this country. Only hub staff can correct it later.",
       "handle": "Page address (optional)",
       "handleHint": "3 to 40 lowercase Latin letters, digits and hyphens, for example acme-build.",
       "description": "Public description (optional)",
@@ -306,7 +308,9 @@
         "handleInvalid": "Use 3 to 40 lowercase Latin letters, digits and hyphens; not only digits.",
         "handleTaken": "This address is taken. Choose another one.",
         "handleLimit": "The page address has been changed too many times.",
-        "descriptionTooLong": "The description is too long"
+        "descriptionTooLong": "The description is too long",
+        "countryRequired": "Choose the country where the company is registered",
+        "countryRefused": "This country cannot be chosen. Choose another one."
       }
     },
     "inviteForm": {

@@ -52,6 +52,9 @@ export const SetProfileCommandSchema = z.strictObject({
 });
 export const SourceRecordCommandSchema = consoleCommand({ record: z.discriminatedUnion('kind', [IdentifierRecord, RegistrationRecord]), sourceRef: z.string().trim().min(1).max(200) });
 export const VerifyIdentifierCommandSchema = consoleCommand({ expectedRevision: Revision, checkId: Id });
+const Country = z.string().regex(/^[A-Z]{2}$/);
+/** `fromCountry` restates what the reviewer saw (null for a company older than the rule), so a second correction is not overwritten. */
+export const CorrectCountryCommandSchema = consoleCommand({ fromCountry: Country.nullable(), country: Country });
 
 export const ClaimListQuerySchema = z.strictObject({ state: z.enum(CLAIM_STATES).optional() });
 export const HandoverListQuerySchema = z.strictObject({ companyId: Id.optional() });

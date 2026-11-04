@@ -8,6 +8,10 @@ Status: claims, disputes, hand-overs, the cooling period, per-hub badges with ex
 |---|---|
 | A claim comes from a verified login and names an active company recipe for its level (`claim_claimed` or `claim_verified`) | `claims_submit`, `claims_recipe` |
 | One open claim per page; a second claim opens a dispute and a third waits until it ends | `company_claim_open_uq`, `claims_submit` |
+| A company's country decides which hub reviews it: deciding a claim, re-checking a verification, proposing or confirming a dispute and verifying an identifier are refused for a hub whose territories do not contain the country (`outside_territory`) and for a company with no country (`company_country_missing`), a rejection included. A region or a place of the country is not the country | `claims_require_territory`, `directory_lock_hub_cover` |
+| A company with a country is claimed only at a hub of that country (`company_outside_hub`), so no dispute lands where nobody may decide it. A company with no country may be claimed anywhere and waits for a correction | `claims_submit` |
+| The check and the write do not race: the company row is locked first, so a correction finishes before or after, and the territory row stays locked until the commit, so its removal does too | `claims_decide`, `directory_lock_hub_cover` |
+| A company's country changes only by a staff correction: audited, by a holder of `admin.claims.authority.decide` at a hub covering the old or the new country. Whoever corrected it does not approve a claim on that company or re-check it (`own_country_correction`), so nobody moves a company into their hub and hands it over alone | `directory_correct_company_country`, `directory_company_country_guard`, `claims_refuse_own_correction` |
 | A dispute is decided by two people: one reviewer proposes the outcome, a different reviewer (not a claimant) confirms; nothing is handed over by the dispute itself | `claims_propose_dispute`, `claims_confirm_dispute` |
 | A claim against a page someone else runs (an active administrator or a hand-over, `claims_page_people`) aims at the verified level and waits a hub-set period (default seven days); a holder or founder claiming their own page does not wait for themselves | `claims_submit`, `claims_settings` |
 | The decider is never the claimant; approval needs the recipe standing passed with nothing blocking it (company screening, an unavailable screening store) and the claimant screened clear | `claims_decide` |
@@ -29,7 +33,7 @@ Status: claims, disputes, hand-overs, the cooling period, per-hub badges with ex
 | An identifier is private unless the country pack shows it belongs to a legal entity alone: a `tax`, `vat` or `licence` role, an `appliesTo` that reaches a sole proprietor or a natural person, `other`, an unknown kind, and `US-EIN` until the owner decides. A private value stays out of every public read, verified or not | `identifier-kinds.ts`, `company_identifier.private` |
 | A company administrator states records (status `claimed`); staff record what a source says (`sourced`, with its reference); neither sets a status in a payload. A claimed-level holder edits descriptive fields only | `claims_record_add`, `claims_staff_record_add`, `claims_set_profile` |
 | Tax registrations are private: the company's administrators read them; the public, other members and hub staff do not | `claims_company_records`, `claims_staff_records`, `claims_public_records` |
-| Private records reach staff only for a claim in play or an open support case of the company at that hub; each read is audited, and staff sourcing a record needs the same reason | `claims_staff_reachable`, `claims_staff_records`, `claims_staff_record_add` |
+| Private records reach staff only for an open support case of the company at that hub, or for a claim in play there on a company of a country the hub covers; each read is audited, and staff sourcing a record needs the same reason | `claims_staff_reachable`, `claims_staff_records`, `claims_staff_record_add` |
 | A person who lost their administrator role keeps nothing through a hand-over, at either level; a claimed-level holder who never had the role keeps what that level gives | `claims_holds_page` |
 | Every state change raises its notice in the same transaction, whichever command made it | `claims_claim_notice`, `claims_handover_notice` |
 
@@ -49,7 +53,7 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | Method and path | Permission | Use |
 |---|---|---|
 | `GET /?state=` | any claims permission | Claims, disputes and the hub's periods |
-| `GET /requests/:claimId` | any claims permission | One claim |
+| `GET /requests/:claimId` | any claims permission | One claim, with `companyCountry` (null for a company older than the rule) |
 | `GET /handovers?companyId=` | any claims permission | Hand-overs of the hub or one company |
 | `POST /requests/:claimId/evidence` | `admin.claims.decide` | `{ checkIds }`: binds checks to the claim |
 | `POST /requests/:claimId/decide` | `admin.claims.decide` | `{ expectedRevision, decision, officerMatch, note }` |
@@ -60,6 +64,7 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | `POST /verifications/:verificationId/recheck` | `admin.claims.decide` | `{ recipeId }`, an active recipe of the level |
 | `GET /companies/:companyId/records` | any claims permission, with an open claim or case there | The company's records, without tax registrations; audited (`claims.records_read`) |
 | `POST /companies/:companyId/records` | `admin.claims.decide`, with an open claim or case there | `{ record, sourceRef }`: an identifier or a registration, labelled `sourced` |
+| `POST /companies/:companyId/country` | `admin.claims.authority.decide`, at a hub covering the old or the new country | `{ fromCountry, country }`: `fromCountry` restates what the reviewer saw (`409 country_changed` otherwise); audited as `company.country_corrected` |
 | `POST /identifiers/:identifierId/verify` | `admin.claims.decide` | `{ expectedRevision, checkId }`: ties the identifier to a passing check; moves no badge |
 | `POST /settings` | `admin.claims.policy.edit` | `{ waitingDays, coolingDays }`, each 1 to 30 |
 
@@ -82,7 +87,7 @@ A contractor licence is a `professional_credential` row of REP-001, checked thro
 
 `company_identifier` is the expand step for `company.legal_identifiers`. Existing values were backfilled (`source_ref` `legacy`), a write to the old column reaches the table, and the commands mirror the table back, so its readers keep working. Dropping the column is the contract step: a later reviewed migration once the readers moved, with the backup and restore evidence `docs/data/migration-plan.md` asks for.
 
-Evidence stays in the verification checks of HUB-003 (`/v1/admin/hubs/:hubId/verification`): a reviewer records them there after the claim arrives, then binds them to it. Refusals carry `details.reason` (`waiting_period`, `company_tie_required`, `evidence_required`, `evidence_mismatch`, `standing_not_passed`, `claimant_not_clear`, `own_claim`, and so on).
+Evidence stays in the verification checks of HUB-003 (`/v1/admin/hubs/:hubId/verification`): a reviewer records them there after the claim arrives, then binds them to it. Refusals carry `details.reason` (`waiting_period`, `company_tie_required`, `evidence_required`, `evidence_mismatch`, `standing_not_passed`, `claimant_not_clear`, `own_claim`, `outside_territory`, `company_country_missing`, and so on).
 
 ## Notices (COMMS-001)
 
@@ -94,6 +99,13 @@ Two account templates, so e-mail is never held back by preferences and an unsubs
 | `claims.claim_update` | The claimant or holder | `outcome` (`in_dispute`, `back_in_review`, `approved`, `rejected`, `revoked`, `expired`), `companyName` |
 
 The triggers write the bell notice and plan the e-mail (`expired` comes from the worker, where no person acts, so it stays in the bell). The API renders the hub's active text in the same transaction (`CommunicationsService.deliverPlanned`), so a crash loses neither. Without a text in a language the hub serves the delivery settles as `skipped`, as for every template. The design also asks for a notice in the page's context thread; `company` is not a context kind yet (COMMS-001), so the bell and e-mail carry it for now.
+
+## Limits of the territory rule
+
+- A hub with only region or place territories covers no country, so it reviews no claim until a company has a place finer than its country.
+- `claims_revoke` has no territory check on purpose: the hub that gave a hand-over can always undo it.
+- A dispute already open at a hub that loses the country (a correction, a removed territory) stays open until a claimant withdraws or the territory returns: nobody may decide it there.
+- A correction does not tell the page's people yet: it needs a notice template of its own.
 
 ## Next
 

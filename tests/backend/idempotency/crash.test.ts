@@ -170,8 +170,9 @@ test('exactly-once completion: crash before and after the handler commit, for ev
   await t.test('directory: person handle, company creation, company handle', async () => {
     await exactlyOnce({ action: 'person.set_handle', client: petr, url: '/v1/me/handle', body: { handle: 'petr-exactly-once' }, effects: () => auditCount(h.db.admin, 'person.handle_changed') });
     const name = 'Exactly Once Roofing';
+    await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
     const result = (await exactlyOnce({
-      action: 'company.create', client: xenia, url: '/v1/companies', body: { name, handle: null, publicDescription: null },
+      action: 'company.create', client: xenia, url: '/v1/companies', body: { name, handle: null, publicDescription: null, country: 'US' },
       effects: () => count(h.db.admin, 'SELECT 1 FROM trustwork.company WHERE display_name = $1', [name]),
     })).body as { company: { id: string } };
     assert.equal(await count(h.db.admin, "SELECT 1 FROM trustwork.membership WHERE person_id = $1 AND status = 'active'", [seed.people.xenia]), 1);

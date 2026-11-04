@@ -9,13 +9,13 @@ import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
 import { staffHubFromEnv } from '../../identity/staff-roles.js';
 import type {
-  AddRecordCommandSchema, BindEvidenceCommandSchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RecheckVerificationCommandSchema, RevokeHandoverCommandSchema, SetProfileCommandSchema,
+  AddRecordCommandSchema, BindEvidenceCommandSchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, CorrectCountryCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RecheckVerificationCommandSchema, RevokeHandoverCommandSchema, SetProfileCommandSchema,
   SourceRecordCommandSchema, SubmitClaimCommandSchema, VerifyIdentifierCommandSchema,
 } from './commands.js';
 import { adminAudit, claims, type ClaimState, type CommandContext, type RecordKind, type StaffRole } from './deps.js';
 import { claimsRefusal, isAuthorityRefusal } from './errors.js';
 import { IdentifierKinds } from './identifier-kinds.js';
-import { toBadge, toClaim, toDispute, toHandover, toOwnClaim, toOwnHandover, toOwnVerification, toRecipe, toSettings, toVerification } from './views.js';
+import { toBadge, toClaim, toCountryCorrection, toDispute, toHandover, toOwnClaim, toOwnHandover, toOwnVerification, toRecipe, toSettings, toVerification } from './views.js';
 
 type Body<S extends z.ZodType> = z.infer<S>;
 type Cmd = { idempotencyKey: string; reason: string };
@@ -188,7 +188,7 @@ export class ClaimsService {
       const row = ClaimsService.ofHub(await claims.get(trx, claimId), hubId);
       if (row.claimant_id === p.personId) return { claim: toOwnClaim(row) };
       if (row.dispute_id !== null && (await claims.own(trx, p.personId)).some((c) => c.dispute_id === row.dispute_id)) throw new ApiError('access.not_found', 'access.not_found');
-      return { claim: { ...toClaim(row), evidence: await claims.evidence(trx, claimId) } };
+      return { claim: { ...toClaim(row), companyCountry: await claims.companyCountry(trx, row.company_id), evidence: await claims.evidence(trx, claimId) } };
     });
   }
 
@@ -262,6 +262,12 @@ export class ClaimsService {
     this.checkIdentifier(body.record);
     return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'claims.record_sourced', objectType: 'company', objectId: companyId },
       async (trx, cmd) => ({ record: { kind: body.record.kind, id: await claims.sourceRecord(trx, cmd, hubId, companyId, body.record.kind, this.withPrivacy(body.record), body.sourceRef) } }));
+  }
+
+  /** The only way a company's country changes. The database asks for a hub covering the old or the new country and audits it. */
+  correctCountry(e: Elevated, hubId: string, companyId: string, body: Body<typeof CorrectCountryCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.authority.decide', action: 'company.country_corrected', objectType: 'company', objectId: companyId },
+      async (trx, cmd) => ({ correction: toCountryCorrection(await claims.correctCompanyCountry(trx, cmd, hubId, companyId, body.fromCountry, body.country)) }));
   }
 
   /** The label on the identifier is all that changes: a badge comes only from a claim decision. */

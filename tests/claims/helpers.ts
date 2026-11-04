@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { withMaintenance } from '@trustwork/data';
 import { staffRoleDefinitions } from '../../packages/data/src/repositories/admin.js';
+import { hubs, kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { addLogins, buildHttpWorld, command, signIn, type AdminWorldHttp } from '../admin/helpers.js';
 import { Client, type Harness, type Response } from '../backend/helpers/app.js';
 import { activateBaseline, screen } from '../screening-gates/helpers.js';
@@ -18,13 +19,18 @@ export type Claim = { id: string; state: string; revision: number; domainTie: st
 /**
  * The HTTP world of the claim suites, on the ADM-001 world: the API serves the world's hub, every staff session is
  * elevated, and two people (hubOwner, lead2) are trust reviewers there; `ops` is a trust reviewer of the other hub only,
- * and the moderator is staff here without any claims permission. Register and screening results reach a page through
- * the verification routes and SANC-003's own code path. Every person, company, domain and number is synthetic.
+ * and the moderator is staff here without any claims permission. The hub covers the United States and the other hub
+ * Canada; `lead` is a data steward here and `ops` also one there, the only holders of the permission that corrects a
+ * company's country. Register and screening results reach a page through the verification routes and SANC-003's own
+ * code path. Every person, company, domain and number is synthetic.
  */
 export async function claimsWorld(h: Harness) {
   await withMaintenance(h.db.admin, async (trx) => {
     await staffRoleDefinitions.release(trx, { version: 1, role: 'trust-reviewer', scopes: ['hub'], permissions: [...PERMISSIONS], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced',
       releasedBy: null });
+    await staffRoleDefinitions.release(trx, { version: 1, role: 'data-steward', scopes: ['hub'], permissions: ['admin.claims.authority.decide', 'admin.claims.read'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced',
+      releasedBy: null });
+    await kernelSync.apply(trx, await kernelReference.fromRepository());
   });
   const w: AdminWorldHttp = await buildHttpWorld(h);
   const hubId = w.world.hubId;
@@ -32,6 +38,12 @@ export async function claimsWorld(h: Harness) {
   await w.actors.assign({ personId: w.people.hubOwner, role: 'trust-reviewer', scope: { kind: 'hub', hubId } });
   await w.actors.assign({ personId: w.people.lead2, role: 'trust-reviewer', scope: { kind: 'hub', hubId } });
   await w.actors.assign({ personId: w.people.ops, role: 'trust-reviewer', scope: { kind: 'hub', hubId: otherHubId } });
+  await w.actors.assign({ personId: w.people.ops, role: 'data-steward', scope: { kind: 'hub', hubId: otherHubId } });
+  await w.actors.assign({ personId: w.people.lead, role: 'data-steward', scope: { kind: 'hub', hubId } });
+  await withMaintenance(h.db.admin, async (trx) => {
+    await hubs.addTerritory(trx, { hubId, level: 'country', code: 'US' });
+    await hubs.addTerritory(trx, { hubId: otherHubId, level: 'country', code: 'CA' });
+  });
   await w.elevateAll();
   await activateBaseline(h.db.admin);
   const reviewer = w.clients.hubOwner;
@@ -48,9 +60,9 @@ export async function claimsWorld(h: Harness) {
   const provider = ok<{ provider: { id: string } }>(await command(reviewer, `${console_}/verification/providers`, { checkType: 'register_match', adapter: 'synthetic_claims_register', mode: 'fake', retentionDays: 365,
     legalBasis: 'statutory_public_register', costMinor: null })).provider.id;
 
-  /** A synthetic page that passes both recipes (a register match and clear screening); unclaimed. */
-  const page = async (name: string, domain: string | null = null): Promise<string> => {
-    const id = await withMaintenance(h.db.admin, async (trx) => (await trx.insertInto('company').values({ display_name: name, claim_status: 'unclaimed', verified_domains: domain ? [domain] : [] })
+  /** A synthetic page of the hub's country that passes both recipes (a register match and clear screening); unclaimed. */
+  const page = async (name: string, domain: string | null = null, country: string | null = 'US'): Promise<string> => {
+    const id = await withMaintenance(h.db.admin, async (trx) => (await trx.insertInto('company').values({ display_name: name, claim_status: 'unclaimed', verified_domains: domain ? [domain] : [], country_code: country })
       .returning('id').executeTakeFirstOrThrow()).id);
     await screen(h.db.admin, { kind: 'company', id });
     for (const recipeId of Object.values(recipes)) {

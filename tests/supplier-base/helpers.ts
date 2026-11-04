@@ -44,8 +44,9 @@ export async function grant(admin: DataPool, w: World, person: Person, action: s
 export async function seedWorld(h: Harness, label: string): Promise<World> {
   const passwordHash = await hash(PASSWORD, { memoryCost: 19456, timeCost: 2, parallelism: 1 });
   const w = await withMaintenance(h.db.admin, async (trx) => {
+    await kernelSync.apply(trx, await kernelReference.fromRepository());
     const company = async (name: string, claim: 'claimed' | 'unclaimed', sourced: 'sourced' | 'registered' = 'registered') =>
-      (await trx.insertInto('company').values({ display_name: `${name} ${label}`, claim_status: claim, sourced_status: sourced, public_description: `${name}: synthetic test company` }).returning('id').executeTakeFirstOrThrow()).id;
+      (await trx.insertInto('company').values({ display_name: `${name} ${label}`, claim_status: claim, sourced_status: sourced, public_description: `${name}: synthetic test company`, country_code: sourced === 'sourced' ? 'US' : null }).returning('id').executeTakeFirstOrThrow()).id;
     const buyer = await company('Synthetic Builders', 'claimed');
     const supplier = await company('Synthetic Supply', 'claimed');
     const otherBuyer = await company('Synthetic Elsewhere', 'claimed');

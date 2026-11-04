@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { HUB_CONSOLE_CONTRACT_VERSION } from '@trustwork/contracts';
 import { withMaintenance } from '@trustwork/data';
+import { hubs, kernelReference, kernelSync } from '../../../../packages/data/src/repositories/kernel.js';
 import type { CrashCase } from '../cases.js';
 import type { Client, Response } from '../../helpers/app.js';
 import { count } from '../../hardening/helpers.js';
@@ -11,7 +12,7 @@ import { activateBaseline, screen } from '../../../screening-gates/helpers.js';
 
 /** Test role definition over the console vocabulary (version 28, unused elsewhere), held at this case's own hub. */
 const VERSION = 28;
-const PERMISSIONS = ['admin.claims.read', 'admin.claims.decide', 'admin.claims.policy.edit', 'admin.claims.revoke'];
+const PERMISSIONS = ['admin.claims.read', 'admin.claims.decide', 'admin.claims.policy.edit', 'admin.claims.revoke', 'admin.claims.authority.decide'];
 
 /**
  * CLM-001: every claim route classified in_transaction, through the BE-005 crash sequence. Two claimants submit and
@@ -26,7 +27,9 @@ export default {
     const admin = h.db.admin;
     const hubId = '00000000-0000-4000-8000-00000000c904';
     const seeded = await withMaintenance(admin, async (trx) => {
+      await kernelSync.apply(trx, await kernelReference.fromRepository());
       await trx.insertInto('hub').values({ id: hubId, slug: `synthetic-claims-${randomBytes(2).toString('hex')}`, lifecycle: 'public' }).execute();
+      await hubs.addTerritory(trx, { hubId, level: 'country', code: 'US' });
       await trx.insertInto('staff_role_definition_version').values({ role: 'trust-reviewer', version: VERSION, scopes: ['hub'], permissions: PERMISSIONS, grant_max_hours: 72, sod_mode: 'reduced' })
         .onConflict((oc) => oc.doNothing()).execute();
       const founder = await trx.selectFrom('staff_role_assignment').select('person_id').where('setup_bootstrap', '=', true).where('role', '=', 'platform-owner').executeTakeFirstOrThrow();
@@ -35,7 +38,7 @@ export default {
       for (const id of [people.a, people.b]) {
         await trx.insertInto('staff_role_assignment').values({ person_id: id, role: 'trust-reviewer', scope_kind: 'hub', hub_id: hubId, definition_version: VERSION, granted_by: founder.person_id, reason: 'Synthetic crash test' }).execute();
       }
-      const company = async (name: string) => (await trx.insertInto('company').values({ display_name: name, claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id;
+      const company = async (name: string) => (await trx.insertInto('company').values({ display_name: name, claim_status: 'unclaimed', country_code: 'US' } as never).returning('id').executeTakeFirstOrThrow()).id;
       return { people, single: await company('Synthetic Crash Claimed Builders'), contested: await company('Synthetic Crash Contested Builders'), held: await company('Synthetic Crash Held Builders') };
     });
     const { people, single, contested, held } = seeded;
@@ -92,7 +95,7 @@ export default {
     await run('claims.dispute_confirm', b, `${base}/claims/disputes/${dispute.id}/confirm`, { expectedRevision: proposed.dispute.revision }, audits('claims.dispute_decided', dispute.id));
 
     // Evidence: a check recorded after the claim, bound to it by a reviewer.
-    const boundCompany = await withMaintenance(admin, async (trx) => (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Evidence Builders', claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id);
+    const boundCompany = await withMaintenance(admin, async (trx) => (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Evidence Builders', claim_status: 'unclaimed', country_code: 'US' } as never).returning('id').executeTakeFirstOrThrow()).id);
     const boundClaim = body<{ claim: { id: string } }>(await c1.post('/v1/claims', submission(boundCompany), { idempotencyKey: 'crash-claims.submit_evidence' }));
     const boundProvider = body<{ provider: { id: string } }>(await a.post(`${base}/verification/providers`, cmd('claims.provider_bound', { checkType: 'register_match', adapter: 'synthetic_crash_claims_bound', mode: 'fake',
       retentionDays: 365, legalBasis: 'statutory_public_register', costMinor: null }), { idempotencyKey: 'crash-claims.provider_bound' }));
@@ -113,7 +116,7 @@ export default {
 
     // A re-check: a page that passes the recipe, with the verification a hand-over leaves.
     await activateBaseline(admin);
-    const renewed = await withMaintenance(admin, async (trx) => (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Renewed Builders', claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id);
+    const renewed = await withMaintenance(admin, async (trx) => (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Renewed Builders', claim_status: 'unclaimed', country_code: 'US' } as never).returning('id').executeTakeFirstOrThrow()).id);
     await screen(admin, { kind: 'company', id: renewed });
     await screen(admin, { kind: 'person', id: people.c2 });
     const provider = body<{ provider: { id: string } }>(await a.post(`${base}/verification/providers`, cmd('claims.provider', { checkType: 'register_match', adapter: 'synthetic_crash_claims_register', mode: 'fake',
@@ -131,7 +134,7 @@ export default {
     await withMaintenance(admin, (trx) => trx.updateTable('company_verification').set({ state: 'expired' }).where('id', '=', verificationId).execute());
     // The company's records: an administrator states them, staff source and verify them.
     const records = await withMaintenance(admin, async (trx) => {
-      const id = (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Records Builders', claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id;
+      const id = (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Records Builders', claim_status: 'unclaimed', country_code: 'US' } as never).returning('id').executeTakeFirstOrThrow()).id;
       await trx.insertInto('membership').values({ person_id: people.c1, company_id: id, role: 'administrator', permissions: ['company.members.manage'], status: 'active', valid_from: new Date('2026-10-01T09:00:00Z') }).execute();
       return id;
     });
@@ -148,6 +151,8 @@ export default {
     const check = body<{ check: { id: string } }>(await a.post(`${base}/verification/checks`, cmd('claims.check_records', { subject: { kind: 'company', id: records }, recipeId: claimedRecipe, providerId: provider.provider.id, result: 'pass',
       evidenceRef: 'register:SYN-CRASH-SOS' }), { idempotencyKey: 'crash-claims.check_records' }));
     await run('claims.identifier_verify', a, `${base}/claims/identifiers/${sourced.record.id}/verify`, { expectedRevision: 1, checkId: check.check.id }, audits('claims.identifier_verified', sourced.record.id));
+
+    await run('claims.company_country_correct', a, `${base}/claims/companies/${records}/country`, { fromCountry: 'US', country: 'GB' }, audits('company.country_corrected', records));
 
     await run('claims.verification_recheck', a, `${base}/claims/verifications/${verificationId}/recheck`, { recipeId: claimedRecipe }, () => count(admin, 'SELECT 1 FROM trustwork.company_verification WHERE company_id = $1', [renewed]));
   },

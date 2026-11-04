@@ -84,7 +84,7 @@ test('the API answers through the proxy with its own headers and refuses forged 
   expect(headers['x-frame-options']).toBe('DENY');
   expect(headers['content-security-policy'] ?? '').toMatch(/frame-ancestors 'none'/);
   expect(headers.server).toBeUndefined();
-  const forged = await request.post('/v1/companies', { headers: { Origin: 'https://attacker.example', 'X-Trustwork-Request': '1', 'Idempotency-Key': `gate-${Date.now()}` }, data: { name: 'x', handle: null, publicDescription: null }, failOnStatusCode: false });
+  const forged = await request.post('/v1/companies', { headers: { Origin: 'https://attacker.example', 'X-Trustwork-Request': '1', 'Idempotency-Key': `gate-${Date.now()}` }, data: { name: 'x', handle: null, publicDescription: null, country: 'US' }, failOnStatusCode: false });
   expect(forged.status()).toBe(403);
   expect(((await forged.json()) as { code: string }).code).toBe('auth.csrf_rejected');
   const noHeader = await request.post('/v1/auth/signup', { headers: { Origin: SAME_ORIGIN.Origin }, data: {}, failOnStatusCode: false });

@@ -7,6 +7,6 @@ import type { AccessInventory } from '../inventory.js';
  */
 export default {
   package: 'BE-003',
-  forcedTables: [],
-  apiDefiners: ['directory_public_company_projects', 'directory_public_project_owners'],
+  forcedTables: ['company_country_correction'],
+  apiDefiners: ['directory_correct_company_country', 'directory_public_company_projects', 'directory_public_project_owners'],
 } satisfies AccessInventory;

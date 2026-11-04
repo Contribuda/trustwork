@@ -29,13 +29,14 @@ test('handles: lower-case ASCII groups, 3-40 characters, never numeric, UUID-sha
 });
 
 test('commands are strict: company creation takes name, handle and description only (no status, claim or verification)', () => {
-  assert.equal(d.CreateCompanyCommandSchema.safeParse({ name: 'Fixture Builders', handle: 'fixture-builders', publicDescription: null }).success, true);
-  assert.equal(d.CreateCompanyCommandSchema.safeParse({ name: 'Fixture Builders', handle: null, publicDescription: 'Roofs' }).success, true);
+  assert.equal(d.CreateCompanyCommandSchema.safeParse({ name: 'Fixture Builders', handle: 'fixture-builders', publicDescription: null, country: 'US' }).success, true);
+  assert.equal(d.CreateCompanyCommandSchema.safeParse({ name: 'Fixture Builders', handle: null, publicDescription: 'Roofs', country: 'US' }).success, true);
+  for (const country of [undefined, null, '', 'us', 'USA', 'UA-43']) assert.equal(d.CreateCompanyCommandSchema.safeParse({ name: 'Fixture Builders', handle: null, publicDescription: null, country }).success, false, String(country));
   for (const extra of [{ claimStatus: 'verified' }, { status: 'claimed' }, { verifiedDomains: ['example.invalid'] }, { origin: 'sourced' }, { ownerPersonId: 'p' }]) {
-    const result = d.CreateCompanyCommandSchema.safeParse({ name: 'Fixture Builders', handle: null, publicDescription: null, ...extra });
+    const result = d.CreateCompanyCommandSchema.safeParse({ name: 'Fixture Builders', handle: null, publicDescription: null, country: 'US', ...extra });
     assert.equal(result.success, false, JSON.stringify(extra));
   }
-  assert.equal(d.CreateCompanyCommandSchema.safeParse({ name: 'Fixture Builders', handle: 'admin', publicDescription: null }).success, false);
+  assert.equal(d.CreateCompanyCommandSchema.safeParse({ name: 'Fixture Builders', handle: 'admin', publicDescription: null, country: 'US' }).success, false);
   assert.equal(d.SetHandleCommandSchema.safeParse({ handle: 'new-name', subjectId: 'x' }).success, false);
 });
 

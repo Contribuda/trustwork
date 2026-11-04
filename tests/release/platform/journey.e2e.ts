@@ -81,6 +81,7 @@ test('sign-up, e-mail verification, company, colleague invitation, project publi
     await ready(page);
     await expect(page.getByRole('heading', { name: t('company.create.title') })).toBeVisible();
     await page.getByLabel(t('company.create.name')).fill(companyName);
+    await page.getByLabel(t('company.create.country')).selectOption('US');
     await page.getByLabel(t('company.create.handle')).fill(handle);
     await page.getByLabel(t('company.create.description')).fill(story);
     await shot(page, project, '03-company-create');

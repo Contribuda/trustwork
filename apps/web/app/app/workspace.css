@@ -573,6 +573,44 @@ a.ws-row__title:hover {
   max-width: 560px;
 }
 
+/* A native select with the anatomy of the UI kit's fields: label, control, description, error. */
+.ws-native-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); /* a long option must not widen the field past a phone's width */
+  gap: var(--space-2);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+.ws-native-field label {
+  font-weight: var(--weight-medium);
+}
+
+.ws-native-field__mark,
+.ws-native-field small {
+  color: var(--color-text-muted);
+  font-weight: var(--weight-regular);
+}
+
+.ws-native-field select {
+  width: 100%;
+  min-height: var(--size-control);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.ws-native-field select[aria-invalid='true'] {
+  border-color: var(--color-danger-text);
+}
+
+.ws-native-field small.ws-native-field__error {
+  color: var(--color-danger-text);
+}
+
 .ws-editor__preview {
   position: sticky;
   top: 16px;

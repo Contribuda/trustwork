@@ -293,6 +293,8 @@
       "title": "Crear la página de una empresa",
       "body": "Usted será su administrador. La página empieza como registrada: el reclamo y la verificación son pasos aparte.",
       "name": "Nombre de la empresa",
+      "country": "País de registro",
+      "countryHint": "Los reclamos sobre esta página los revisa el hub de este país. Después solo el personal del hub puede corregirlo.",
       "handle": "Dirección de la página (opcional)",
       "handleHint": "De 3 a 40 letras latinas minúsculas, dígitos y guiones, por ejemplo acme-build.",
       "description": "Descripción pública (opcional)",
@@ -306,7 +308,9 @@
         "handleInvalid": "Use de 3 a 40 letras latinas minúsculas, dígitos y guiones; no solo dígitos.",
         "handleTaken": "Esta dirección ya está en uso. Elija otra.",
         "handleLimit": "La dirección de la página se cambió demasiadas veces.",
-        "descriptionTooLong": "La descripción es demasiado larga"
+        "descriptionTooLong": "La descripción es demasiado larga",
+        "countryRequired": "Elija el país donde está registrada la empresa",
+        "countryRefused": "Este país no se puede elegir. Elija otro."
       }
     },
     "inviteForm": {

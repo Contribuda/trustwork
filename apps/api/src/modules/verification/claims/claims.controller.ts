@@ -5,7 +5,7 @@ import { Body, Params, Query } from '../../../common/zod.js';
 import { Elevation, ElevationGuard } from '../../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import {
-  AddRecordCommandSchema, RECORD_KINDS, RetireRecordCommandSchema, SetProfileCommandSchema, SourceRecordCommandSchema, VerifyIdentifierCommandSchema,
+  AddRecordCommandSchema, CorrectCountryCommandSchema, RECORD_KINDS, RetireRecordCommandSchema, SetProfileCommandSchema, SourceRecordCommandSchema, VerifyIdentifierCommandSchema,
   BindEvidenceCommandSchema, ClaimListQuerySchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, HandoverListQuerySchema, ProposeDisputeCommandSchema, RecheckVerificationCommandSchema, RecipeListQuerySchema,
   RevokeHandoverCommandSchema, SubmitClaimCommandSchema, VerificationListQuerySchema, WithdrawClaimCommandSchema,
 } from './commands.js';
@@ -74,6 +74,11 @@ export class AdminClaimsController {
   @Post('companies/:companyId/records') @HttpCode(201) @Idempotent('claims.record_source', 'companyId')
   sourceRecord(@Params(HubCompanyParams) p: P<typeof HubCompanyParams>, @Body(SourceRecordCommandSchema) body: P<typeof SourceRecordCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
     return this.service.sourceRecord(elevated(state, e, r), p.hubId, p.companyId, body);
+  }
+
+  @Post('companies/:companyId/country') @HttpCode(200) @Idempotent('claims.company_country_correct', 'companyId')
+  correctCountry(@Params(HubCompanyParams) p: P<typeof HubCompanyParams>, @Body(CorrectCountryCommandSchema) body: P<typeof CorrectCountryCommandSchema>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow, @Req() r: TrustworkRequest) {
+    return this.service.correctCountry(elevated(state, e, r), p.hubId, p.companyId, body);
   }
 
   @Post('identifiers/:identifierId/verify') @HttpCode(200) @Idempotent('claims.identifier_verify', 'identifierId')

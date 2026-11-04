@@ -1,4 +1,4 @@
-import type { ClaimDisputeRow, ClaimRecipe, ClaimsSettingsRow, CompanyClaimRow, CompanyHandoverRow, CompanyVerificationRow, PublicBadge } from './deps.js';
+import type { ClaimDisputeRow, ClaimRecipe, ClaimsSettingsRow, CompanyClaimRow, CompanyCountryCorrection, CompanyHandoverRow, CompanyVerificationRow, PublicBadge } from './deps.js';
 
 /**
  * Response projections of the claim routes: camelCase, timestamps as ISO strings. A claimant sees their own claim and
@@ -34,6 +34,9 @@ export const toOwnVerification = (r: CompanyVerificationRow) => ({
 export const toVerification = (r: CompanyVerificationRow) => ({ ...toOwnVerification(r), decidedBy: r.decided_by });
 /** The whole public projection of a badge: level, categories and dates. */
 export const toBadge = (r: PublicBadge) => ({ level: r.level, categories: r.categories, decidedAt: iso(r.decided_at), validUntil: iso(r.valid_until) });
+export const toCountryCorrection = (r: CompanyCountryCorrection) => ({
+  id: r.id, hubId: r.hub_id, companyId: r.company_id, fromCountry: r.from_country, country: r.to_country, correctedBy: r.corrected_by, correctedAt: iso(r.corrected_at),
+});
 export const toSettings = (hubId: string, r: ClaimsSettingsRow | undefined) => ({
   hubId, waitingDays: r?.waiting_days ?? 7, coolingDays: r?.cooling_days ?? 7, revision: r?.revision ?? 0, updatedAt: iso(r?.updated_at ?? null),
 });
