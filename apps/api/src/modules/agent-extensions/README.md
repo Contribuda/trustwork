@@ -11,6 +11,8 @@ Status: **registry implemented, runtime pending.** Staff can draft, test, activa
 | A manifest is a closed vocabulary with no key that can disable a guard rail | `EXTENSION_MANIFEST_KEYS` and `agent_extensions_manifest_keys` (the registry test compares them); any other key at any depth is `guard_rail` |
 | Every action names a mandate kind | `manifestRefusals` and `agent_extensions_check_manifest` (`action_without_mandate_kind`); `read` and `govern` are not extension actions |
 | A confirmation is never weaker than the strongest built-in action of the same mandate kind | `confirmationFloor` and `agent_extensions_confirmation_floor`, read from the engine manifests |
+| A declared side effect fixes the mandate kind | `SIDE_EFFECT_MANDATE_KINDS`: `outbound_message` needs `communicate`, so the action meets that kind's floor and the `outbound_messages` kill switch; a mismatch is `side_effect_needs_mandate_kind` |
+| What leaves is declared | `external_call` needs a non-empty `dataClassesSent` (`data_classes_undeclared`), and each private class needs an egress class that carries it (`PRIVATE_CLASS_EGRESS`, `private_class_not_sent`) |
 | No endpoint in a restricted place | The stated country and region and the country-code domain, at draft and again at activation, through `hubs_place_restricted` (which also reads places the hub added) |
 | An extension's key is its own module key | A mandate covers it only when the person confirmed that key, so no existing mandate is widened; a built-in key is refused (`key_reserved`) |
 | `tested` is the engine's word | Staff ask for a run (`agents.extension_safety_run`); only the worker role records it, under a live job lease, on the fake adapter, for this manifest digest |
@@ -19,6 +21,8 @@ Status: **registry implemented, runtime pending.** Staff can draft, test, activa
 | The egress matrix decides | The hook needs an active route scoped to this extension and a dry run of the call gate for every data class sent; a refusal is `egress_denied` with the gate's reason |
 | A charge has a price | A charged action needs a mandate kind that spends a budget and names a metered price version. It does not activate yet: only billing may read its tables (payment neutrality), and AGT-004 owns the check that the version is active. Until then the hook refuses it (`price_version_unavailable`) |
 | An engine update re-tests | `agents.extension_engine_tick` asks a run for every tested or active version whose passing suite is from another engine; a failure suspends it in the same transaction and fences executing actions |
+| Today's rules bind what is already active | The tick withdraws any tested or active version below today's rules, even with no new engine number; `record_run` fails a manifest the database refuses, whatever the report says; `manifest-holds` compares against the built-ins of the running engine |
+| A dead suite job is not a pass | The tick expires a run whose job is gone or dead, or that passed its deadline (an hour), and suspends the version when its passing suite is from another engine. A version on the current engine keeps its valid suite |
 | Staff never manage one participant's agent | No route names a participant; an audit shows digests and outcomes only |
 
 Lifecycle `draft -> tested -> active -> suspended -> retired`. Suspending needs one person (`admin.agents.extensions.suspend`) because withdrawing an ability is always safe. A suspended version returns to `tested` only with a new passing suite, and to `active` only through a new configuration version.

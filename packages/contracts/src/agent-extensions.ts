@@ -145,6 +145,30 @@ export function unknownManifestKeys(raw: unknown): string[] {
   return [...out].sort();
 }
 
+/* ---------- What a declaration requires ---------- */
+
+/**
+ * The mandate kinds a declared side effect needs; a side effect not listed here needs none in particular. A declaration
+ * decides which kill switches apply and which confirmation floor an action meets, so an action cannot reach a person's
+ * channel under `research` and step around the `outbound_messages` switch and the floor of `communicate`.
+ */
+export const SIDE_EFFECT_MANDATE_KINDS: Readonly<Partial<Record<z.infer<typeof SideEffectSchema>, readonly MandateActionV2[]>>> = {
+  outbound_message: ['communicate'],
+  publication: ['publish', 'maintain_profile'],
+  money_commitment: ['place_order', 'accept_order', 'register', 'release_payment'],
+  reputation_signal: ['record_evidence', 'confirm_execution'],
+};
+/**
+ * The egress classes that can carry each party-private class. The two vocabularies differ: `privateDataClasses` says what
+ * an action touches, `dataClassesSent` what the egress matrix decides on. One of these must be declared as sent.
+ */
+export const PRIVATE_CLASS_EGRESS: Readonly<Record<z.infer<typeof PrivateDataClassSchema>, readonly z.infer<typeof DataClassSchema>[]>> = {
+  negotiation_constraints: ['deal_party_private'],
+  budgets: ['person_private', 'company_private', 'deal_party_private'],
+  private_projects: ['project_restricted'],
+  drafts: ['person_private', 'company_private'],
+};
+
 /* ---------- Confirmation floor ---------- */
 
 const CONFIRMATION_RANK: Readonly<Record<CapabilityConfirmation, number>> = { none: 0, mandate: 1, person_each: 2, person_each_step_up: 3, first_party_form: 4, first_party_step_up: 5 };
@@ -222,7 +246,7 @@ export function extensionModuleManifest(manifest: AgentExtensionManifest, versio
 export const AGENT_EXTENSION_REASONS = [
   // Registration.
   'manifest_invalid', 'guard_rail', 'action_without_mandate_kind', 'action_kind_refused', 'confirmation_below_built_in', 'capability_invalid', 'restricted_endpoint', 'endpoint_undeclared',
-  'key_reserved', 'charge_without_budget',
+  'key_reserved', 'charge_without_budget', 'side_effect_needs_mandate_kind', 'data_classes_undeclared', 'private_class_not_sent',
   // Lifecycle and activation.
   'invalid_transition', 'revision_conflict', 'suite_required', 'suite_stale', 'suite_pending', 'version_not_ready', 'route_missing', 'egress_denied', 'price_version_unavailable',
   'drafter_cannot_approve', 'one_version_per_extension',
@@ -252,6 +276,12 @@ export function manifestConsistencyRefusals(m: AgentExtensionManifest): Extensio
     }
     for (const h of a.endpointHosts) if (!hosts.has(h)) out.push({ code: 'endpoint_undeclared', detail: `${id}:${h}` });
     if (a.dataClassesSent.length > 0 && a.endpointHosts.length === 0) out.push({ code: 'endpoint_undeclared', detail: id });
+    if (a.sideEffects.includes('external_call') && a.dataClassesSent.length === 0) out.push({ code: 'data_classes_undeclared', detail: id });
+    for (const effect of a.sideEffects) {
+      const kinds = SIDE_EFFECT_MANDATE_KINDS[effect];
+      if (kinds && !kinds.includes(a.mandateKind)) out.push({ code: 'side_effect_needs_mandate_kind', detail: `${id}:${effect}` });
+    }
+    for (const c of a.privateDataClasses) if (!PRIVATE_CLASS_EGRESS[c].some((d) => a.dataClassesSent.includes(d))) out.push({ code: 'private_class_not_sent', detail: `${id}:${c}` });
     if (a.sideEffects.includes('external_call') !== (a.endpointHosts.length > 0)) out.push({ code: 'endpoint_undeclared', detail: `${id}:external_call` });
     if (a.cost.kind === 'per_call' && BigInt(a.cost.amount.minorUnits) > 0n && (a.kind !== 'commit' || BUDGET_KIND_BY_ACTION[a.mandateKind] === null)) out.push({ code: 'charge_without_budget', detail: id });
     for (const message of capabilityViolations(extensionActionCapability(m, a, { extensionId: '00000000-0000-4000-8000-000000000000', version: 1 }))) out.push({ code: 'capability_invalid', detail: `${id}:${message}` });

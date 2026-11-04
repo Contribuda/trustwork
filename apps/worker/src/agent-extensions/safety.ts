@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { computeDigest } from '../../../../packages/contracts/src/common/digest.js';
 import {
-  AgentExtensionManifestSchema, extensionCapabilities, ExtensionCallOutputSchema, extensionInputViolations, unknownManifestKeys,
+  AgentExtensionManifestSchema, extensionCapabilities, ExtensionCallOutputSchema, extensionInputViolations, manifestRefusals, unknownManifestKeys,
   type AgentExtensionManifest, type ExtensionAction, type ExtensionCallInput, type ExtensionSafetyReport,
 } from '../../../../packages/contracts/src/agent-extensions.js';
-import { capabilityViolations } from '../../../../packages/contracts/src/agent-catalog.js';
+import { capabilityViolations, type AgentCapability } from '../../../../packages/contracts/src/agent-catalog.js';
 import { installedAdapter, type ExtensionAdapter, type InstalledExtensionAdapter } from './adapters.js';
 
 /**
@@ -94,17 +94,21 @@ function actionScenarios(suite: string, action: ExtensionAction, adapter: Extens
 }
 
 /** Every scenario of one manifest. Without an installed adapter pair the suite is one failing scenario, never an empty pass. */
-export function extensionSafetyScenarios(input: { manifest: AgentExtensionManifest; extensionId: string; adapters: readonly InstalledExtensionAdapter[] }): ExtensionScenario[] {
+export function extensionSafetyScenarios(input: {
+  manifest: AgentExtensionManifest; extensionId: string; adapters: readonly InstalledExtensionAdapter[]; builtIn: readonly Pick<AgentCapability, 'mandateAction' | 'confirmation'>[];
+}): ExtensionScenario[] {
   const { manifest, extensionId } = input;
   const suite = manifest.safetySuite.suiteId;
   const installed = installedAdapter(input.adapters, manifest.adapter);
   const base: ExtensionScenario[] = [
     {
       id: `${suite}.manifest-holds`, kind: 'pure', owasp: ['LLM06', 'ASI02'], title: 'The stored manifest still holds under this engine',
-      defence: 'The manifest passes the current schema and vocabulary, and every action derives a capability that passes the shared invariants, so an engine update that tightens a rule withdraws the extension.',
+      defence: 'The manifest passes the current schema and vocabulary, every action derives a capability that passes the shared invariants, and no confirmation is below the built-ins this engine ships, so an engine update that tightens a rule withdraws the extension.',
       run() {
         AgentExtensionManifestSchema.parse(manifest);
         assert.deepEqual(unknownManifestKeys(manifest), []);
+        // Restricted places need the hub's own list: the database checks them when it records this run.
+        assert.deepEqual(manifestRefusals(manifest, { builtIn: input.builtIn, engineModuleKeys: [], isRestricted: () => false }), []);
         for (const c of extensionCapabilities(manifest, { extensionId, version: 1 })) assert.deepEqual(capabilityViolations(c), [], c.id);
       },
     },
@@ -123,7 +127,7 @@ export function extensionSafetyScenarios(input: { manifest: AgentExtensionManife
 
 /** Runs every scenario; an exception fails that scenario only, so the report shows everything that broke. */
 export async function runExtensionSuite(input: {
-  manifest: AgentExtensionManifest; extensionId: string; manifestDigest: string; engineVersion: string; adapters: readonly InstalledExtensionAdapter[];
+  manifest: AgentExtensionManifest; extensionId: string; manifestDigest: string; engineVersion: string; adapters: readonly InstalledExtensionAdapter[]; builtIn: readonly Pick<AgentCapability, 'mandateAction' | 'confirmation'>[];
 }): Promise<ExtensionSafetyReport> {
   const scenarios: ExtensionSafetyReport['scenarios'] = [];
   for (const s of extensionSafetyScenarios(input)) {

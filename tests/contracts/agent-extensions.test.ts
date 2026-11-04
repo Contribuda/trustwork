@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { capabilityViolations, type AgentCapability } from '../../packages/contracts/src/agent-catalog.js';
 import {
   AGENT_EXTENSION_REASONS, AgentExtensionManifestSchema, AgentExtensionsConfigPayloadSchema, confirmationFloor, DraftExtensionVersionCommandSchema, EXTENSION_MANIFEST_KEYS, extensionActionCapability,
-  extensionAmountCovers, extensionCallRefusal, ExtensionCallOutputSchema, ExtensionCallViewSchema, extensionCapabilities, extensionInputViolations, extensionModuleManifest, extensionModuleVersion,
+  extensionAmountCovers, PRIVATE_CLASS_EGRESS, SIDE_EFFECT_MANDATE_KINDS, extensionCallRefusal, ExtensionCallOutputSchema, ExtensionCallViewSchema, extensionCapabilities, extensionInputViolations, extensionModuleManifest, extensionModuleVersion,
   ExtensionSafetyReportSchema, extensionTransitionAllowed, extensionVersionRef, hostCountry, manifestRefusals, unknownManifestKeys, type AgentExtensionManifest, type ExtensionAction, type ManifestFacts,
 } from '../../packages/contracts/src/agent-extensions.js';
 import { AgentExtensionVersionRefSchema, extensionCapabilityViolations, HUB_CONSOLE_CONTRACT_VERSION, restrictedPlaceViolations } from '../../packages/contracts/src/hub.js';
@@ -90,6 +90,24 @@ test('the manifest vocabulary has no key that could disable a guard rail', () =>
   const used = walkKeys(manifest);
   assert.deepEqual([...used].filter((k) => !(EXTENSION_MANIFEST_KEYS as readonly string[]).includes(k)), []);
   assert.deepEqual([...EXTENSION_MANIFEST_KEYS].filter((k) => !used.has(k)), [], 'the fixture exercises the whole vocabulary');
+});
+
+test('a declared side effect fixes the mandate kind: an outbound message under research is refused', () => {
+  assert.deepEqual(codes(withAction({ sideEffects: ['external_call', 'outbound_message'] })), ['side_effect_needs_mandate_kind']);
+  assert.ok(manifestRefusals(withAction({ sideEffects: ['external_call', 'outbound_message'] }), facts).some((r) => r.detail === 'permit_lookup.lookup_permit:outbound_message'));
+  assert.deepEqual(codes(withAction({ mandateKind: 'communicate', sideEffects: ['external_call', 'outbound_message'] })), [], 'under its own kind');
+  assert.ok(codes(withAction({ sideEffects: ['external_call', 'publication'] })).includes('side_effect_needs_mandate_kind'));
+  assert.ok(codes(withAction({ mandateKind: 'negotiate', sideEffects: ['external_call', 'outbound_message'] })).includes('side_effect_needs_mandate_kind'), 'the rule names communicate, not any talking verb');
+  for (const [effect, kinds] of Object.entries(SIDE_EFFECT_MANDATE_KINDS)) assert.ok(kinds.length > 0, effect);
+});
+
+test('what leaves is declared: an external call states its classes, and a private class is sent as an egress class', () => {
+  assert.deepEqual(codes(withAction({ dataClassesSent: [] })), ['data_classes_undeclared'], 'silence is not public');
+  assert.deepEqual(codes(withAction({ privateDataClasses: ['budgets'], dataClassesSent: ['public'] })).filter((c) => c !== 'capability_invalid'), ['private_class_not_sent']);
+  assert.deepEqual(codes(withAction({ privateDataClasses: ['budgets'], dataClassesSent: ['company_private'] })), []);
+  assert.deepEqual(codes(withAction({ privateDataClasses: ['private_projects'], dataClassesSent: ['company_private'] })), ['private_class_not_sent'], 'a class that cannot carry it');
+  assert.deepEqual(Object.keys(PRIVATE_CLASS_EGRESS).sort(), ['budgets', 'drafts', 'negotiation_constraints', 'private_projects']);
+  for (const classes of Object.values(PRIVATE_CLASS_EGRESS)) assert.ok(!classes.includes('public'), 'public never carries a private class');
 });
 
 test('ACCEPTANCE: a confirmation policy weaker than the built-in action of the same mandate kind is rejected', () => {
