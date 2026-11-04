@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import test from 'node:test';
+import { staffRoleDefinitions } from '../../packages/data/src/repositories/admin.js';
 import { createPool, withMaintenance, withPrincipal } from '@trustwork/data';
 import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
 import { addLogins, signIn } from '../admin/helpers.js';
@@ -185,6 +186,29 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     assert.ok(JSON.stringify(supplier.rfqs).includes(rfq.current_version_id!));
     assert.ok(!JSON.stringify(supplier).includes('PRIVATE-ceiling') && !JSON.stringify(supplier).includes('privateConstraint'));
     assert.ok(!JSON.stringify(supplier).includes(seed.companies.supplier), 'company invitation is outside the personal export');
+  });
+  await t.test('a staff invitation addressed to the person is in their export with the address, never the staff reason, and in nobody else\'s', async () => {
+    const address = 'synthetic-privacy-petr@example.invalid';
+    await withMaintenance(h.db.admin, async (trx) => {
+      await staffRoleDefinitions.release(trx, { version: 301, role: 'moderator', scopes: ['hub'], permissions: ['admin.moderation.read'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+      await trx.insertInto('staff_invitation').values({ scope_kind: 'hub', hub_id: servingHubId, role: 'moderator', definition_version: 301, email_normalized: address, sensitive: false, invited_by: seed.people.anna,
+        reason: 'Synthetic staff-only reason 4412', expires_at: new Date(Date.now() + 86_400_000) } as never).execute();
+      // Answered by someone else while they held the address: it stays theirs, not the address's next holder's.
+      await staffRoleDefinitions.release(trx, { version: 301, role: 'support-agent', scopes: ['hub'], permissions: ['admin.support.case.create'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+      const answered = await trx.insertInto('staff_invitation').values({ scope_kind: 'hub', hub_id: servingHubId, role: 'support-agent', definition_version: 301, email_normalized: address, sensitive: false, invited_by: seed.people.anna,
+        reason: 'Synthetic staff-only reason 4413', expires_at: new Date(Date.now() + 86_400_000) } as never).returning('id').executeTakeFirstOrThrow();
+      await trx.updateTable('staff_invitation').set({ status: 'declined', person_id: seed.people.boris, responded_at: new Date() } as never).where('id', '=', answered.id).execute();
+    });
+    const read = async (client: typeof petr, id: string) => {
+      const created = await client.post('/v1/privacy/exports', { subject: { kind: 'person', id } });
+      const delivered = await client.get(`/v1/privacy/exports/${(created.body as { export: { id: string } }).export.id}`);
+      assert.equal(delivered.status, 200, JSON.stringify(delivered.body));
+      return (delivered.body as { archive: { data: { staffInvitations: Array<{ email_normalized: string; role: string; status: string }> } } }).archive.data.staffInvitations;
+    };
+    const own = await read(petr, seed.people.petr);
+    assert.deepEqual(own.map((i) => [i.email_normalized, i.role, i.status]), [[address, 'moderator', 'pending']]);
+    assert.ok(!JSON.stringify(own).includes('4412'), 'the staff member\'s reason is a staff record');
+    assert.deepEqual((await read(boris, seed.people.boris)).map((i) => [i.role, i.status]), [['support-agent', 'declined']], 'the person who answered keeps it; nobody else\'s invitation is there');
   });
   await t.test('own clean file bytes are authorized and digest checked; counterparty bytes and storage paths stay out', async () => {
     const seedFile = async (personId: string, marker: string) => {

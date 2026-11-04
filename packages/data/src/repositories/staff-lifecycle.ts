@@ -3,7 +3,7 @@ import type { Transaction } from '../pool.js';
 import type { CommandContext, StaffTarget } from './admin.js';
 import type { StaffRoleAssignmentRow } from '../schema/admin.js';
 import type {
-  MyStaffInvitationRow, StaffAccessReviewCampaignRow, StaffAccessReviewItemRow, StaffAccountabilityOfferRow, StaffAccountabilityReadRow, StaffAccountabilityRow, StaffActivationJoinedRow,
+  MyStaffInvitationRow, OwnStaffInvitationRow, StaffAccessReviewCampaignRow, StaffAccessReviewItemRow, StaffAccountabilityOfferRow, StaffAccountabilityReadRow, StaffAccountabilityRow, StaffActivationJoinedRow,
   StaffActivationRow, StaffDirectoryRow, StaffEligibleRoleRow, StaffInvitationRow, StaffOffboardingRow,
 } from '../schema/staff-lifecycle.js';
 import '../schema/staff-lifecycle.js';
@@ -53,6 +53,11 @@ export const staffLifecycle = {
       FROM trustwork.staff_invitation_apply(${ctxJson(ctx)}::jsonb, ${invitationId}::uuid) r`.execute(trx);
     const row = rows[0]!;
     return { invitation: row.invitation, outcome: row.outcome };
+  },
+  /** Every invitation addressed to the caller's verified addresses or accepted by them, for their subject export. */
+  async ownInvitations(trx: Transaction): Promise<OwnStaffInvitationRow[]> {
+    const { rows } = await sql<OwnStaffInvitationRow>`SELECT * FROM trustwork.staff_invitations_of_self()`.execute(trx);
+    return rows;
   },
   async withdraw(trx: Transaction, ctx: CommandContext, invitationId: string): Promise<StaffInvitationRow> {
     const { rows } = await sql<StaffInvitationRow>`SELECT * FROM trustwork.staff_invitation_withdraw(${ctxJson(ctx)}::jsonb, ${invitationId}::uuid)`.execute(trx);

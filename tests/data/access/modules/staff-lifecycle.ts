@@ -9,7 +9,7 @@ export default {
   forcedTables: ['staff_invitation', 'staff_eligible_role', 'staff_activation', 'staff_access_review_campaign', 'staff_access_review_item', 'staff_accountability', 'staff_accountability_offer', 'staff_offboarding'],
   apiDefiners: [
     'staff_require_hub_staff', 'staff_directory', 'staff_effective_assignments',
-    'staff_invite', 'staff_invitation_respond', 'staff_invitation_apply', 'staff_invitation_withdraw', 'staff_my_invitations',
+    'staff_invite', 'staff_invitation_respond', 'staff_invitation_apply', 'staff_invitation_withdraw', 'staff_my_invitations', 'staff_invitations_of_self',
     'staff_grant_eligible_role', 'staff_revoke_eligible_role', 'staff_activation_request', 'staff_activation_decide', 'staff_activation_end',
     'staff_access_review_open', 'staff_access_review_decide', 'staff_access_review_withdraw',
     'staff_accountability_assign', 'staff_accountability_end', 'staff_accountability_resume', 'staff_accountability_offer', 'staff_accountability_respond', 'staff_accountabilities',

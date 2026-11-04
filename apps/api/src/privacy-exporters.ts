@@ -4,6 +4,7 @@ import { NoFileMandates } from './modules/files/mandates.js';
 import { withOwnPrivacyFile } from './modules/files/privacy-export.js';
 import type { FilesModuleOptions } from './modules/files/config.js';
 import { sql } from 'kysely';
+import { staffLifecycle } from '../../../packages/data/src/repositories/staff-lifecycle.js';
 import { composeModuleExports, type PrivacyOwningPorts } from './privacy-module-exporters.js';
 import { PRIVACY_MODULE_INVENTORY } from '../../../packages/contracts/src/privacy.js';
 import type { Principal } from './deps/contracts.js';
@@ -47,7 +48,7 @@ const MODULE_COVERAGE = [
   { module: 'files', status: 'partial', includes: 'own authorized metadata and clean local bytes with digest checks; authenticated bounded streams include all clean local file sizes; external storage remains explicit' },
   { module: 'identity', status: 'partial', includes: 'person, emails, provider identities, memberships and all session views without token hashes; account-change history pending' },
   { module: 'plans', status: 'partial', includes: 'owner plans, all versions/states/changes/timing/shares/locations/permits/diary plus currently addressed shared-item projections; revoked private shares excluded' },
-  { module: 'privacy', status: 'supported', includes: 'own request and preference records' },
+  { module: 'privacy', status: 'supported', includes: 'own request and preference records; staff invitations addressed to the person, with the address' },
   { module: 'procurement', status: 'partial', includes: 'own needs, all RFQ versions and invitations; personal supplier invitations and pinned shared RFQ versions; company invitation history pending' },
   { module: 'profiles', status: 'supported', includes: 'owner profile, consents, licences, portraits, experience, preferences, follows, bookmarks and reading progress' },
   { module: 'projects', status: 'partial', includes: 'owned and currently participating project projections; ownership-transfer and participation history pending' },
@@ -119,6 +120,8 @@ export async function composeExport(ctx: AppContext, identity: IdentityServices,
       rfqs: await mapSequential([...new Set(invitations.invitations.map((i) => i.rfq.id))], (id) => procurement.getRfq(id, readState)),
     };
   }
+  // An invitation names the person by address; it is theirs to see, under their own authority (the staff reason is not).
+  if (subject.kind === 'person') data.staffInvitations = await staffLifecycle.ownInvitations(trx);
   data.sales = await mapSequential(quoteRows, (r) => sales.getQuote(r.id, readState));
   // Task and consultation agreements belong to their own projections; the commerce reader deliberately rejects them.
   const commerceAgreementRows = agreementRows.length ? await trx.selectFrom('agreement').select('id').where('id', 'in', agreementRows.map((r) => r.id))
