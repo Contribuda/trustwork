@@ -160,7 +160,11 @@
         "input_invalid": "Chaqiruv bu amal koʻrsatgan kiritmalarga mos emas.",
         "amount_below_cost": "Summa bu amalning narxini qoplamaydi.",
         "output_refused": "Kengaytma javobi shartnomasiga mos kelmadi va bekor qilindi.",
-        "adapter_unavailable": "Bu kengaytma adapteri ushbu ulanish uchun oʻrnatilmagan."
+        "adapter_unavailable": "Bu kengaytma adapteri ushbu ulanish uchun oʻrnatilmagan.",
+        "side_effect_needs_mandate_kind": "Koʻrsatilgan taʼsir boshqa mandat turini talab qiladi.",
+        "data_classes_undeclared": "Tashqi chaqiruv yuboradigan maʼlumot sinflarini koʻrsatishi kerak.",
+        "private_class_not_sent": "Maxfiy maʼlumot sinfi yuboriladigan sinflar orasida koʻrsatilmagan.",
+        "extension_not_confirmed": "Bu mandat ushbu kengaytmaning shu hubdagi imkoniyatlari uchun tasdiqlanmagan. Yangisini tasdiqlang."
       }
     }
   }

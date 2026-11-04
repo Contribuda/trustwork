@@ -551,6 +551,8 @@ export class AssistantService {
     if ((bound as { source?: { kind?: string } }).source?.kind === 'extension') {
       const extension = await agentExtensions.action<ExtensionAction>(trx, provenance.hub_id, call.capabilityId);
       if (!extension) return deny('capability.unknown');
+      // A mandate names a key; the person confirmed this hub's authority under it, or the call does not run.
+      if (!(await agentExtensions.mandateCovers(trx, row.id, provenance.hub_id, call.capabilityId))) return deny('extension_not_confirmed');
       const refused = extensionCallRefusal(extension.action, { amount: call.amount, payload: call.effect.payload });
       if (refused) return deny(refused);
       effect = { ...call.effect, extensionVersion: { id: extension.versionId, manifestDigest: extension.manifestDigest } };

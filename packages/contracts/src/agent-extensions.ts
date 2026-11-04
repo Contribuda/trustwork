@@ -18,8 +18,10 @@ import { DataClassSchema } from './retrieval.js';
  *
  * An extension is one more ability of the participant's agent, never a separate agent:
  *
- * - its key is its own module key, so a mandate covers it only when the person confirmed that key: no existing mandate
- *   and no extension version can widen what a person already confirmed;
+ * - its key is its own module key, and a key alone is not enough: each first-party confirmation records the authority of
+ *   the version active in that hub (`agent_extensions_authority_digest`: the manifest without its titles). A version that
+ *   adds an endpoint, a data class or an action, or the same key in another hub, needs a new confirmation; a new wording
+ *   does not;
  * - every action names a mandate kind, and each action is an AGT-002 capability with an `extension` source, so
  *   `capabilityViolations`, the shared authority check, the mandate policy, the budget reservation, approvals and the
  *   kill switches apply to it exactly as to a built-in action;
@@ -251,7 +253,7 @@ export const AGENT_EXTENSION_REASONS = [
   'invalid_transition', 'revision_conflict', 'suite_required', 'suite_stale', 'suite_pending', 'version_not_ready', 'route_missing', 'egress_denied', 'price_version_unavailable',
   'drafter_cannot_approve', 'one_version_per_extension',
   // A call.
-  'extension_inactive', 'extension_killed', 'version_changed', 'input_invalid', 'amount_below_cost', 'output_refused', 'adapter_unavailable',
+  'extension_inactive', 'extension_killed', 'version_changed', 'extension_not_confirmed', 'input_invalid', 'amount_below_cost', 'output_refused', 'adapter_unavailable',
 ] as const;
 export const AgentExtensionReasonSchema = z.enum(AGENT_EXTENSION_REASONS);
 export type AgentExtensionReason = z.infer<typeof AgentExtensionReasonSchema>;
