@@ -400,15 +400,18 @@ export const StartOffboardingCommandSchema = consoleCommand({
 });
 const Suggested = z.array(z.strictObject({ personId: IdSchema, displayName: z.string() }));
 /**
- * What completing the offboarding revokes, what blocks it, and the open work to hand to someone else, each with people
- * suggested by role (never by workload). Admin clients are listed for completeness: no admin-client table exists yet.
+ * What completing the offboarding ends (roles, eligible roles, activations, approval requests, open invitations, admin
+ * MCP connections), what blocks it, and the open work to hand to someone else, each with people suggested by role (never
+ * by workload).
  */
 export const OffboardingChecklistSchema = z.strictObject({
   roles: z.array(z.strictObject({ assignmentId: IdSchema, role: HubStaffRoleSchema, scope: StaffScopeSchema, breakglass: z.boolean() })),
   eligibleRoles: z.array(z.strictObject({ eligibleRoleId: IdSchema, role: HubStaffRoleSchema, scope: StaffScopeSchema })),
   activations: z.array(z.strictObject({ activationId: IdSchema, role: HubStaffRoleSchema, status: z.enum(['pending', 'active']) })),
   approvalRequests: z.array(z.strictObject({ approvalId: IdSchema, action: z.string(), status: z.enum(['pending', 'approved']) })),
-  adminClients: z.array(z.never()),
+  invitations: z.array(z.strictObject({ invitationId: IdSchema, role: HubStaffRoleSchema, scope: StaffScopeSchema, status: z.enum(['pending', 'accepted']) })),
+  /** The person's admin MCP connections (MCP-002, `surface: admin`); completion revokes them with their tokens and consents. */
+  adminClients: z.array(z.strictObject({ connectionId: IdSchema, clientId: z.string(), status: z.enum(['active', 'suspended']), hubId: IdSchema.nullable() })),
   accountabilities: z.array(z.strictObject({
     accountabilityId: IdSchema, hubId: IdSchema, functionKey: HubFunctionKeySchema, kind: AccountabilityKindSchema, agentRoleKey: AgentRoleKey.nullable(),
     status: AccountabilityStatusSchema, requiredRole: HubStaffRoleSchema.nullable(),

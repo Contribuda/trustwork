@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
+import { sql } from 'kysely';
 import { createPool, type DataPool } from '@trustwork/data';
 import { staffAssignments, supportCases, type CommandContext } from '../../../packages/data/src/repositories/admin.js';
 import { staffLifecycle } from '../../../packages/data/src/repositories/staff-lifecycle.js';
@@ -145,11 +146,30 @@ test('function accountability and offboarding (ADM-004 part 5)', { skip: db ? fa
     const supportCase = await as(p.customer, (trx) => supportCases.openOwn(trx, { hubId: w.hubId, category: 'account_access', summary: 'Synthetic: cannot open my project' }));
     await as(p.lead2, async (trx) => supportCases.update(trx, await elevate(p.lead2), supportCase.id, { assignedTo: p.lead }));
     await as(p.hubOwner, async (trx) => staffLifecycle.openAccessReview(trx, await elevate(p.hubOwner), { scope: hub, title: 'Synthetic review', roles: ['support-lead'], dueInSeconds: 30 * 86_400 }));
+    // A running activation of the eligible role, an accepted invitation to another role, and an admin MCP connection.
+    const running = await as(p.lead, async (trx) => staffLifecycle.requestActivation(trx, await elevate(p.lead), eligible.id, 3600));
+    assert.equal(running.outcome, 'active');
+    const leadMail = `lead.${randomBytes(3).toString('hex')}@invite.example.invalid`;
+    await owner((trx) => trx.insertInto('email_binding').values({ person_id: p.lead, email_normalized: leadMail, is_primary: false, verified_at: new Date() }).execute());
+    await owner((trx) => trx.insertInto('second_factor').values({ id: crypto.randomUUID(), person_id: p.lead, kind: 'totp', state: 'active', secret_sealed: randomBytes(48), activated_at: new Date() } as never).execute());
+    const invitation = await as(p.owner, async (trx) => staffLifecycle.invite(trx, await elevate(p.owner), { email: leadMail, role: 'auditor', scope: hub, definitionVersion: 1, validForSeconds: null }));
+    await as(p.lead, (trx) => staffLifecycle.respond(trx, invitation.id, true));
+    const connection = await owner(async (trx) => {
+      const client = (await sql<{ id: string }>`INSERT INTO trustwork.oauth_client (client_id, registration, client_name, redirect_uris, application_type, token_endpoint_auth_method)
+        VALUES ('synthetic-admin-mcp-client', 'dynamic_registration', 'Synthetic admin MCP client', ARRAY['https://client.example.invalid/cb'], 'web', 'none') RETURNING id`.execute(trx)).rows[0]!.id;
+      const elevation = (await sql<{ id: string }>`SELECT id FROM trustwork.session_elevation WHERE person_id = ${p.lead}::uuid ORDER BY created_at DESC LIMIT 1`.execute(trx)).rows[0]!.id;
+      const consent = (await sql<{ id: string }>`INSERT INTO trustwork.connection_consent (person_id, client_ref, client_id, redirect_uri, surface, scopes, consent_text_version, step_up, elevation_id, locale, expires_at)
+        VALUES (${p.lead}::uuid, ${client}::uuid, 'synthetic-admin-mcp-client', 'https://client.example.invalid/cb', 'admin', ARRAY['admin.read'], 1, true, ${elevation}::uuid, 'en', now() + interval '30 days') RETURNING id`.execute(trx)).rows[0]!.id;
+      return (await sql<{ id: string }>`INSERT INTO trustwork.connection (hub_id, person_id, surface, client_ref, client_id, resource, redirect_uri, consent_id)
+        VALUES (${w.hubId}::uuid, ${p.lead}::uuid, 'admin', ${client}::uuid, 'synthetic-admin-mcp-client', 'https://trustwork.test/mcp/admin', 'https://client.example.invalid/cb', ${consent}::uuid) RETURNING id`.execute(trx)).rows[0]!.id;
+    });
     await rejects(as(p.moderator, (trx) => staffLifecycle.offboardingChecklist(trx, offboarding)), 'P0002', 'admin.not_found');
     const checklist = OffboardingChecklistSchema.parse(await as(p.hubOwner, (trx) => staffLifecycle.offboardingChecklist(trx, offboarding)));
-    assert.deepEqual(checklist.roles.map((r) => r.role), ['support-lead']);
+    assert.deepEqual(checklist.roles.map((r) => r.role).sort(), ['moderator', 'support-lead'], 'the activated role counts as a role to end');
     assert.deepEqual(checklist.eligibleRoles.map((e) => e.eligibleRoleId), [eligible.id]);
-    assert.deepEqual(checklist.adminClients, []);
+    assert.deepEqual(checklist.activations.map((a) => [a.activationId, a.status]), [[running.activation.id, 'active']]);
+    assert.deepEqual(checklist.invitations.map((i) => [i.invitationId, i.role, i.status]), [[invitation.id, 'auditor', 'accepted']]);
+    assert.deepEqual(checklist.adminClients.map((c) => [c.connectionId, c.clientId, c.status]), [[connection, 'synthetic-admin-mcp-client', 'active']]);
     assert.equal(checklist.accountabilities.length, 1);
     assert.deepEqual(checklist.accountabilities[0]!.offers.map((o) => [o.toPersonId, o.toPersonName]), [[p.hubOwner, 'Synthetic Hub Owner']]);
     assert.deepEqual(checklist.accountabilities[0]!.suggested.map((s) => s.personId), [p.hubOwner]);
@@ -160,16 +180,24 @@ test('function accountability and offboarding (ADM-004 part 5)', { skip: db ? fa
 
   await t.test('completion is refused while an accountability is open; after the hand-over it revokes roles, eligible roles and elevations in one transaction', async () => {
     await rejects(as(p.hubOwner, async (trx) => staffLifecycle.completeOffboarding(trx, await elevate(p.hubOwner), offboarding)), '23514', 'admin.offboarding_blocked');
-    assert.deepEqual(await activeRoles(p.lead), ['support-lead'], 'nothing changed');
+    assert.deepEqual(await activeRoles(p.lead), ['moderator', 'support-lead'], 'nothing changed');
     const [offer] = await owner((trx) => trx.selectFrom('staff_accountability_offer').selectAll().where('offboarding_id', '=', offboarding).execute());
+    // The blocker is cleared only by the fallback accepting, never by an administrator ending the accountability.
+    await rejects(as(p.hubOwner, async (trx) => staffLifecycle.endAccountability(trx, await elevate(p.hubOwner), offer!.accountability_id)), '23514', 'admin.offboarding_open');
     await respond(p.hubOwner, offer!.id, true);
     await rejects(as(p.moderator, async (trx) => staffLifecycle.completeOffboarding(trx, await elevate(p.moderator), offboarding)), '42501', 'admin.forbidden');
     const done = await as(p.hubOwner, async (trx) => staffLifecycle.completeOffboarding(trx, await elevate(p.hubOwner), offboarding));
     assert.deepEqual([done.status, done.completed_by], ['completed', p.hubOwner]);
-    assert.deepEqual(await activeRoles(p.lead), []);
+    assert.deepEqual(await activeRoles(p.lead), [], 'the standing role and the activated role ended');
     const eligible = await owner((trx) => trx.selectFrom('staff_eligible_role').select('revoked_at').where('person_id', '=', p.lead).execute());
     assert.ok(eligible.length === 1 && eligible[0]!.revoked_at !== null);
     assert.deepEqual(await owner((trx) => trx.selectFrom('session_elevation').select('id').where('person_id', '=', p.lead).where('revoked_at', 'is', null).execute()), []);
+    assert.deepEqual((await owner((trx) => trx.selectFrom('staff_invitation').select('status').where('person_id', '=', p.lead).execute())).map((i) => i.status), ['withdrawn'], 'the accepted invitation cannot be applied any more');
+    const connections = await owner((trx) => sql<{ status: string; status_reason: string | null; withdrawn_reason: string | null }>`SELECT c.status, c.status_reason, k.withdrawn_reason
+      FROM trustwork.connection c JOIN trustwork.connection_consent k ON k.id = c.consent_id WHERE c.person_id = ${p.lead}::uuid`.execute(trx));
+    assert.deepEqual(connections.rows, [{ status: 'revoked', status_reason: 'person_revocation', withdrawn_reason: 'person_revocation' }], 'the admin MCP connection and its consent ended');
+    const sessions = await owner((trx) => trx.selectFrom('session').select(['revoked_at', 'revoked_reason']).where('person_id', '=', p.lead).execute());
+    assert.ok(sessions.length > 0 && sessions.every((s) => s.revoked_at !== null && s.revoked_reason === 'admin'), 'with the last staff role gone the sessions ended');
     assert.deepEqual((await audit('staff.offboarding_completed')).map((a) => [a.actor_person_id, a.permission]), [[p.hubOwner, 'admin.staff.revoke']]);
     await rejects(as(p.hubOwner, async (trx) => staffLifecycle.completeOffboarding(trx, await elevate(p.hubOwner), offboarding)), '23514', 'admin.invalid_transition');
     // The case stays open for reassignment; the person's past actions stay attributed.
@@ -185,6 +213,11 @@ test('function accountability and offboarding (ADM-004 part 5)', { skip: db ? fa
     assert.deepEqual((await offersOf(trustOwner)).filter((o) => o.status === 'pending'), []);
     assert.deepEqual(await activeRoles(p.moderator), ['moderator']);
     assert.equal((await accountability(trustOwner)).status, 'active');
+    // Nobody completes or cancels their own offboarding, even with admin.staff.revoke at the scope.
+    const ofOwner = await as(p.admin, async (trx) => staffLifecycle.startOffboarding(trx, await elevate(p.admin), p.hubOwner, hub));
+    await rejects(as(p.hubOwner, async (trx) => staffLifecycle.cancelOffboarding(trx, await elevate(p.hubOwner), ofOwner.id)), '42501', 'admin.self_offboarding');
+    await rejects(as(p.hubOwner, async (trx) => staffLifecycle.completeOffboarding(trx, await elevate(p.hubOwner), ofOwner.id)), '42501', 'admin.self_offboarding');
+    assert.equal((await as(p.admin, async (trx) => staffLifecycle.cancelOffboarding(trx, await elevate(p.admin), ofOwner.id))).status, 'cancelled');
   });
 
   await t.test('rows only change state and are never deleted', async () => {
