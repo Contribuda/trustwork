@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreateCompanyCommandSchema } from '@trustwork/contracts/client';
 import { Button, Form, FormActions, FormAlert, TextArea, TextField } from '@trustwork/ui';
+import { t as uiText } from '@trustwork/ui/i18n';
 import { mapFieldErrors, useAuthForm } from '@/components/auth/useAuthForm';
 import type { ErrorEnvelopeLike } from '@/app/_lib/api-client';
 import { t, type LocaleKey } from '@/app/_lib/i18n';
@@ -12,6 +13,7 @@ const FIELD_MAP = {
   name: { required: 'company.create.error.nameRequired', too_long: 'company.create.error.nameTooLong', invalid: 'company.create.error.nameRequired' },
   handle: { invalid: 'company.create.error.handleInvalid', too_short: 'company.create.error.handleInvalid', too_long: 'company.create.error.handleInvalid' },
   publicDescription: { too_long: 'company.create.error.descriptionTooLong', invalid: 'company.create.error.descriptionTooLong' },
+  country: { required: 'company.create.error.countryRequired', invalid: 'company.create.error.countryRequired' },
 } as const;
 
 /** Directory handle problems come as `validation.schema` with `{ field: 'handle', reason }` (BE-003). */
@@ -25,17 +27,22 @@ const HANDLE_REASONS: Record<string, LocaleKey> = {
  * Creates the company page (`POST /v1/companies`, WEB-004): a `registered` company with the creator as its only
  * administrator. The API refuses a person who already has an active employer (`membership.already_employed`) and a
  * taken handle; both render localized copy. The page address is optional: without it the page uses its identifier.
+ * The country is required and never preselected: it decides which hub reviews claims on the page, and only staff can
+ * correct it afterwards. `countries` comes from the server and holds what the deployment offers, never a restricted
+ * place. A native select, as in the country switcher: searchable by typing, and no combobox script for one field.
  */
-export function CompanyCreateForm() {
+export function CompanyCreateForm({ countries }: { countries: ReadonlyArray<{ code: string; name: string }> }) {
   const router = useRouter();
   const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
   const [description, setDescription] = useState('');
+  const [country, setCountry] = useState('');
   const form = useAuthForm();
 
   const onError = (error: ErrorEnvelopeLike) => {
     const reason = error.details?.reason;
     if (error.details?.field === 'handle' && typeof reason === 'string' && HANDLE_REASONS[reason]) return { handle: t(HANDLE_REASONS[reason]!) };
+    if (error.details?.field === 'country') return { country: t('company.create.error.countryRefused') };
     return mapFieldErrors(form.fieldIssues(error), FIELD_MAP);
   };
 
@@ -63,13 +70,36 @@ export function CompanyCreateForm() {
         isBusy={form.busy}
         onSubmit={async (event) => {
           event.preventDefault();
-          const payload = { name, handle: handle.trim() ? handle.trim() : null, publicDescription: description.trim() ? description.trim() : null };
+          const payload = { name, handle: handle.trim() ? handle.trim() : null, publicDescription: description.trim() ? description.trim() : null, country };
           const response = await form.submit({ path: '/v1/companies', payload, schema: CreateCompanyCommandSchema, idempotent: true, onError });
           if (response.kind === 'ok') router.refresh();
         }}
       >
         <div className="au-form__fields">
           <TextField id="company-name" label={t('company.create.name')} value={name} onChange={setName} autoComplete="organization" isRequired errorMessage={form.fields.name} isDisabled={form.busy} />
+          <div className="ws-native-field">
+            <label htmlFor="company-country">
+              {t('company.create.country')} <span className="ws-native-field__mark">({uiText('common.required')})</span>
+            </label>
+            <select
+              id="company-country"
+              value={country}
+              onChange={(event) => setCountry(event.target.value)}
+              required
+              disabled={form.busy}
+              aria-invalid={form.fields.country ? true : undefined}
+              aria-describedby={form.fields.country ? 'company-country-hint company-country-error' : 'company-country-hint'}
+            >
+              <option value="">{t('locale.chooseCountry')}</option>
+              {countries.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+            <small id="company-country-hint">{t('company.create.countryHint')}</small>
+            {form.fields.country ? <small id="company-country-error" className="ws-native-field__error">{form.fields.country}</small> : null}
+          </div>
           <TextField
             id="company-handle"
             label={t('company.create.handle')}

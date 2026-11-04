@@ -56,7 +56,7 @@ test('procurement and sales on the live API: stale quotes are not comparable, or
   const { personId: buyerId } = await verifiedAccount(buyer.request, 'Бахром Закупщик', uniqueEmail('buyer'));
   await verifiedAccount(seller.request, 'Зарина Продавец', uniqueEmail('seller'));
   const company = `Поставка ${Date.now().toString(36)}`;
-  const created = await seller.request.post('/v1/companies', { headers: { ...SAME_ORIGIN, 'Idempotency-Key': `e2e-co-${Date.now()}` }, data: { name: company, handle: null, publicDescription: 'Металлопрокат для строек.' } });
+  const created = await seller.request.post('/v1/companies', { headers: { ...SAME_ORIGIN, 'Idempotency-Key': `e2e-co-${Date.now()}` }, data: { name: company, handle: null, publicDescription: 'Металлопрокат для строек.', country: 'UZ' } });
   expect(created.status(), await created.text()).toBe(201);
   await screenEveryone();
 

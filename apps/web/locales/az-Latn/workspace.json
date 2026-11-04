@@ -293,6 +293,8 @@
       "title": "Şirkət səhifəsi yaratmaq",
       "body": "Siz onun administratoru olacaqsınız. Səhifə «qeydiyyatdan keçib» statusu ilə yaradılır: təsdiq və yoxlama ayrı addımlardır.",
       "name": "Şirkətin adı",
+      "country": "Qeydiyyat ölkəsi",
+      "countryHint": "Bu səhifə üzrə sorğulara bu ölkənin habı baxır. Sonradan onu yalnız hab əməkdaşları düzəldə bilər.",
       "handle": "Səhifə ünvanı (istəyə görə)",
       "handleHint": "3-dən 40-a qədər kiçik latın hərfi, rəqəm və defis, məsələn acme-build.",
       "description": "İctimai təsvir (istəyə görə)",
@@ -306,7 +308,9 @@
         "handleInvalid": "3-dən 40-a qədər kiçik latın hərfi, rəqəm və defisdən istifadə edin; yalnız rəqəmlər yox.",
         "handleTaken": "Bu ünvan tutulub. Başqasını seçin.",
         "handleLimit": "Səhifənin ünvanı həddindən çox dəyişdirilib.",
-        "descriptionTooLong": "Təsvir çox uzundur"
+        "descriptionTooLong": "Təsvir çox uzundur",
+        "countryRequired": "Şirkətin qeydiyyatdan keçdiyi ölkəni seçin",
+        "countryRefused": "Bu ölkəni seçmək olmaz. Başqasını seçin."
       }
     },
     "inviteForm": {

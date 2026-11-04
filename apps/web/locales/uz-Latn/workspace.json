@@ -293,6 +293,8 @@
       "title": "Kompaniya sahifasini yaratish",
       "body": "Siz uning administratori bo‘lasiz. Sahifa «ro‘yxatdan o‘tgan» holatida yaratiladi: tasdiqlash va tekshirish alohida bosqichlar.",
       "name": "Kompaniya nomi",
+      "country": "Ro‘yxatdan o‘tgan mamlakat",
+      "countryHint": "Bu sahifa bo‘yicha so‘rovlarni shu mamlakat habi ko‘rib chiqadi. Keyinchalik uni faqat hab xodimlari tuzata oladi.",
       "handle": "Sahifa manzili (ixtiyoriy)",
       "handleHint": "3 dan 40 gacha kichik lotin harflari, raqamlar va chiziqchalar, masalan acme-build.",
       "description": "Ommaviy tavsif (ixtiyoriy)",
@@ -306,7 +308,9 @@
         "handleInvalid": "3 dan 40 gacha kichik lotin harflari, raqamlar va chiziqchalardan foydalaning; faqat raqamlar emas.",
         "handleTaken": "Bu manzil band. Boshqasini tanlang.",
         "handleLimit": "Sahifa manzili juda ko‘p marta o‘zgartirilgan.",
-        "descriptionTooLong": "Tavsif juda uzun"
+        "descriptionTooLong": "Tavsif juda uzun",
+        "countryRequired": "Kompaniya ro‘yxatdan o‘tgan mamlakatni tanlang",
+        "countryRefused": "Bu mamlakatni tanlab bo‘lmaydi. Boshqasini tanlang."
       }
     },
     "inviteForm": {

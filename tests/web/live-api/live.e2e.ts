@@ -152,6 +152,11 @@ test('password recovery through the mailbox ends every session and the old passw
   expect((await page.request.get('/v1/me')).status()).toBe(401);
 });
 
+/** The form offers no default country: a person chooses one. */
+async function pickCountry(page: Page): Promise<void> {
+  await page.getByLabel(msg('company.create.country')).selectOption('UZ');
+}
+
 test('company creation, a project and its publication, visible on the public pages', async ({ page, browser }) => {
   await verifiedAccount(page.request, 'Owner Olim');
   const handle = `e2e-${Date.now().toString(36)}`;
@@ -160,6 +165,7 @@ test('company creation, a project and its publication, visible on the public pag
   await expect(page.getByRole('heading', { name: msg('company.create.title') })).toBeVisible();
   await expectAccessible(page);
   await page.getByLabel(msg('company.create.name')).fill('Стройка Олима');
+  await pickCountry(page);
   await page.getByLabel(msg('company.create.handle')).fill(handle);
   await page.getByLabel(msg('company.create.description')).fill('Строим дома в Ташкенте.');
   await shot(page, '05-company-create');
@@ -169,7 +175,7 @@ test('company creation, a project and its publication, visible on the public pag
   await shot(page, '06-company');
 
   // A second company is refused: one active employer per person.
-  const again = await page.request.post('/v1/companies', { headers: { ...SAME_ORIGIN, 'Idempotency-Key': `e2e-${Date.now()}` }, data: { name: 'Second', handle: null, publicDescription: null } });
+  const again = await page.request.post('/v1/companies', { headers: { ...SAME_ORIGIN, 'Idempotency-Key': `e2e-${Date.now()}` }, data: { name: 'Second', handle: null, publicDescription: null, country: 'UZ' } });
   expect(again.status()).toBe(409);
   expect((await again.json()).code).toBe('membership.already_employed');
 
@@ -253,7 +259,7 @@ test('negative authorization: other people, anonymous visitors, forged requests 
 
   // Forged mutations with A's cookie: no CSRF header, a foreign origin, cross-site fetch metadata, extra fields.
   const key = () => ({ 'Idempotency-Key': `e2e-f-${Date.now()}-${Math.random().toString(36).slice(2)}` });
-  const body = { name: 'Forged company', handle: null, publicDescription: null };
+  const body = { name: 'Forged company', handle: null, publicDescription: null, country: 'UZ' };
   const noHeader = await page.request.post('/v1/companies', { headers: { Origin: WEB_ORIGIN, ...key() }, data: body });
   expect(noHeader.status()).toBe(403);
   expect((await noHeader.json()).code).toBe('auth.csrf_rejected');
@@ -271,7 +277,7 @@ test('negative authorization: other people, anonymous visitors, forged requests 
 test('a taken company address and other API errors render localized copy, never the code', async ({ page, browser }) => {
   await verifiedAccount(page.request, 'First Founder');
   const handle = `taken-${Date.now().toString(36)}`;
-  const first = await page.request.post('/v1/companies', { headers: { ...SAME_ORIGIN, 'Idempotency-Key': `e2e-t-${Date.now()}` }, data: { name: 'First', handle, publicDescription: null } });
+  const first = await page.request.post('/v1/companies', { headers: { ...SAME_ORIGIN, 'Idempotency-Key': `e2e-t-${Date.now()}` }, data: { name: 'First', handle, publicDescription: null, country: 'UZ' } });
   expect(first.status()).toBe(201);
 
   const ctx = await browser.newContext();
@@ -280,6 +286,7 @@ test('a taken company address and other API errors render localized copy, never 
   await second.goto(`${WEB_ORIGIN}/app/company`);
   await ready(second);
   await second.getByLabel(msg('company.create.name')).fill('Second');
+  await pickCountry(second);
   await second.getByLabel(msg('company.create.handle')).fill(handle);
   await second.getByRole('button', { name: msg('company.create.submit') }).click();
   await expect(second.getByText(msg('company.create.error.handleTaken')).first()).toBeVisible();

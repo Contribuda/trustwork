@@ -4,6 +4,7 @@ import { withMaintenance } from '@trustwork/data';
 import { expectError, SKIP_REASON, startHarness, type Client, type Response } from '../backend/helpers/app.js';
 import { login, seedPersonas } from '../backend/helpers/personas.js';
 import { consentPublicProfiles } from '../data/helpers/seed.js';
+import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 
 const h = await startHarness('directory_api');
 
@@ -50,6 +51,7 @@ test('directory API: company creation, handles with redirects, keyset directorie
   if (!h) return;
   t.after(() => h.close());
   const seed = await seedPersonas(h);
+  await withMaintenance(h.db.admin, async (trx) => kernelSync.apply(trx, await kernelReference.fromRepository()));
   const as = async (key: Parameters<typeof login>[1]): Promise<Client> => { const c = h.client(); await login(c, key); return c; };
   const petr = await as('petr');
   const anna = await as('anna');
@@ -62,15 +64,29 @@ test('directory API: company creation, handles with redirects, keyset directorie
   const count = async (sqlText: string, params: unknown[] = []): Promise<number> => Number((await admin.query<{ n: number }>(sqlText, params)).rows[0]?.n);
 
   let roofing: Company;
+  await t.test('POST /v1/companies: the country is required, and a restricted or unknown place is refused', async () => {
+    const attempt = { name: 'Fixture Placeless', handle: null, publicDescription: null };
+    assert.equal((await petr.post('/v1/companies', attempt)).status, 422);
+    assert.equal((await petr.post('/v1/companies', { ...attempt, country: null })).status, 422);
+    assert.equal((await petr.post('/v1/companies', { ...attempt, country: 'us' })).status, 422);
+    assert.equal((await petr.post('/v1/companies', { ...attempt, country: 'UA-43' })).status, 422);
+    for (const country of ['RU', 'CU', 'IR', 'KP', 'ZZ']) {
+      const refused = await petr.post('/v1/companies', { ...attempt, country });
+      expectError(refused, 422, 'validation.schema');
+      assert.deepEqual((refused.body as { details?: unknown }).details, { field: 'country', reason: 'country_refused' });
+    }
+    assert.equal(await count("SELECT count(*)::int AS n FROM trustwork.company WHERE display_name = 'Fixture Placeless'"), 0);
+  });
+
   await t.test('POST /v1/companies: a registered, unclaimed company with exactly one administrator, the creator', async () => {
-    expectError(await anonymous.post('/v1/companies', { name: 'Fixture Roofing', handle: null, publicDescription: null }), 401, 'auth.session_invalid');
-    expectError(await petr.post('/v1/companies', { name: 'Fixture Roofing', handle: null, publicDescription: null, claimStatus: 'verified' }), 422, 'validation.unknown_field');
+    expectError(await anonymous.post('/v1/companies', { name: 'Fixture Roofing', handle: null, publicDescription: null, country: 'US' }), 401, 'auth.session_invalid');
+    expectError(await petr.post('/v1/companies', { name: 'Fixture Roofing', handle: null, publicDescription: null, country: 'US', claimStatus: 'verified' }), 422, 'validation.unknown_field');
     const before = await count('SELECT count(*)::int AS n FROM trustwork.company');
-    expectError(await anna.post('/v1/companies', { name: 'Second Employer', handle: null, publicDescription: null }), 409, 'membership.already_employed');
+    expectError(await anna.post('/v1/companies', { name: 'Second Employer', handle: null, publicDescription: null, country: 'US' }), 409, 'membership.already_employed');
     assert.equal(await count('SELECT count(*)::int AS n FROM trustwork.company'), before, 'an employed person creates nothing');
 
     const created = ok<{ company: Company; membership: { personId: string; companyId: string; role: string; status: string; permissions: string[]; invitedBy: string | null } }>(
-      await petr.post('/v1/companies', { name: 'Fixture Roofing', handle: 'Fixture-Roofing', publicDescription: 'Roofs and gutters' }), 201,
+      await petr.post('/v1/companies', { name: 'Fixture Roofing', handle: 'Fixture-Roofing', publicDescription: 'Roofs and gutters', country: 'US' }), 201,
     );
     roofing = created.company;
     assert.deepEqual(Object.keys(created.company).sort(), COMPANY_KEYS);
@@ -93,20 +109,20 @@ test('directory API: company creation, handles with redirects, keyset directorie
     assert.equal(await count("SELECT count(*)::int AS n FROM trustwork.outbox_event WHERE type = 'company.created' AND aggregate_id = $1", [roofing.id]), 1);
 
     // The creator is now employed: the next request re-resolves the principal (epoch bumped) and is refused.
-    expectError(await petr.post('/v1/companies', { name: 'Fixture Roofing Two', handle: null, publicDescription: null }), 409, 'membership.already_employed');
+    expectError(await petr.post('/v1/companies', { name: 'Fixture Roofing Two', handle: null, publicDescription: null, country: 'US' }), 409, 'membership.already_employed');
     const me = ok<{ membership: { companyId: string; role: string } | null }>(await petr.get('/v1/me'));
     assert.equal(JSON.stringify(me).includes(roofing.id), true, 'the founding membership is the active employer');
   });
 
   await t.test('company creation is atomic: a taken handle or a concurrent second creation leaves no company behind', async () => {
     const before = await count('SELECT count(*)::int AS n FROM trustwork.company');
-    const taken = await xenia.post('/v1/companies', { name: 'Handle Squatter', handle: 'fixture-roofing', publicDescription: null });
+    const taken = await xenia.post('/v1/companies', { name: 'Handle Squatter', handle: 'fixture-roofing', publicDescription: null, country: 'US' });
     expectError(taken, 422, 'validation.schema');
     assert.deepEqual((taken.body as { details: unknown }).details, { field: 'handle', reason: 'handle_unavailable' });
     assert.equal(await count('SELECT count(*)::int AS n FROM trustwork.company'), before, 'rolled back with the handle');
     assert.equal(await count("SELECT count(*)::int AS n FROM trustwork.membership WHERE person_id = $1 AND status = 'active'", [seed.people.xenia]), 0);
 
-    const results = await Promise.all([1, 2, 3].map((i) => xenia.post('/v1/companies', { name: `Race ${i}`, handle: null, publicDescription: null })));
+    const results = await Promise.all([1, 2, 3].map((i) => xenia.post('/v1/companies', { name: `Race ${i}`, handle: null, publicDescription: null, country: 'US' })));
     assert.deepEqual(results.map((r) => r.status).sort(), [201, 409, 409], JSON.stringify(results.map((r) => r.body)));
     for (const r of results.filter((r) => r.status === 409)) expectError(r, 409, 'membership.already_employed');
     assert.equal(await count('SELECT count(*)::int AS n FROM trustwork.company'), before + 1, 'only the winner exists');

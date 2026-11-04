@@ -18,6 +18,7 @@ import { formatMoney, longDate, t, tDynamic } from '@/app/_lib/i18n';
 import { currencyCode, identifierLabel } from '@/app/_lib/country';
 import { typo } from '@/app/_lib/typo';
 import { primeLocale } from '@/app/_lib/locale';
+import { switcherCountries } from '@/components/locale/LocaleControls';
 
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
@@ -31,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
  * invite colleagues, and the member list shows names only of public profiles.
  */
 export default async function CompanyWorkspacePage({ searchParams }: { searchParams: PageSearchParams }) {
-  await primeLocale();
+  const active = await primeLocale();
   const principal = await requirePrincipal(searchParams, '/app/company');
   const view = await data.getCompanyWorkspace(principal);
   const live = DATA_SOURCE === 'api';
@@ -66,7 +67,7 @@ export default async function CompanyWorkspacePage({ searchParams }: { searchPar
             </NextLink>
           </div>
         </div>
-        {live ? <CompanyCreateForm /> : null}
+        {live ? <CompanyCreateForm countries={switcherCountries(active).map(({ code, name }) => ({ code, name }))} /> : null}
       </>
     );
   }

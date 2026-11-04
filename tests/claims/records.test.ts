@@ -153,7 +153,7 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
     const check = await passingCheck(companyId);
     expectRefusal(await verify(reviewer, { ...identifier, revision: 9 }, check), 409, 'validation.revision_conflict', 'revision_conflict');
     expectRefusal(await verify(w.clients.moderator, identifier, check), 403, 'access.forbidden', 'forbidden');
-    expectRefusal(await verify(w.clients.ops, identifier, check, `/v1/admin/hubs/${otherHubId}`), 422, 'validation.schema', 'check_mismatch');
+    expectRefusal(await verify(w.clients.ops, identifier, check, `/v1/admin/hubs/${otherHubId}`), 403, 'access.forbidden', 'outside_territory');
     assert.equal((await verify(w.clients.employee, identifier, check)).status, 403);
     assert.equal((await records(person.client, companyId)).identifiers[0]?.status, 'claimed');
   });

@@ -29,6 +29,7 @@ function mapDirectoryError(error: unknown): unknown {
     case 'directory.handle_unavailable': return new ApiError('validation.schema', 'this handle is not available', { field: 'handle', reason: 'handle_unavailable' });
     case 'directory.handle_invalid': return new ApiError('validation.schema', 'this handle is not allowed', { field: 'handle', reason: 'handle_invalid' });
     case 'directory.handle_limit': return new ApiError('validation.schema', 'this subject has used all its handle changes', { field: 'handle', reason: 'handle_limit' });
+    case 'directory.country_refused': return new ApiError('validation.schema', 'this country cannot be chosen', { field: 'country', reason: 'country_refused' });
     case 'directory.not_authorised': return new ApiError('access.forbidden');
     case 'directory.not_found': return new ApiError('access.not_found');
     default: return error;
@@ -271,7 +272,7 @@ export class DirectoryService {
     if (principal.membership) throw new ApiError('membership.already_employed');
     try {
       return await this.principals.runAs(state, async (trx, p) => {
-        const created = await directory.createCompany(trx, { name: input.name, publicDescription: input.publicDescription, handle: input.handle });
+        const created = await directory.createCompany(trx, { name: input.name, publicDescription: input.publicDescription, handle: input.handle, country: input.country });
         const row = await directory.company(trx, created.company_id);
         const membership = await memberships.getById(trx, created.membership_id);
         if (!row || !membership) throw new Error('created company is not readable in its own transaction');

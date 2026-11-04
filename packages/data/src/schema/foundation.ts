@@ -108,6 +108,8 @@ export interface CompanyTable {
   legal_identifiers: JSONColumnType<LegalIdentifier[], string | undefined, string>;
   public_description: string | null;
   verified_domains: Generated<string[]>;
+  /** ISO 3166-1; null on rows older than the rule. Written at creation and by a staff correction only (migrations/directory). */
+  country_code: string | null;
   authz_epoch: GeneratedInt;
   revision: GeneratedInt;
   created_at: GeneratedTimestamp;
@@ -415,7 +417,7 @@ export const TABLE_COLUMNS: TableColumns<FoundationDatabase> = {
   session: columns('session', ['id', 'person_id', 'token_hash', 'created_at', 'last_seen_at', 'idle_expires_at', 'absolute_expires_at', 'authenticated_at', 'auth_method', 'user_agent_family', 'ip_prefix', 'revoked_at', 'revoked_reason']),
   auth_token: columns('auth_token', ['id', 'token_hash', 'kind', 'person_id', 'email_normalized', 'created_at', 'expires_at', 'consumed_at']),
   login_failure: columns('login_failure', ['id', 'subject_hash', 'occurred_at', 'expires_at']),
-  company: columns('company', ['id', 'display_name', 'sourced_status', 'claim_status', 'legal_identifiers', 'public_description', 'verified_domains', 'authz_epoch', 'revision', 'created_at', 'updated_at']),
+  company: columns('company', ['id', 'display_name', 'sourced_status', 'claim_status', 'legal_identifiers', 'public_description', 'verified_domains', 'country_code', 'authz_epoch', 'revision', 'created_at', 'updated_at']),
   company_private: columns('company_private', ['company_id', 'internal_notes', 'billing_account_id', 'revision', 'created_at', 'updated_at']),
   membership: columns('membership', ['id', 'person_id', 'company_id', 'role', 'permissions', 'status', 'invited_by', 'invited_at', 'valid_from', 'ended_at', 'ended_by', 'ended_reason', 'revision', 'created_at', 'updated_at']),
   permission_grant: columns('permission_grant', ['id', 'principal_person_id', 'principal_company_id', 'action', 'scope', 'limits', 'granted_by', 'granted_at', 'expires_at', 'revoked_at', 'revoked_reason', 'revision', 'created_at', 'updated_at']),

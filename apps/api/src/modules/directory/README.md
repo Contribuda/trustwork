@@ -27,6 +27,16 @@ Lower-case ASCII letters and digits in hyphen-separated groups, 3 to 40 characte
 - At most ten handle records per subject, so renaming cannot squat names.
 - Handle problems answer `422 validation.schema` with `details: { field: "handle", reason: "handle_unavailable" | "handle_invalid" | "handle_limit" }` until the frozen error list gains a directory code.
 
+## Company country
+
+`POST /v1/companies` requires `country` (ISO 3166-1). It is the link claim review follows ([`claims/README.md`](../verification/claims/README.md)): `hub_territory` gives each hub its countries, and `company.country_code` puts a company in one. What a company states about itself (`company_profile.region_code`, its records) never decides who reviews it, and the country stays out of the public projections: `region_code` is shown only if the company chooses.
+
+- The database refuses a country that is unknown, not selectable or restricted: `422 validation.schema` with `details: { field: "country", reason: "country_refused" }`. With no restricted list loaded it refuses every country, so `packages/data/bin/kernel-sync.mjs` has to have run (the release job does).
+- The form offers what the deployment offers (`switcherCountries`), which never holds a restricted place, and preselects nothing.
+- Neither the company nor a claimant changes it: the runtime role has no grant on the column, and for every role, maintenance included, a change needs a `company_country_correction` row of the same transaction (`directory_company_country_guard`). Only `directory_correct_company_country` writes one, through `POST /v1/admin/hubs/:hubId/claims/companies/:companyId/country`.
+- Rows older than the rule stay `NULL`. Nothing guesses a country for them.
+- **Import.** No code creates a company from an import yet: `sources_stage_batch` stages `sourced_record_field` rows that name a record, and datasets and registers link to a company that already exists. The database refuses a `sourced` row without a country, so the import command has to bring one. It cannot take it from what is stored today: `source`, `import_batch` and `sourced_record_field` carry no country, and a hub may cover several, so the batch's hub does not say which one.
+
 ## Authorization layers
 
 - Application policy first (membership permissions, the object policy for projects), then the SECURITY DEFINER commands `directory_set_handle` and `directory_create_company` re-check the same authority in the database. The runtime role has no write privilege on `directory_handle` and no longer inserts companies directly.

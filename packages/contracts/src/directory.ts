@@ -151,9 +151,12 @@ export const ProjectLookupSchema = handleLookupSchema(ProjectDirectoryEntrySchem
 /**
  * Creates a `registered`, `unclaimed` company; the creator becomes its only (founding) administrator. Fails with
  * `membership.already_employed` while the creator has an active employer (one active employer per person).
- * Claims and verification never come from this command.
+ * Claims and verification never come from this command. `country` (ISO 3166-1) is what claim review follows: it decides
+ * which hub may review the page, and afterwards only an audited staff correction changes it. The database refuses a
+ * country that is unknown, not selectable or restricted.
  */
-export const CreateCompanyCommandSchema = z.strictObject({ name: NameSchema, handle: HandleSchema.nullable(), publicDescription: TextSchema.nullable() });
+export const CompanyCountrySchema = z.string().regex(/^[A-Z]{2}$/);
+export const CreateCompanyCommandSchema = z.strictObject({ name: NameSchema, handle: HandleSchema.nullable(), publicDescription: TextSchema.nullable(), country: CompanyCountrySchema });
 export type CreateCompanyCommand = z.infer<typeof CreateCompanyCommandSchema>;
 export const CreateCompanyResultSchema = z.strictObject({ company: CompanyDirectoryEntrySchema, membership: MembershipSchema });
 export type CreateCompanyResult = z.infer<typeof CreateCompanyResultSchema>;
