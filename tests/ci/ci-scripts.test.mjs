@@ -8,7 +8,7 @@ import { gzipSync } from 'node:zlib';
 import { checkLockfile, expressionAllowed } from '../../scripts/ci/licenses.mjs';
 import { compare, measure, serverOnlyHits } from '../../scripts/ci/bundle-budget.mjs';
 import { dirtyEntries } from '../../scripts/ci/assert-clean-tree.mjs';
-import { formatSkipSummary } from '../../scripts/ci/skip-summary-reporter.mjs';
+import { clockWarnings, formatClockSummary, formatSkipSummary } from '../../scripts/ci/skip-summary-reporter.mjs';
 
 const scratch = (t) => {
   const dir = mkdtempSync(join(tmpdir(), 'trustwork-ci-'));
@@ -130,6 +130,33 @@ test('skip summary names each skipped test and explains database skips; nothing 
   assert.match(summary, /tests\/web\/web\.test\.ts: browser\n/);
   assert.match(summary, /TRUSTWORK_REQUIRE_PG=1/);
   assert.doesNotMatch(formatSkipSummary([{ name: 'browser', file: 'x', reason: 'set TRUSTWORK_E2E=1' }]), /PostgreSQL/);
+});
+
+test('the clock warning of the harness is found, and repeated once per text', () => {
+  const line = '[trustwork-data] suite: the database clock is 900 ms off this process; tests comparing process time with now() may fail (resync the Docker VM clock)';
+  assert.deepEqual(clockWarnings(`noise\n${line}\nmore`), [line]);
+  assert.deepEqual(clockWarnings('[trustwork-data] backend=docker clock_skew_ms=12\n'), []);
+  assert.equal(formatClockSummary([]), '');
+  assert.equal(formatClockSummary([line, line]).split(line).length, 2);
+});
+
+test('a failed run repeats the clock warning after everything else; a passing run does not', (t) => {
+  const dir = scratch(t);
+  const reporter = new URL('../../scripts/ci/skip-summary-reporter.mjs', import.meta.url).href;
+  const env = { ...process.env };
+  delete env.NODE_TEST_CONTEXT; // otherwise the child reports to this runner instead of running its own reporters
+  const run = (name, body) => {
+    const file = join(dir, name);
+    writeFileSync(file, `import test from 'node:test';\nconsole.warn('[trustwork-data] fixture: the database clock is 900 ms off this process; resync');\ntest('case', () => { ${body} });\n`);
+    return spawnSync(process.execPath, ['--test', '--test-reporter=spec', '--test-reporter-destination=stdout', `--test-reporter=${reporter}`, '--test-reporter-destination=stderr', file], { encoding: 'utf8', env });
+  };
+  const failed = run('failing.test.mjs', "throw new Error('fixture failure');");
+  assert.equal(failed.status, 1);
+  assert.match(failed.stderr, /CLOCK: this run failed/);
+  assert.match(failed.stderr, /the database clock is 900 ms off/);
+  const passed = run('passing.test.mjs', '');
+  assert.equal(passed.status, 0);
+  assert.doesNotMatch(passed.stderr, /CLOCK:/);
 });
 
 test('the reporter prints the summary at the end of a real node:test run', (t) => {

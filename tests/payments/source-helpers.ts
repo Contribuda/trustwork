@@ -78,7 +78,8 @@ export async function sourceWorld(h: Harness, slug?: string) {
   const fake = new DeterministicPaymentFake();
   const runtime = { pool, receiptPool: verifier.pool, providers: new PaymentProviders(new Map([[hub.connectionId, fake]])), source: { verifierPool: sourcePool,
     adapters: new PaymentSourceAdapters(new Map((['identity_link', 'account'] as const).map((fact) => [issuers[fact].input.implementationDigest, new SignedSyntheticSourceAdapter(issuers[fact].input.implementationDigest, fact)]))) } };
-  const ingress = await startPaymentIngress(runtime, 0);
+  const refusals: Array<Record<string, unknown>> = [];
+  const ingress = await startPaymentIngress(runtime, 0, (level, message, fields) => { refusals.push({ level, message, ...fields }); });
   const send = async (e: PaymentSourceAssertion, signature?: string) => {
     const raw = Buffer.from(JSON.stringify(e));
     return fetch(`http://127.0.0.1:${ingress.port}/payments/sources/${e.registrationId}`, { method: 'POST', body: raw,
@@ -150,7 +151,7 @@ export async function sourceWorld(h: Harness, slug?: string) {
   const registry = new HandlerRegistry(); registerPayments(registry, runtime);
   const deps = { pool, registry, config: defaultWorkerConfig({ concurrency: 1, relayBatchSize: 1000 }), metrics: new Metrics(), log: () => {} };
   const relay = new OutboxRelay(deps), runner = new JobRunner(deps);
-  return { ...hub, registerDecisionPublisher, providerEnabled, issuers, registerIssuer, runtime, pool, fake, q, send, challenge, bind, fresh, staffClient, approveDigest, install, relay, runner,
+  return { ...hub, refusals, registerDecisionPublisher, providerEnabled, issuers, registerIssuer, runtime, pool, fake, q, send, challenge, bind, fresh, staffClient, approveDigest, install, relay, runner,
     tick: async () => { await relay.relayOnce(); await runner.tick(); await runner.idle(); },
     async close() { for (const app of staffApps) await app.close(); await ingress.close(); await sourcePool.end(); await verifier.close(); await pool.end(); await worker.close();
       await h.db.admin.query(`REVOKE ALL ON FUNCTION trustwork.payments_source_verifier_registration(uuid),trustwork.payments_source_record_assertion(jsonb) FROM ${role}`);
