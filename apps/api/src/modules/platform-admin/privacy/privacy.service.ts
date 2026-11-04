@@ -70,11 +70,11 @@ export class PrivacyService {
    * a participant's mandate is not an operator grant, and operator agents (AGT-030, ADR 010 decision 26) do not exist
    * yet. When they do, their grant check belongs here; the database refuses a delegated row until then.
    */
-  prepareResponseDraft(state: RequestState, requestId: string) {
-    return this.run(state, (trx) => privacy.prepareResponseDraft(trx, requestId, this.exports.coverage, null));
+  prepareResponseDraft(state: RequestState, requestId: string, grantId: string) {
+    return this.run(state, (trx) => privacy.prepareResponseDraft(trx, { requestId, grantId, coverage: this.exports.coverage, delegation: null, auditRequestId: state.requestId }));
   }
-  responseDrafts(state: RequestState, requestId: string) {
-    return this.run(state, async (trx) => ({ drafts: await privacy.responseDrafts(trx, requestId) }));
+  responseDrafts(state: RequestState, requestId: string, grantId: string) {
+    return this.run(state, async (trx) => ({ drafts: await privacy.responseDrafts(trx, { requestId, grantId, auditRequestId: state.requestId }) }));
   }
   request(state: RequestState, input: PrivacyRequestCommand) { return this.run(state, (trx) => privacy.request(trx, input)); }
   requests(state: RequestState) { return this.run(state, async (trx) => ({ requests: await privacy.requests(trx) })); }

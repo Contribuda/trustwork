@@ -3,12 +3,12 @@ import { finished } from 'node:stream/promises';
 import { Controller, Get, Header, HttpCode, Inject, Post, Res, UseGuards } from '@nestjs/common';
 import type { z } from 'zod';
 import { Authenticated, Idempotent, ReqState, type RequestState } from '../../../common/request.js';
-import { Body, Params } from '../../../common/zod.js';
+import { Body, Params, Query } from '../../../common/zod.js';
 import { Elevation, ElevationGuard } from '../../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../../identity/second-factor/deps.js';
 import {
   PrivacyExportCommandSchema, PrivacyHoldCommandSchema, PrivacyHoldReleaseSchema, PrivacyIdParamsSchema, PrivacyPreferenceCommandSchema, PrivacyRequestCommandSchema, PrivacyMarketingObjectionSchema, PrivacySourceProofSchema, PrivacySourceSubmissionSchema,
-  PrivacyFileParamsSchema, PrivacyExternalSourceCaseSchema, PrivacyPlanProposeSchema, PrivacyPlanApproveSchema, PrivacyPlanExecuteSchema,
+  PrivacyFileParamsSchema, PrivacyExternalSourceCaseSchema, PrivacyPlanProposeSchema, PrivacyPlanApproveSchema, PrivacyPlanExecuteSchema, PrivacyResponseDraftGrantSchema,
 } from '../../../../../../packages/contracts/src/privacy.js';
 import { PrivacyService } from './privacy.service.js';
 
@@ -59,21 +59,22 @@ export class PrivacyController {
 }
 
 /**
- * Preparation, not decision: a response package at Draft for a staff member holding the privacy read permission. No
- * elevation is required because the package changes nothing; delegated principals are refused here as everywhere in
- * privacy until operator grants exist (AGT-030). Every decision route below keeps the elevation guard as well.
+ * Preparation, not decision: a response package at Draft for a staff member holding the privacy read permission and a
+ * usable case grant naming the request, who has no conflict with its subject. Both routes are audited. No elevation is
+ * required because the package changes nothing; delegated principals are refused here as everywhere in privacy until
+ * operator grants exist (AGT-030). Every decision route below keeps the elevation guard as well.
  */
 @Controller('v1/admin/privacy')
 @Authenticated()
 export class PrivacyPreparationController {
   constructor(@Inject(PrivacyService) private readonly privacy: PrivacyService) {}
   @Post('requests/:id/response-draft') @HttpCode(201) @Header('Cache-Control', 'no-store') @Idempotent('privacy.response_draft_prepare', 'id')
-  prepare(@ReqState() state: RequestState, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>) {
-    return this.privacy.prepareResponseDraft(state, params.id);
+  prepare(@ReqState() state: RequestState, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>, @Body(PrivacyResponseDraftGrantSchema) body: z.infer<typeof PrivacyResponseDraftGrantSchema>) {
+    return this.privacy.prepareResponseDraft(state, params.id, body.grantId);
   }
   @Get('requests/:id/response-drafts') @Header('Cache-Control', 'no-store')
-  drafts(@ReqState() state: RequestState, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>) {
-    return this.privacy.responseDrafts(state, params.id);
+  drafts(@ReqState() state: RequestState, @Params(PrivacyIdParamsSchema) params: z.infer<typeof PrivacyIdParamsSchema>, @Query(PrivacyResponseDraftGrantSchema) query: z.infer<typeof PrivacyResponseDraftGrantSchema>) {
+    return this.privacy.responseDrafts(state, params.id, query.grantId);
   }
 }
 

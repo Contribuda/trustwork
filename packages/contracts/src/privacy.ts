@@ -49,6 +49,8 @@ export const PrivacySourceSubmissionSchema = z.object({
   proposedValue: z.string().min(1).max(2000).nullable().default(null),
 }).strict().refine((r) => (r.action === 'correction') === (r.proposedValue !== null));
 export const PrivacyPlanProposeSchema = z.object({ requestId: z.uuid(), grantId: z.uuid() }).strict();
+/** The case grant naming the request: the body of Draft preparation and the query of reading Drafts. */
+export const PrivacyResponseDraftGrantSchema = z.object({ grantId: z.uuid() }).strict();
 export const PrivacyPlanApproveSchema = z.object({ grantId: z.uuid(), digest: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
 export const PrivacyPlanExecuteSchema = z.object({ digest: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
 
