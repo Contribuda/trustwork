@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import type { AgentCapability } from '../../packages/contracts/src/agent-catalog.js';
 import { ExtensionSafetyReportSchema } from '../../packages/contracts/src/agent-extensions.js';
 import { ENGINE_EXTENSION_ADAPTERS, extensionSafetyScenarios, FakeExtensionAdapter, installedAdapter, runExtensionSuite, type InstalledExtensionAdapter } from '../../apps/worker/src/agent-extensions/index.js';
 import { checkRegistry, defineSuite, runScenario, type SafetySuite } from '../agent-safety/core/harness.js';
@@ -15,10 +16,10 @@ const DIGEST = 'a'.repeat(64);
 const manifest = manifestOf('permit_lookup');
 const pair = (fake: FakeExtensionAdapter): InstalledExtensionAdapter[] => [{ adapterId: 'synthetic_http', fakeAdapterId: 'synthetic_http_fake', fake, live: null }];
 const suiteOf = (adapters: readonly InstalledExtensionAdapter[]): SafetySuite => defineSuite({
-  id: manifest.safetySuite.suiteId, title: 'Synthetic permit lookup', owner: { kind: 'extension', extensionId: EXTENSION_ID }, scenarios: extensionSafetyScenarios({ manifest, extensionId: EXTENSION_ID, adapters }),
+  id: manifest.safetySuite.suiteId, title: 'Synthetic permit lookup', owner: { kind: 'extension', extensionId: EXTENSION_ID }, scenarios: extensionSafetyScenarios({ manifest, extensionId: EXTENSION_ID, adapters, builtIn: [] }),
 });
-const failedOf = async (adapters: readonly InstalledExtensionAdapter[]) => {
-  const report = await runExtensionSuite({ manifest, extensionId: EXTENSION_ID, manifestDigest: DIGEST, engineVersion: '0.1.0', adapters });
+const failedOf = async (adapters: readonly InstalledExtensionAdapter[], builtIn: readonly Pick<AgentCapability, 'mandateAction' | 'confirmation'>[] = []) => {
+  const report = await runExtensionSuite({ manifest, extensionId: EXTENSION_ID, manifestDigest: DIGEST, engineVersion: '0.1.0', adapters, builtIn });
   ExtensionSafetyReportSchema.parse(report);
   return report.scenarios.filter((s) => s.status === 'failed').map((s) => s.id.replace('extension.permit_lookup.', ''));
 };
@@ -36,10 +37,15 @@ test('the extension suite registers on the EVAL-001 harness and passes on the in
 
 test('every action of a manifest gets its own scenarios', () => {
   const two = manifestOf('two_actions', { actions: [lookup, { ...lookup, operation: 'second_lookup' }] });
-  const ids = extensionSafetyScenarios({ manifest: two, extensionId: EXTENSION_ID, adapters: ENGINE_EXTENSION_ADAPTERS }).map((s) => s.id);
+  const ids = extensionSafetyScenarios({ manifest: two, extensionId: EXTENSION_ID, adapters: ENGINE_EXTENSION_ADAPTERS, builtIn: [] }).map((s) => s.id);
   assert.ok(ids.includes('extension.two_actions.lookup-permit.injected-text-stays-data'));
   assert.ok(ids.includes('extension.two_actions.second-lookup.injected-text-stays-data'));
   assert.equal(new Set(ids).size, ids.length);
+});
+
+test('manifest-holds: a built-in raised above the manifest fails the suite, so an engine update withdraws it', async () => {
+  assert.deepEqual(await failedOf(ENGINE_EXTENSION_ADAPTERS, [{ mandateAction: 'research', confirmation: 'mandate' }]), [], 'at the floor');
+  assert.deepEqual(await failedOf(ENGINE_EXTENSION_ADAPTERS, [{ mandateAction: 'research', confirmation: 'person_each' }]), ['manifest-holds']);
 });
 
 test('negative: a suite without the installed pair fails, never passes empty', async () => {
@@ -78,7 +84,7 @@ test('negative: a fake that repeats an effect, or cannot be looked up, fails', a
 test('a report never echoes what the adapter said', async () => {
   const secret = 'synthetic-private-canary';
   const report = await runExtensionSuite({
-    manifest, extensionId: EXTENSION_ID, manifestDigest: DIGEST, engineVersion: '0.1.0',
+    manifest, extensionId: EXTENSION_ID, manifestDigest: DIGEST, engineVersion: '0.1.0', builtIn: [],
     adapters: pair(new FakeExtensionAdapter('synthetic_http_fake', () => ({ summary: secret, facts: { command: secret } }))),
   });
   assert.equal(report.passed, false);

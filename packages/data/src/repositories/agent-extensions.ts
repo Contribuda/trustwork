@@ -79,6 +79,8 @@ export interface ExtensionRunTarget {
   hubId: string;
   manifest: unknown;
   manifestDigest: string;
+  /** The built-in confirmations of the running engine. */
+  builtIn: { mandateAction: string; confirmation: string }[];
 }
 
 export const agentExtensionWorker = {
@@ -90,8 +92,8 @@ export const agentExtensionWorker = {
     const { rows } = await sql<{ r: string }>`SELECT trustwork.agent_extensions_record_run(${runId}::uuid, ${jobId}::uuid, ${fencingToken}::bigint, ${JSON.stringify(report)}::jsonb) AS r`.execute(trx);
     return rows[0]!.r;
   },
-  async engineTick(trx: Transaction, engineVersion: string, limit = 100): Promise<number> {
-    const { rows } = await sql<{ n: number }>`SELECT trustwork.agent_extensions_engine_tick(${engineVersion}::text, ${limit}::integer) AS n`.execute(trx);
+  async engineTick(trx: Transaction, engineVersion: string, limit = 100, deadlineSeconds = 3600): Promise<number> {
+    const { rows } = await sql<{ n: number }>`SELECT trustwork.agent_extensions_engine_tick(${engineVersion}::text, ${limit}::integer, ${deadlineSeconds}::integer) AS n`.execute(trx);
     return rows[0]?.n ?? 0;
   },
 };

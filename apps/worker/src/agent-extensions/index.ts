@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 import type { DataPool } from '@trustwork/data';
+import type { AgentCapability } from '../../../../packages/contracts/src/agent-catalog.js';
 import { AgentExtensionManifestSchema, ExtensionSafetyReportSchema, type ExtensionSafetyReport } from '../../../../packages/contracts/src/agent-extensions.js';
 import { agentExtensionWorker } from '../../../../packages/data/src/repositories/agent-extensions.js';
 import { inTransaction } from '../db.js';
@@ -58,7 +59,7 @@ export function registerExtensionSafetyRuns(registry: HandlerRegistry, runtime: 
       const parsed = AgentExtensionManifestSchema.safeParse(target.manifest);
       const stored = target.manifest as { safetySuite: { suiteId: string } };
       const report = parsed.success
-        ? await runExtensionSuite({ manifest: parsed.data, extensionId: target.extensionId, manifestDigest: target.manifestDigest, engineVersion: runtime.engineVersion, adapters: runtime.adapters })
+        ? await runExtensionSuite({ manifest: parsed.data, extensionId: target.extensionId, manifestDigest: target.manifestDigest, engineVersion: runtime.engineVersion, adapters: runtime.adapters, builtIn: target.builtIn as Pick<AgentCapability, 'mandateAction' | 'confirmation'>[] })
         : refusedManifestReport(stored.safetySuite.suiteId, target.manifestDigest, runtime.engineVersion);
       const outcome = await agentExtensionWorker.recordRun(trx, payload.runId, job.id, job.fencing_token, ExtensionSafetyReportSchema.parse(report));
       runtime.log(outcome === 'passed' ? 'info' : 'warn', 'extension safety suite finished', { runId: payload.runId, versionId: target.versionId, outcome, failed: report.scenarios.filter((s) => s.status === 'failed').length });
