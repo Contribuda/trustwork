@@ -6,7 +6,8 @@ import { expectAccessible, expectNoHorizontalOverflow, msg, shot, verifiedAccoun
  * HC-23 Verification against the live API, in Georgian (demo mode off): a steward drafts and activates a recipe, records
  * it for the launch checklist, registers a provider and sets the claim periods; a provider goes live through a second
  * person; a reader sees everything and can change nothing; a participant finds nothing. Key states pass axe and fit 1280
- * and 375 px. Every person and hub is synthetic.
+ * and 375 px. This file sorts after `console.e2e.ts` on purpose: its staff raise the node's staff count, and those journeys
+ * approve within one role. Every person and hub is synthetic.
  */
 const SLUG = `synthetic-verification-${Date.now().toString(36)}`;
 const PERMISSIONS = ['admin.hub.read', 'admin.claims.read', 'admin.claims.policy.edit', 'admin.config.edit', 'admin.providers.toggle', 'admin.providers.secret.write'];
@@ -20,7 +21,9 @@ test('a steward configures verification on a live hub; a second person is needed
   const a = await enrolled(aCtx, 'Synthetic Verification Steward A');
   const b = await enrolled(bCtx, 'Synthetic Verification Steward B');
   const reader = await enrolled(readerCtx, 'Synthetic Verification Reader');
-  for (const person of [a, b]) await control('/staff', { personId: person.personId, role: 'data-steward', permissions: PERMISSIONS, scope: { kind: 'node' } });
+  // Two roles: with enough staff on the node, separation of duties asks the second person to act through a different role.
+  await control('/staff', { personId: a.personId, role: 'data-steward', permissions: PERMISSIONS, scope: { kind: 'node' } });
+  await control('/staff', { personId: b.personId, role: 'ops-engineer', permissions: PERMISSIONS, scope: { kind: 'node' } });
   await control('/staff', { personId: reader.personId, role: 'auditor', permissions: ['admin.hub.read', 'admin.claims.read'], scope: { kind: 'node' } });
   for (const person of [a, b, reader]) await person.elevate();
   for (const ctx of [aCtx, bCtx, readerCtx, participantCtx]) await inGeorgian(ctx);
