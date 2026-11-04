@@ -4,11 +4,12 @@ import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { FORBIDDEN_CONTROL_WORDS } from '@trustwork/contracts';
 import {
-  ActiveFlagsQuerySchema, ConsoleSearchHitSchema, ConsoleSearchQuerySchema, ConsoleSearchResultSchema, ConsoleSavedViewSchema, ConsoleTargetQuerySchema, ConsoleViewConfigurationSchema, ConsoleViewsQuerySchema, ConsoleWorkCountSchema,
-  ConsoleWorkItemSchema, ConsoleWorkListSchema, ConsoleWorkQuerySchema, CreateConsoleViewCommandSchema, FLAG_SHARE_PERCENTS, parseConsoleRef, RemoveConsoleViewCommandSchema, SetConsoleNotificationsCommandSchema, SetFlagStageCommandSchema,
+  ActiveFlagsQuerySchema, CONSOLE_REF_UUID, CONSOLE_VIEW_VOCABULARY, ConsoleSearchHitSchema, ConsoleSearchQuerySchema, ConsoleSearchResultSchema, ConsoleSavedViewSchema, ConsoleTargetQuerySchema, ConsoleViewConfigurationSchema, ConsoleViewsQuerySchema, ConsoleWorkCountSchema,
+  ConsoleWorkItemSchema, ConsoleWorkListSchema, ConsoleWorkQuerySchema, CreateConsoleViewCommandSchema, FLAG_REFUSED_KEY, FLAG_SHARE_PERCENTS, parseConsoleRef, RemoveConsoleViewCommandSchema, SetConsoleNotificationsCommandSchema, SetFlagStageCommandSchema,
   UpdateConsoleViewCommandSchema,
 } from '../../../packages/contracts/src/console-services.js';
 import { flagBucket, flagInForce } from '../../../apps/api/src/modules/platform-admin/console-services/flag-buckets.js';
+import { SetFlagCommandSchema } from '../../../apps/api/src/modules/platform-admin/schemas.js';
 
 type Def = { type: string; shape?: Record<string, z.ZodType>; element?: z.ZodType; innerType?: z.ZodType; options?: z.ZodType[]; valueType?: z.ZodType; keyType?: z.ZodType; checks?: unknown[]; format?: string };
 const defOf = (schema: z.ZodType) => (schema as unknown as { def: Def }).def;
@@ -80,21 +81,45 @@ test('no request schema of this module carries a ranking word (ADM-001 guard rai
   }
 });
 
-test('a saved view stores no search text, and a filter value cannot be a name, an address or a telephone number', () => {
-  const ok = { filters: { state: ['open'], role: ['support-agent'] }, columns: ['id', 'state'], sort: { column: 'at', direction: 'descending' } };
-  assert.equal(ConsoleViewConfigurationSchema.safeParse(ok).success, true);
-  assert.equal(ConsoleViewConfigurationSchema.safeParse({ ...ok, query: 'maria' }).success, false, 'no search text');
-  for (const value of ['maria@example.invalid', 'Maria Petrova', '+15550100123', '15550100123', 'a b', '']) {
-    assert.equal(ConsoleViewConfigurationSchema.safeParse({ ...ok, filters: { actor: [value] } }).success, false, value);
+test('a saved view holds only what its surface lists: nothing typed, no identifier, however it is dressed up', () => {
+  const ok = { filters: { state: ['open'] }, columns: ['number', 'state'], sort: { column: 'openedAt', direction: 'descending' } };
+  const command = { contractVersion: '1.0.0', idempotencyKey: 'view-key-1', reason: 'Synthetic', scope: { kind: 'platform' }, surface: 'support:cases', configuration: ok, teamRole: null, isDefault: false };
+  const accepted = (configuration: unknown, extra: object = {}) => CreateConsoleViewCommandSchema.safeParse({ ...command, name: 'Open cases', configuration, ...extra }).success;
+  assert.equal(accepted(ok), true);
+  assert.equal(accepted({ ...ok, query: 'maria' }), false, 'no search text');
+  const hexId = randomUUID().replaceAll('-', '');
+  for (const value of ['Maria.Petrova', 'maria.petrova', 'maria-petrova', '1555-0100-123', 'maria:example.invalid', 'maria@example.invalid', 'Maria Petrova', '+15550100123', '15550100123', hexId, randomUUID(), 'a b', '']) {
+    for (const teamRole of [null, 'moderator']) {
+      assert.equal(accepted({ ...ok, filters: { state: [value] } }, { teamRole }), false, `value ${value}`);
+      assert.equal(accepted({ ...ok, filters: { actor: [value] } }, { teamRole }), false, `actor ${value}`);
+    }
   }
-  const command = { contractVersion: '1.0.0', idempotencyKey: 'view-key-1', reason: 'Synthetic', scope: { kind: 'platform' }, surface: 'flags', configuration: ok, teamRole: null, isDefault: false };
-  assert.equal(CreateConsoleViewCommandSchema.safeParse({ ...command, name: 'Open flags' }).success, true);
+  assert.equal(accepted({ ...ok, filters: { mariaPetrova: ['open'] } }), false, 'a filter this surface does not have');
+  assert.equal(accepted({ ...ok, filters: { constructor: ['open'] } }), false, 'not a property of every object');
+  assert.equal(accepted({ ...ok, filters: { stage: ['off'] } }), false, 'a filter of another surface');
+  assert.equal(accepted({ ...ok, columns: ['mariaPetrova'] }), false, 'a column cannot carry a word');
+  assert.equal(accepted({ ...ok, sort: { column: 'mariaPetrova', direction: 'ascending' } }), false, 'nor can a sort');
   for (const name of ['maria@example.invalid', 'Call 555 0100 123', 'Mine +1 (555) 010-0123', '   ']) assert.equal(CreateConsoleViewCommandSchema.safeParse({ ...command, name }).success, false, name);
-  // An identifier may sit in a personal view, never in one shared with a team.
-  const pinned = { ...ok, filters: { actor: [randomUUID()] } };
-  assert.equal(CreateConsoleViewCommandSchema.safeParse({ ...command, name: 'Pinned', configuration: pinned }).success, true);
-  assert.equal(CreateConsoleViewCommandSchema.safeParse({ ...command, name: 'Pinned', configuration: pinned, teamRole: 'moderator' }).success, false);
   assert.ok(!walk(ConsoleSavedViewSchema, 'view', () => undefined).some((name) => /owner|person/i.test(name)), 'who owns a team view is not shown');
+  for (const [surface, { filters, columns }] of Object.entries(CONSOLE_VIEW_VOCABULARY)) {
+    const values = [...Object.keys(filters), ...Object.values(filters).flat(), ...columns] as string[];
+    assert.ok(columns.length > 0, surface);
+    assert.ok(values.every((value) => !/@|\s/.test(value) && !CONSOLE_REF_UUID.test(value)), surface);
+    assert.ok(Object.entries(filters).every(([key, list]) => ConsoleViewConfigurationSchema.safeParse({ filters: { [key]: [...(list as readonly string[])] }, columns: [...columns], sort: null }).success), `${surface}: its own list fits the shape`);
+  }
+});
+
+test('ADM-005: a flag key cannot be about ranking, matching, reputation or payment', () => {
+  const flag = { contractVersion: '1.0.0', idempotencyKey: 'flag-key-1', reason: 'Synthetic', scope: { kind: 'hub', hubId: randomUUID() }, value: true, description: 'Synthetic', declaredEffect: 'ui', expiresAt: new Date().toISOString() };
+  for (const key of ['matching.v2', 'ranking.boost_off', 'payment.new_form', 'payments.v2', 'reputation.decay', 'ui.payment_form', 'ui.matching_panel', 'directory.rank_b', 'payout.batch_b', 'sponsored.slots', 'recommendations.rule_b']) {
+    assert.ok(FLAG_REFUSED_KEY.test(key), key);
+    assert.equal(SetFlagCommandSchema.safeParse({ ...flag, key }).success, false, key);
+  }
+  for (const key of ['ui.dense_tables', 'ops.dispatch_batching', 'ops.payload_size', 'retrieval.rerank_model_b']) {
+    assert.ok(!FLAG_REFUSED_KEY.test(key), key);
+    assert.equal(SetFlagCommandSchema.safeParse({ ...flag, key }).success, true, key);
+  }
+  assert.equal(SetFlagCommandSchema.safeParse({ ...flag, key: 'ui.variant', value: 'matching_b' }).success, false, 'nor its value');
 });
 
 test('ADM-005 acceptance: a flag stage cannot name a person, a company, a session or a list of them', () => {
@@ -110,29 +135,29 @@ test('ADM-005 acceptance: a flag stage cannot name a person, a company, a sessio
   assert.equal(SetFlagStageCommandSchema.safeParse({ ...base, stage: 'on', sharePercent: 5 }).success, false, 'only a share has one');
 });
 
-test('a bucket is deterministic, spread evenly, nested across shares, and does not follow a person from session to session', () => {
+test('a bucket is deterministic, spread evenly and nested across shares, and each flag draws its own people', () => {
   const flag = randomUUID();
-  const sessions = Array.from({ length: 20_000 }, () => randomUUID());
-  const session = sessions[0] as string;
-  assert.equal(flagBucket(flag, session), flagBucket(flag, session), 'stable for a session');
+  const people = Array.from({ length: 20_000 }, () => randomUUID());
+  const person = people[0] as string;
+  assert.equal(flagBucket(flag, person), flagBucket(flag, person), 'stable for a person');
   for (const share of FLAG_SHARE_PERCENTS) {
-    const inside = sessions.filter((id) => flagInForce({ id: flag, stage: 'share', sharePercent: share }, { id, staff: false })).length;
-    assert.ok(Math.abs(inside / sessions.length - share / 100) < 0.01, `${share} percent gave ${inside}`);
+    const inside = people.filter((personId) => flagInForce({ id: flag, stage: 'share', sharePercent: share }, { personId, staff: false })).length;
+    assert.ok(Math.abs(inside / people.length - share / 100) < 0.01, `${share} percent gave ${inside}`);
   }
-  const small = new Set(sessions.filter((id) => flagBucket(flag, id) < 5));
-  const wide = new Set(sessions.filter((id) => flagBucket(flag, id) < 25));
-  assert.ok([...small].every((id) => wide.has(id)), 'widening only adds sessions');
+  const small = new Set(people.filter((id) => flagBucket(flag, id) < 5));
+  const wide = new Set(people.filter((id) => flagBucket(flag, id) < 25));
+  assert.ok([...small].every((id) => wide.has(id)), 'widening only adds people');
   const other = randomUUID();
-  assert.ok(sessions.slice(0, 200).some((id) => flagBucket(flag, id) !== flagBucket(other, id)), 'each flag draws its own sessions');
+  assert.ok(people.slice(0, 200).some((id) => flagBucket(flag, id) !== flagBucket(other, id)), 'each flag draws its own people');
 });
 
 test('stages decide what is in force, and being staff matters only for staff only', () => {
-  const session = { id: randomUUID(), staff: true };
+  const reader = { personId: randomUUID(), staff: true };
   const id = randomUUID();
-  assert.equal(flagInForce({ id, stage: 'off', sharePercent: null }, session), false);
-  assert.equal(flagInForce({ id, stage: 'staff_only', sharePercent: null }, session), true);
-  assert.equal(flagInForce({ id, stage: 'staff_only', sharePercent: null }, { ...session, staff: false }), false);
-  assert.equal(flagInForce({ id, stage: 'on', sharePercent: null }, { ...session, staff: false }), true);
-  const out = Array.from({ length: 2000 }, () => randomUUID()).find((sid) => flagBucket(id, sid) >= 50) as string;
-  assert.equal(flagInForce({ id, stage: 'share', sharePercent: 50 }, { id: out, staff: true }), false, 'a share does not widen for staff');
+  assert.equal(flagInForce({ id, stage: 'off', sharePercent: null }, reader), false);
+  assert.equal(flagInForce({ id, stage: 'staff_only', sharePercent: null }, reader), true);
+  assert.equal(flagInForce({ id, stage: 'staff_only', sharePercent: null }, { ...reader, staff: false }), false);
+  assert.equal(flagInForce({ id, stage: 'on', sharePercent: null }, { ...reader, staff: false }), true);
+  const out = Array.from({ length: 2000 }, () => randomUUID()).find((personId) => flagBucket(id, personId) >= 50) as string;
+  assert.equal(flagInForce({ id, stage: 'share', sharePercent: 50 }, { personId: out, staff: true }), false, 'a share does not widen for staff');
 });

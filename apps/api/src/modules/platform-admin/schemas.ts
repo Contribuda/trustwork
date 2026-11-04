@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   CONSOLE_SECOND_PERSON_ACTIONS, consoleCommand, type ConsoleSecondPersonAction, FORBIDDEN_CONTROL_WORDS, HubStaffRoleSchema, ProjectionClassSchema, ShortTextSchema,
 } from '../../deps/contracts.js';
+import { FLAG_REFUSED_KEY } from './console-services/deps.js';
 
 /**
  * Request schemas of the administration API (ADM-001). Every command is a console command (`consoleCommand` of the
@@ -109,6 +110,10 @@ export const SetFlagCommandSchema = command({
   // The database refuses these words in keys too (plus access words); values and descriptions are checked here.
   for (const [path, text] of [['key', c.key], ['description', c.description], ['value', typeof c.value === 'string' ? c.value : '']] as const) {
     if (FORBIDDEN_CONTROL_WORDS.test(text)) ctx.addIssue({ code: 'custom', path: [path], message: 'flags never control ranking, scores, positions or badges' });
+  }
+  // ADM-005: nor the subjects payment may never reach; the database refuses these keys for every writer.
+  for (const [path, text] of [['key', c.key], ['value', typeof c.value === 'string' ? c.value : '']] as const) {
+    if (FLAG_REFUSED_KEY.test(text)) ctx.addIssue({ code: 'custom', path: [path], message: 'flags never touch ranking, matching, reputation or payment' });
   }
 });
 

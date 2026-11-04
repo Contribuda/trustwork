@@ -18,7 +18,7 @@ Every route under `/v1/admin/console` needs a signed-in session and a live eleva
 | `GET notifications`, `POST notifications` | the person | Their own settings: e-mail categories and quiet hours |
 | `GET flags` | staff covering the target | Flags with stage and expiry, expired ones included |
 | `POST flags/:id/stage` | `admin.flags.edit` at the flag's scope | Moves a stage; audited |
-| `GET /v1/flags/active` | any signed-in session | The flags in force for this session at the hub this API serves |
+| `GET /v1/flags/active` | any signed-in person | The flags in force for them at the hub this API serves |
 
 ## What search never does
 
@@ -45,18 +45,19 @@ Operator Agent team review items are not a source yet: AGT-030 has no table to r
 
 ## Saved views
 
-A view remembers filters, columns and a sort for one surface at one scope, for its owner or for a team: the holders of one role covering that scope. It stores no rows, counts or search text. What it shows is computed for each reader under their own permissions when they open it. A filter value is a code in every view, and a view shared with a team holds no identifier, so sharing cannot tell a team who or what its owner was looking at. The name is the one free text: it refuses an address or a telephone number, but a person's name cannot be told from any other words, so that stays with the writer. Only the owner changes a view, while they are staff covering the scope and in the team.
+A view remembers filters, columns and a sort for one surface at one scope, for its owner or for a team: the holders of one role covering that scope. It stores no rows, counts or search text. What it shows is computed for each reader under their own permissions when they open it. Every filter, value and column comes from a list per surface (`CONSOLE_VIEW_VOCABULARY`, and `console_view_vocabulary()` for every writer), because no pattern can tell a code from a name made to look like one. So a view holds no identifier and nothing typed, and sharing it cannot tell a team who or what its owner was looking at. A screen that needs a new filter adds it to both lists. The name is the one free text: it refuses an address or a telephone number, but a person's name cannot be told from any other words, so that stays with the writer. Only the owner changes a view, while they are staff covering the scope and in the team.
 
 ## Flag stages
 
-Off, staff only, a share of sessions (1, 5, 25 or 50 percent) and on, in `feature_flag_rollout` beside the flag. A new flag starts off; flags from before this module keep working at stage on. A stage says only for which sessions a flag is in force, so the rule that flags never touch access, projections, egress or ranking is unchanged.
+Off, staff only, a share of people (1, 5, 25 or 50 percent) and on, in `feature_flag_rollout` beside the flag. A new flag starts off; flags from before this module keep working at stage on. A stage says only for whom a flag is in force, so the rule that flags never touch access, projections, egress or ranking is unchanged. The work package says a share of sessions; the bucket follows the person instead, because a session bucket lets a client reach a 1 percent share by signing in again.
 
 - **Off is immediate.** One person, no second approval and no revision to restate, so it cannot be held up. Every other stage restates the revision it was decided on, and every command moves the revision, so a widening prepared before an off is refused. The session read has no cache.
-- **A stage cannot target a person.** The command and the table have a stage and a percent and nowhere to put anything else. The bucket comes from the flag's generated id and the session id, so it is not chosen by anyone, a person gets a new draw with a new session, and a session inside 5 percent is inside 25 percent too.
-- An expired flag is in force for nobody. It can be set off, and it cannot be widened until it is extended.
+- **A stage cannot target a person.** The command and the table have a stage and a percent and nowhere to put anything else. The bucket is a hash of the flag's generated id and the person id: nobody chooses it, it does not change with a new sign-in, and someone inside 5 percent is inside 25 percent too. Anyone who knows the flag and a person id can compute that person's bucket, which tells them nothing they could use to single that person out: a stage still reaches a whole percent of people.
+- **A flag cannot be about ranking, matching, reputation or payment.** Keys with those words at the start of a segment (`matching.v2`, `ui.payment_form`, also `sponsor` and `recommend`) are refused by the table for every writer, and by the API with string values too. Payment never changes the first three, so a flag cannot reach any of them.
+- **An expired flag is in force for nobody.** It can be set off and cannot be widened. Extending it brings it back at off with a new revision, whatever stage it had, for every writer of the flag, so a change of date never returns it to everyone. The `flags.set` audit row records the extension.
 
 ## Known limits
 
-- Notification settings are stored and read; nothing consults them yet, because the staff notices have no mail templates (a MAIL follow-up, see the platform administration README).
+- Notification settings are stored and read; nothing consults them yet, because the staff notices have no mail templates (a MAIL follow-up, see the platform administration README). **When mail consumes them, quiet hours must exempt the `incidents` and `recovery` categories:** a person's quiet hours may not hold back an incident page or an account recovery notice, which are time-critical and, for recovery, part of the protection of the subject. Opting out of a category by e-mail stays the person's choice; quiet hours only delay, and these two are not delayed.
 - A request id that is not a uuid (a client may send one) is found in the audit explorer, not here.
 - Only pipeline runs are searched as runs. Assistant runs are participants' data and are never searched; operator agent runs arrive with AGT-030.

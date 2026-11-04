@@ -145,19 +145,17 @@ export class ConsoleServicesService {
   }
 
   /**
-   * The flags in force for this session at the hub this API serves, read fresh on every call: there is no cache to outlive
-   * turning a flag off. Flags that are not in force for this session are not named, and no other hub's are reachable.
+   * The flags in force for the caller at the hub this API serves, read fresh on every call: there is no cache to outlive
+   * turning a flag off. Flags that are not in force for them are not named, and no other hub's are reachable.
    * Being staff of another hub counts for nothing here. A deployment that serves no hub has no flags in force.
    */
   activeFlags(state: RequestState): Promise<ActiveFlags> {
-    const session = state.session;
-    if (!session) throw new ApiError('auth.session_invalid', 'authentication required');
     const hubId = this.servedHubId;
     if (!hubId) return Promise.resolve({ flags: [] });
-    return this.read(state, async (trx) => {
+    return this.read(state, async (trx, p) => {
       const staff = await consoleReads.isStaff(trx, { kind: 'hub', hubId });
       const rows = await consoleFlags.inForceAt(trx, hubId);
-      return { flags: rows.filter((row) => flagInForce({ id: row.id, stage: row.stage, sharePercent: row.share_percent }, { id: session.id, staff })).map((row) => ({ key: row.key, value: row.value })) };
+      return { flags: rows.filter((row) => flagInForce({ id: row.id, stage: row.stage, sharePercent: row.share_percent }, { personId: p.personId, staff })).map((row) => ({ key: row.key, value: row.value })) };
     });
   }
 }

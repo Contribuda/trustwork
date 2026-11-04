@@ -1,17 +1,24 @@
 -- ADM-005 part 1: rollout stages of a feature flag (docs/engine/hub-console/console-design.md, section 6.2; contract
 -- packages/contracts/src/console-services.ts).
 --
--- A flag moves off -> staff only -> a share of sessions (1, 5, 25 or 50 percent, deterministic buckets) -> on. The stage
+-- A flag moves off -> staff only -> a share of people (1, 5, 25 or 50 percent, deterministic buckets) -> on. The stage
 -- lives beside the flag and changes nothing about what a flag is: feature_flag still refuses access, projection, egress
--- and ranking words and values, and a stage only says for which sessions the flag is in force.
+-- and ranking words and values, and a stage only says for whom the flag is in force.
 --
 -- * A stage cannot target a person. The table has a stage and a percent; it has no person, company, session or list
---   column, so no writer can store one. The bucket comes from the flag's server-chosen id and the session id, and only
---   a percent of them is selected; the application computes it (flag-buckets.ts), nothing stores it.
+--   column, so no writer can store one. The bucket comes from the flag's server-chosen id and the person id, so signing
+--   in again cannot reach a share, and only a percent of people is selected; the application computes it
+--   (flag-buckets.ts), nothing stores it.
 -- * Off is immediate and needs one person: it takes no revision, so a flag can always be stopped whatever anyone else is
 --   doing, and every read sees the row as it is (no cache, no job). Any other stage restates the revision it was decided
 --   on, so a widening prepared before someone turned the flag off is refused and cannot switch it back on.
 -- * A new flag starts off. Flags that existed before this migration keep working as they did, at stage on.
+-- * Extending an expired flag brings it back at off, with a new revision. It was out of force, whoever looks at it now
+--   decided nothing about it, and it must not return for everyone by a change of date. This is a trigger, so it holds
+--   for every writer of feature_flag; the flags.set audit row of the extension records the act.
+-- * No flag may be about ranking, matching, reputation or payment (FLAG_REFUSED_KEY): payment never changes the first
+--   three, so a flag cannot reach any of them. feature_flag refused ranking and access words already. Existing rows are
+--   not validated but are set off here, and any rewrite of them is refused.
 
 CREATE TABLE trustwork.feature_flag_rollout (
   flag_id uuid PRIMARY KEY REFERENCES trustwork.feature_flag (id),
@@ -55,9 +62,23 @@ CREATE POLICY feature_flag_rollout_read ON trustwork.feature_flag_rollout FOR SE
 CREATE POLICY feature_flag_rollout_worker_read ON trustwork.feature_flag_rollout FOR SELECT TO trustwork_worker USING (true);
 GRANT SELECT ON trustwork.feature_flag_rollout TO trustwork_app, trustwork_worker;
 
+ALTER TABLE trustwork.feature_flag ADD CONSTRAINT feature_flag_key_no_outcome CHECK (key !~ '(^|[._])(rank|match|reput|payment|payout|sponsor|recommend)') NOT VALID;
+
 SET LOCAL trustwork.maintenance = 'on';
-INSERT INTO trustwork.feature_flag_rollout (flag_id, stage) SELECT f.id, 'on' FROM trustwork.feature_flag f;
+INSERT INTO trustwork.feature_flag_rollout (flag_id, stage)
+SELECT f.id, CASE WHEN f.key ~ '(^|[._])(rank|match|reput|payment|payout|sponsor|recommend)' THEN 'off' ELSE 'on' END FROM trustwork.feature_flag f;
 SET LOCAL trustwork.maintenance = 'off';
+
+-- An expired flag that gets a future expiry returns at off, and the revision moves, so nothing decided before it applies.
+CREATE FUNCTION trustwork.console_flag_revived() RETURNS trigger
+LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
+BEGIN
+  IF OLD.expires_at <= now() AND NEW.expires_at > now() THEN
+    UPDATE trustwork.feature_flag_rollout SET stage = 'off', share_percent = NULL WHERE flag_id = NEW.id;
+  END IF;
+  RETURN NULL;
+END $$;
+CREATE TRIGGER feature_flag_rollout_revived AFTER UPDATE OF expires_at ON trustwork.feature_flag FOR EACH ROW EXECUTE FUNCTION trustwork.console_flag_revived();
 
 -- The one command that moves a stage (admin.flags.edit at the flag's own scope).
 CREATE FUNCTION trustwork.console_flag_set_stage(p_ctx jsonb, p_flag uuid, p_stage text, p_share integer, p_expected_revision integer) RETURNS trustwork.feature_flag_rollout

@@ -6,7 +6,7 @@ export { consoleFlags, consoleNotifications, consoleReads, consoleViews, type Co
 export type { ConsoleNotificationSettingRow, ConsoleSavedViewRow, FlagStage } from '../../../../../../packages/data/src/schema/console-services.js';
 export {
   ActiveFlagsQuerySchema, ConsoleSearchHitSchema, ConsoleSearchQuerySchema, ConsoleSearchResultSchema, ConsoleTargetQuerySchema, ConsoleViewConfigurationSchema, ConsoleViewsQuerySchema,
-  ConsoleWorkItemSchema, ConsoleWorkQuerySchema, CONSOLE_WORK_LIMIT, CreateConsoleViewCommandSchema, parseConsoleRef, RemoveConsoleViewCommandSchema, SetConsoleNotificationsCommandSchema,
+  ConsoleWorkItemSchema, ConsoleWorkQuerySchema, CONSOLE_WORK_LIMIT, CreateConsoleViewCommandSchema, FLAG_REFUSED_KEY, parseConsoleRef, RemoveConsoleViewCommandSchema, SetConsoleNotificationsCommandSchema,
   SetFlagStageCommandSchema, UpdateConsoleViewCommandSchema,
   type ActiveFlags, type ConsoleFlag, type ConsoleNotificationSettings, type ConsoleSavedView, type ConsoleSearchResult, type ConsoleViewConfiguration, type ConsoleWorkCount, type ConsoleWorkList,
   type ConsoleWorkView, type CreateConsoleViewCommand, type RemoveConsoleViewCommand, type SetConsoleNotificationsCommand, type SetFlagStageCommand, type UpdateConsoleViewCommand,

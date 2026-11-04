@@ -18,6 +18,7 @@ const HINTS: Readonly<Record<string, { code: ErrorCode; required?: string }>> = 
   'admin.review_escalated': { code: 'access.forbidden', required: 'permission' },
   'admin.review_empty': { code: 'access.not_found' },
   'admin.view_limit': { code: 'validation.schema' },
+  'admin.view_configuration': { code: 'validation.schema' },
   'admin.self_offboarding': { code: 'access.forbidden' },
   'admin.offboarding_open': { code: 'validation.revision_conflict' },
   'admin.offboarding_blocked': { code: 'validation.revision_conflict' },

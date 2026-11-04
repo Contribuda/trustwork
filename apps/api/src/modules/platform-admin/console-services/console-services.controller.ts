@@ -88,7 +88,7 @@ export class ConsoleServicesController {
   }
 }
 
-/** What any signed-in session uses to decide what to show: the flags in force for it. Not a staff route. */
+/** What any signed-in person's client uses to decide what to show: the flags in force for them. Not a staff route. */
 @Controller('v1/flags')
 export class ActiveFlagsController {
   constructor(@Inject(ConsoleServicesService) private readonly console: ConsoleServicesService) {}

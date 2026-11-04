@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { sql } from 'kysely';
 import {
-  CONSOLE_NOTIFICATION_CATEGORIES, CONSOLE_VIEW_SURFACES, ConsoleActionCodeSchema, ConsoleFlagSchema, ConsoleNotificationSettingsSchema, ConsoleSavedViewSchema, type ConsoleFlag, type ConsoleSavedView,
+  CONSOLE_NOTIFICATION_CATEGORIES, CONSOLE_VIEW_SURFACES, CONSOLE_VIEW_VOCABULARY, ConsoleActionCodeSchema, ConsoleFlagSchema, ConsoleNotificationSettingsSchema, ConsoleSavedViewSchema, type ConsoleFlag, type ConsoleSavedView,
 } from '../../../packages/contracts/src/console-services.js';
 import { HubConfigDomainSchema, HubStaffRoleSchema } from '../../../packages/contracts/src/hub.js';
 import { consoleFlags, consoleNotifications, consoleViews } from '../../../packages/data/src/repositories/console-services.js';
-import { staffAssignments } from '../../../packages/data/src/repositories/admin.js';
+import { featureFlags, staffAssignments } from '../../../packages/data/src/repositories/admin.js';
 import { flagBucket } from '../../../apps/api/src/modules/platform-admin/console-services/flag-buckets.js';
 import { Client, SKIP_REASON, startHarness, type Response } from '../../backend/helpers/app.js';
-import { auditRows, command, expectRefusal } from '../helpers.js';
+import { auditRows, command, emailOf, expectRefusal, signIn } from '../helpers.js';
 import { rejects } from '../../data/admin/helpers.js';
 import { buildConsoleWorld, ids, type ConsoleWorld } from './helpers.js';
 
@@ -29,7 +29,9 @@ test('console views, notification settings and flag stages (ADM-005)', { skip: h
   const { hubId, otherHubId } = w;
   const hub = { kind: 'hub', hubId } as const;
   const otherHub = { kind: 'hub', hubId: otherHubId } as const;
-  const configuration = { filters: { state: ['open'] }, columns: ['id', 'state'], sort: { column: 'at', direction: 'descending' } };
+  const configuration = { filters: { state: ['open'] }, columns: ['number', 'state'], sort: { column: 'openedAt', direction: 'descending' } };
+  const flagView = { filters: { stage: ['off'] }, columns: ['key'], sort: null };
+  const incidentView = { filters: { severity: ['sev1'] }, columns: ['severity'], sort: null };
   const viewOf = (r: Response): ConsoleSavedView => ConsoleSavedViewSchema.parse((r.body as { view: unknown }).view);
   const create = (client: Client, body: Record<string, unknown> = {}) => command(client, '/v1/admin/console/views', { scope: hub, surface: 'support:cases', name: 'Open cases', configuration, teamRole: null, isDefault: false, ...body });
   const list = async (client: Client, query = `hubId=${hubId}`): Promise<ConsoleSavedView[]> => {
@@ -39,7 +41,8 @@ test('console views, notification settings and flag stages (ADM-005)', { skip: h
   };
 
   await t.test('the database and the contract hold the same vocabularies, and the stage table has nowhere to put a person', async () => {
-    const { rows: [vocab] } = await h.db.admin.query<{ surfaces: string[]; categories: string[] }>('SELECT trustwork.console_view_surfaces() AS surfaces, trustwork.console_notification_categories() AS categories');
+    const { rows: [vocab] } = await h.db.admin.query<{ surfaces: string[]; categories: string[]; views: unknown }>('SELECT trustwork.console_view_surfaces() AS surfaces, trustwork.console_notification_categories() AS categories, trustwork.console_view_vocabulary() AS views');
+    assert.deepEqual(vocab?.views, JSON.parse(JSON.stringify(CONSOLE_VIEW_VOCABULARY)), 'the same filters, values and columns per surface');
     assert.deepEqual(vocab?.surfaces, [...CONSOLE_VIEW_SURFACES]);
     assert.deepEqual(vocab?.categories, [...CONSOLE_NOTIFICATION_CATEGORIES]);
     // A stored value the contract cannot name would fail a whole list, so everything a hit or a row carries is in the contract.
@@ -92,24 +95,31 @@ test('console views, notification settings and flag stages (ADM-005)', { skip: h
   });
 
   await t.test('negative: nothing a person typed reaches a team through a view, for any writer', async () => {
-    const uuid = randomUUID();
+    const hexId = randomUUID().replaceAll('-', '');
     expectRefusal(await create(c.lead, { configuration: { ...configuration, query: 'maria' } }), 422, 'validation.unknown_field');
-    expectRefusal(await create(c.lead, { configuration: { ...configuration, filters: { actor: ['maria@example.invalid'] } } }), 422, 'validation.schema');
+    for (const value of ['Maria.Petrova', 'maria.petrova', '1555-0100-123', 'maria:example.invalid', hexId, randomUUID()]) {
+      expectRefusal(await create(c.lead, { configuration: { ...configuration, filters: { state: [value] } } }), 422, 'validation.schema');
+    }
     expectRefusal(await create(c.lead, { name: 'maria@example.invalid' }), 422, 'validation.schema');
-    expectRefusal(await create(c.lead, { teamRole: 'support-lead', configuration: { ...configuration, filters: { actor: [uuid] } } }), 422, 'validation.schema');
     const ctx = await w.actors.elevate(p.lead);
-    const direct = (body: Partial<Parameters<typeof consoleViews.create>[2]>) => w.actors.as(p.lead, (trx) => consoleViews.create(trx, ctx, { scope: hub, surface: 'support:cases', name: 'Direct', configuration, teamRole: null, isDefault: false, ...body }));
-    await rejects(direct({ configuration: { ...configuration, query: 'maria' } }), '23514');
-    await rejects(direct({ configuration: { ...configuration, filters: { actor: ['maria@example.invalid'] } } }), '23514');
-    await rejects(direct({ configuration: { ...configuration, filters: { actor: ['Maria Petrova'] } } }), '23514');
-    await rejects(direct({ configuration: { ...configuration, filters: { actor: ['15550100123'] } } }), '23514');
+    const direct = (body: Partial<Parameters<typeof consoleViews.create>[2]>) => w.actors.as(p.lead, (trx) => consoleViews.create(trx, ctx, { scope: hub, surface: 'support:cases', name: 'Direct', configuration, teamRole: 'support-lead', isDefault: false, ...body }));
+    await rejects(direct({ configuration: { ...configuration, query: 'maria' } }), '23514', 'admin.view_configuration');
+    for (const value of ['Maria.Petrova', 'maria.petrova', '1555-0100-123', 'maria:example.invalid', 'maria@example.invalid', 'Maria Petrova', '15550100123', hexId, randomUUID()]) {
+      await rejects(direct({ configuration: { ...configuration, filters: { state: [value] } } }), '23514', 'admin.view_configuration');
+      await rejects(direct({ teamRole: null, configuration: { ...configuration, filters: { state: [value] } } }), '23514', 'admin.view_configuration');
+    }
+    await rejects(direct({ configuration: { ...configuration, filters: { mariaPetrova: ['open'] } } }), '23514', 'admin.view_configuration');
+    await rejects(direct({ configuration: { ...configuration, columns: ['mariaPetrova'] } }), '23514', 'admin.view_configuration');
+    await rejects(direct({ configuration: { ...configuration, sort: { column: 'mariaPetrova', direction: 'ascending' } } }), '23514', 'admin.view_configuration');
+    await rejects(direct({ surface: 'flags' }), '23514', 'admin.view_configuration');
     await rejects(direct({ name: 'maria@example.invalid' }), '23514');
     await rejects(direct({ name: 'Call 555 0100 123' }), '23514');
-    await rejects(direct({ teamRole: 'support-lead', configuration: { ...configuration, filters: { actor: [uuid] } } }), '23514');
-    // A personal view may pin an identifier; sharing it later is refused the same way.
-    const pinned = viewOf(await create(c.lead, { name: 'Pinned', configuration: { ...configuration, filters: { actor: [uuid] } } }));
-    expectRefusal(await command(c.lead, `/v1/admin/console/views/${pinned.id}`, { expectedRevision: 1, name: 'Pinned', configuration: { ...configuration, filters: { actor: [uuid] } }, teamRole: 'support-lead', isDefault: false }), 422, 'validation.schema');
-    await rejects(w.actors.as(p.lead, (trx) => consoleViews.update(trx, ctx, pinned.id, { expectedRevision: 1, name: 'Pinned', configuration: { ...configuration, filters: { actor: [uuid] } }, teamRole: 'support-lead', isDefault: false })), '23514');
+    // The table holds it without the command too.
+    await rejects(w.actors.owner((trx) => trx.insertInto('console_saved_view').values({ scope_kind: 'hub', hub_id: hubId, node_id: null, surface: 'support:cases', owner_person_id: p.lead, team_role: 'support-lead', name: 'Raw', configuration: JSON.stringify({ ...configuration, filters: { state: ['Maria.Petrova'] } }), removed_at: null }).execute()), '23514');
+    // An update has the stored view's surface: the database answers, and the API says it as a shape error.
+    const view = viewOf(await create(c.lead, { name: 'To edit' }));
+    expectRefusal(await command(c.lead, `/v1/admin/console/views/${view.id}`, { expectedRevision: 1, name: 'To edit', configuration: { ...configuration, filters: { state: ['maria'] } }, teamRole: 'support-lead', isDefault: false }), 422, 'validation.schema', 'view_configuration');
+    expectRefusal(await command(c.lead, `/v1/admin/console/views/${view.id}`, { expectedRevision: 1, name: 'To edit', configuration: { filters: { stage: ['off'] }, columns: ['key'], sort: null }, teamRole: null, isDefault: false }), 422, 'validation.schema', 'view_configuration');
   });
 
   await t.test('negative: only the owner changes a view, on the revision they saw', async () => {
@@ -143,16 +153,16 @@ test('console views, notification settings and flag stages (ADM-005)', { skip: h
   });
 
   await t.test('concurrency: one default per surface and at most 100 views, whatever arrives together', async () => {
-    const defaults = await Promise.all([0, 1, 2, 3].map((i) => create(c.agent, { name: `Default ${i}`, surface: 'flags', isDefault: true })));
+    const defaults = await Promise.all([0, 1, 2, 3].map((i) => create(c.agent, { name: `Default ${i}`, surface: 'flags', configuration: flagView, isDefault: true })));
     assert.deepEqual(defaults.map((r) => r.status), [201, 201, 201, 201]);
     assert.equal((await list(c.agent, `hubId=${hubId}&surface=flags`)).filter((v) => v.isDefault).length, 1);
     const ctx = await w.actors.elevate(p.ops);
     await w.actors.owner(async (trx) => {
-      for (let i = 0; i < 99; i += 1) await trx.insertInto('console_saved_view').values({ scope_kind: 'hub', hub_id: hubId, node_id: null, surface: 'incidents', owner_person_id: p.ops, team_role: null, name: `Filled ${i}`, configuration: JSON.stringify(configuration), removed_at: null }).execute();
+      for (let i = 0; i < 99; i += 1) await trx.insertInto('console_saved_view').values({ scope_kind: 'hub', hub_id: hubId, node_id: null, surface: 'incidents', owner_person_id: p.ops, team_role: null, name: `Filled ${i}`, configuration: JSON.stringify(incidentView), removed_at: null }).execute();
     });
-    const raced = await Promise.allSettled([1, 2].map((i) => w.actors.as(p.ops, (trx) => consoleViews.create(trx, { ...ctx, requestId: `req-${randomUUID()}` }, { scope: hub, surface: 'incidents', name: `Race ${i}`, configuration, teamRole: null, isDefault: false }))));
+    const raced = await Promise.allSettled([1, 2].map((i) => w.actors.as(p.ops, (trx) => consoleViews.create(trx, { ...ctx, requestId: `req-${randomUUID()}` }, { scope: hub, surface: 'incidents', name: `Race ${i}`, configuration: incidentView, teamRole: null, isDefault: false }))));
     assert.deepEqual(raced.map((r) => r.status).sort(), ['fulfilled', 'rejected']);
-    await rejects(w.actors.as(p.ops, (trx) => consoleViews.create(trx, ctx, { scope: hub, surface: 'incidents', name: 'Over', configuration, teamRole: null, isDefault: false })), '23514', 'admin.view_limit');
+    await rejects(w.actors.as(p.ops, (trx) => consoleViews.create(trx, ctx, { scope: hub, surface: 'incidents', name: 'Over', configuration: incidentView, teamRole: null, isDefault: false })), '23514', 'admin.view_limit');
   });
 
   await t.test('notification settings: nothing by default, and each person reads and writes only their own', async () => {
@@ -222,18 +232,30 @@ test('console views, notification settings and flag stages (ADM-005)', { skip: h
     assert.deepEqual((await auditRows(h, "object_type = 'feature_flag' AND object_id = $1 AND action LIKE 'flags.stage_%'", [id])).map((r) => r.action), ['flags.stage_staff_only', 'flags.stage_on', 'flags.stage_off']);
   });
 
-  await t.test('a share follows the session, not the person: the same bucket for a session, a new draw for a new one', async () => {
-    const id = await flagIn('ui.share_walk');
-    const session = await w.actors.owner(async (trx) => (await trx.selectFrom('session').select('id').where('person_id', '=', p.customer).where('revoked_at', 'is', null).orderBy('created_at', 'desc').executeTakeFirstOrThrow()).id);
-    const bucket = flagBucket(id, session);
+  await t.test('a share follows the person: signing in again does not reach it', async () => {
+    // A flag for which the customer falls outside half of everyone; a new sign-in must not change that.
+    let id = '';
+    for (let n = 0; !id || flagBucket(id, p.customer) < 50; n += 1) id = await flagIn(`ui.share_walk_${n}`);
+    const key = (await flag(id)).key;
     assert.equal((await stage(c.hubOwner, id, 'share', 1, 50)).status, 200);
     const shown = await flag(id);
     assert.deepEqual([shown.stage, shown.sharePercent], ['share', 50]);
-    assert.equal((await active(c.customer)).includes('ui.share_walk'), bucket < 50, 'decided by the bucket');
-    assert.equal((await active(c.customer)).includes('ui.share_walk'), bucket < 50, 'and the same again');
-    // Staff are in a share by their session's bucket like anyone else.
-    const staffSession = await w.actors.owner(async (trx) => (await trx.selectFrom('session').select('id').where('person_id', '=', p.lead).where('revoked_at', 'is', null).orderBy('created_at', 'desc').executeTakeFirstOrThrow()).id);
-    assert.equal((await active(c.lead)).includes('ui.share_walk'), flagBucket(id, staffSession) < 50);
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      const again = new Client(w.app);
+      await signIn(again, emailOf('customer'));
+      assert.ok(!(await active(again)).includes(key), `sign-in ${attempt}`);
+    }
+    // Someone inside stays inside, on every session; staff are in a share by their own bucket like anyone else.
+    let inside = '';
+    for (let n = 0; !inside || flagBucket(inside, p.customer) >= 50; n += 1) inside = await flagIn(`ui.share_in_${n}`);
+    const insideKey = (await flag(inside)).key;
+    assert.equal((await stage(c.hubOwner, inside, 'share', 1, 50)).status, 200);
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const again = new Client(w.app);
+      await signIn(again, emailOf('customer'));
+      assert.ok((await active(again)).includes(insideKey), `sign-in ${attempt}`);
+    }
+    assert.equal((await active(c.lead)).includes(insideKey), flagBucket(inside, p.lead) < 50);
   });
 
   await t.test('negative: a stage is decided on the revision it saw, so a widening cannot undo an off', async () => {
@@ -269,18 +291,61 @@ test('console views, notification settings and flag stages (ADM-005)', { skip: h
     expectRefusal(await c.customer.get(`/v1/flags/active?hubId=${otherHubId}`), 422, 'validation.unknown_field');
   });
 
+  // The table's own check forbids an expiry before creation; a flag only gets there with time, which the tests do not have.
+  await w.actors.owner((trx) => sql`ALTER TABLE trustwork.feature_flag DROP CONSTRAINT feature_flag_expiry`.execute(trx));
+
   await t.test('negative: an expired flag is in force for nobody, can be set off and cannot be widened', async () => {
     const id = await flagIn('ui.expiry_walk');
     assert.equal((await stage(c.hubOwner, id, 'on', 1)).status, 200);
     assert.ok((await active(c.customer)).includes('ui.expiry_walk'));
     await w.actors.owner(async (trx) => {
-      await sql`ALTER TABLE trustwork.feature_flag DROP CONSTRAINT feature_flag_expiry`.execute(trx);
       await sql`UPDATE trustwork.feature_flag SET expires_at = now() - interval '1 minute' WHERE id = ${id}::uuid`.execute(trx);
     });
     assert.ok(!(await active(c.customer)).includes('ui.expiry_walk'));
     assert.equal((await flag(id)).expired, true, 'listed for removal from code');
     expectRefusal(await stage(c.hubOwner, id, 'share', 2, 5), 409, 'validation.revision_conflict');
     assert.equal((await stage(c.hubOwner, id, 'off', 2)).status, 200);
+  });
+
+  await t.test('negative: extending an expired flag brings it back at off with a new revision, for every writer', async () => {
+    const expire = (flagId: string) => w.actors.owner((trx) => sql`UPDATE trustwork.feature_flag SET expires_at = now() - interval '1 minute' WHERE id = ${flagId}::uuid`.execute(trx));
+    const extend = (key: string) => command(c.owner, '/v1/admin/flags', { scope: hub, key, value: true, description: 'Synthetic flag', declaredEffect: 'ui', expiresAt });
+    const id = await flagIn('ui.revive_walk');
+    assert.equal((await stage(c.hubOwner, id, 'on', 1)).status, 200);
+    assert.ok((await active(c.customer)).includes('ui.revive_walk'));
+    await expire(id);
+    assert.ok(!(await active(c.customer)).includes('ui.revive_walk'));
+    const { revision } = await flag(id);
+    assert.equal((await extend('ui.revive_walk')).status, 200);
+    const back = await flag(id);
+    assert.deepEqual([back.stage, back.sharePercent, back.expired, back.revision], ['off', null, false, revision + 1], 'off, and the revision moved');
+    assert.ok(!(await active(c.customer)).includes('ui.revive_walk'), 'not back for everyone');
+    assert.ok(!(await active(c.lead)).includes('ui.revive_walk'), 'nor for staff');
+    expectRefusal(await stage(c.hubOwner, id, 'on', revision), 409, 'validation.revision_conflict');
+    assert.equal((await stage(c.hubOwner, id, 'staff_only', revision + 1)).status, 200, 'widening starts again, on purpose');
+
+    // A share keeps nothing of its percent, and a raw writer is held to the same rule.
+    const shared = await flagIn('ui.revive_share');
+    assert.equal((await stage(c.hubOwner, shared, 'share', 1, 25)).status, 200);
+    await expire(shared);
+    await w.actors.owner((trx) => sql`UPDATE trustwork.feature_flag SET expires_at = now() + interval '1 day' WHERE id = ${shared}::uuid`.execute(trx));
+    assert.deepEqual([(await flag(shared)).stage, (await flag(shared)).sharePercent], ['off', null]);
+
+    // Changing the date of a live flag leaves its stage alone.
+    const live = await flagIn('ui.revive_live');
+    assert.equal((await stage(c.hubOwner, live, 'on', 1)).status, 200);
+    assert.equal((await extend('ui.revive_live')).status, 200);
+    assert.deepEqual([(await flag(live)).stage, (await flag(live)).revision], ['on', 2]);
+  });
+
+  await t.test('negative: no flag is about ranking, matching, reputation or payment, for any writer', async () => {
+    const body = { scope: hub, value: true, description: 'Synthetic flag', declaredEffect: 'ui', expiresAt };
+    const ctx = await w.actors.elevate(p.owner);
+    for (const key of ['matching.v2', 'ranking.fresh_b', 'payment.new_form', 'reputation.decay_b', 'ui.payment_form', 'sponsored.slots_b', 'recommendations.rule_b']) {
+      expectRefusal(await command(c.owner, '/v1/admin/flags', { ...body, key }), 422, 'validation.schema');
+      await rejects(w.actors.as(p.owner, (trx) => featureFlags.set(trx, ctx, { scope: hub, key, value: true, description: 'Synthetic flag', declaredEffect: 'ui', expiresAt: new Date(expiresAt) })), '23514');
+    }
+    assert.equal((await command(c.owner, '/v1/admin/flags', { ...body, key: 'ops.dispatch_batching' })).status, 200, 'a word inside another word is not one of them');
   });
 
   await t.test('negative: a stage changes nothing about what a flag may be, and no writer outside the command moves it', async () => {

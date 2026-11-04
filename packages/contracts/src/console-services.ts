@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { IanaTimeZoneSchema, RevisionSchema, TimestampSchema } from './common/ids.js';
-import { consoleCommand, HubConfigDomainSchema, HubStaffRoleSchema, StaffScopeSchema } from './hub.js';
+import { consoleCommand, HUB_STAFF_ROLES, HubConfigDomainSchema, HubStaffRoleSchema, StaffScopeSchema } from './hub.js';
 
 /**
  * Console navigation services (ADM-005, docs/engine/hub-console/console-design.md sections 3.4, 3.5 and 6.2): the object
@@ -62,7 +62,7 @@ const AuditOutcomeSchema = z.enum(['applied', 'denied', 'failed']);
 const IncidentSeveritySchema = z.enum(['sev1', 'sev2', 'sev3', 'sev4']);
 const IncidentKindSchema = z.enum(['security', 'privacy_breach', 'provider', 'content', 'availability']);
 
-/** The stages of a flag, narrowest first (console-design 6.2). The share is in deterministic buckets of sessions. */
+/** The stages of a flag, narrowest first (console-design 6.2). The share is in deterministic buckets of people. */
 export const FLAG_ROLLOUT_STAGES = ['off', 'staff_only', 'share', 'on'] as const;
 export const FlagRolloutStageSchema = z.enum(FLAG_ROLLOUT_STAGES);
 export type FlagRolloutStage = z.infer<typeof FlagRolloutStageSchema>;
@@ -164,15 +164,62 @@ export const CONSOLE_VIEW_SURFACES = [
 export const ConsoleViewSurfaceSchema = z.enum(CONSOLE_VIEW_SURFACES);
 export type ConsoleViewSurface = z.infer<typeof ConsoleViewSurfaceSchema>;
 
-const ViewKeySchema = z.string().regex(/^[a-z][a-zA-Z0-9_.]{0,63}$/, 'a filter or column key');
-/** A filter value is a code: no space, no `@`, no plus, not a long run of digits. A name, an address or a phone does not fit. */
-const ViewValueSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$/, 'a filter value is a code').refine((value) => !/^[0-9]{7,}$/.test(value), { message: 'a filter value is a code' });
+const SEVERITIES = ['sev1', 'sev2', 'sev3', 'sev4'] as const;
+const PERIODS = ['day', 'week', 'month', 'quarter'] as const;
+const WORK_SURFACE = {
+  filters: { kind: CONSOLE_WORK_KINDS, severity: SEVERITIES, role: HUB_STAFF_ROLES },
+  columns: ['kind', 'state', 'action', 'severity', 'role', 'at', 'expiresAt', 'reason'],
+} as const;
 
 /**
- * What a saved view remembers: filters, columns and a sort. It stores no search text, and a filter value can only be a
- * code, because a view is shared and a shared view is read by people who did not type it. A view shared with a team
- * also holds no identifier (see `consoleViewShareable`): it never tells the team who or what someone was looking at.
- * The rows a view shows are computed for each reader at read time, under that reader's own permissions; it stores none.
+ * Every filter, value and column a saved view may hold, per surface. A pattern cannot tell a code from a name that has
+ * been made to look like one (`Maria.Petrova`, `maria:example.invalid`, a uuid without its hyphens), so nothing here is
+ * matched by shape: a value is on this list or it is refused. A view therefore cannot carry anything someone typed, or
+ * tell a team who or what its owner was looking at. People and companies have no filters: nothing about them is a
+ * saved choice. `console_view_vocabulary()` holds the same list for every writer (tested equal); a screen that needs a
+ * new filter adds it to both.
+ */
+export const CONSOLE_VIEW_VOCABULARY = {
+  'inbox:waiting': WORK_SURFACE,
+  'inbox:mine': WORK_SURFACE,
+  'inbox:assigned': WORK_SURFACE,
+  'inbox:done': WORK_SURFACE,
+  'users:people': { filters: {}, columns: ['displayName', 'joinedAt'] },
+  'users:companies': { filters: {}, columns: ['displayName', 'joinedAt'] },
+  'users:staff': { filters: { role: HUB_STAFF_ROLES, secondFactor: ['enrolled', 'none'] }, columns: ['displayName', 'role', 'scope', 'secondFactor', 'validUntil'] },
+  'users:clients': { filters: {}, columns: ['displayName', 'state'] },
+  'audit:events': {
+    filters: { outcome: ['applied', 'denied', 'failed'], scopeKind: ['platform', 'node', 'hub'], period: PERIODS, secondPerson: ['yes'], breakglass: ['yes'] },
+    columns: ['sequence', 'occurredAt', 'action', 'outcome', 'actorRole', 'scope', 'objectType'],
+  },
+  'audit:access': { filters: { kind: ['case_read', 'dispute_evidence_read', 'audit_read', 'evidence_view'], period: PERIODS }, columns: ['sequence', 'occurredAt', 'kind', 'objectType'] },
+  flags: {
+    filters: { stage: FLAG_ROLLOUT_STAGES, declaredEffect: ['ui', 'behaviour', 'content', 'operations'], expired: ['yes', 'no'] },
+    columns: ['key', 'stage', 'sharePercent', 'declaredEffect', 'expiresAt'],
+  },
+  incidents: { filters: { state: ['open', 'mitigated', 'resolved', 'closed'], severity: SEVERITIES, kind: ['security', 'privacy_breach', 'provider', 'content', 'availability'] }, columns: ['severity', 'kind', 'state', 'openedAt'] },
+  'moderation:cases': {
+    filters: { state: ['open', 'in_review', 'decided', 'appealed', 'appeal_decided', 'closed'], decision: ['no_action', 'warning', 'content_removed', 'content_restored', 'sanction'] },
+    columns: ['state', 'decision', 'openedAt', 'decidedAt'],
+  },
+  'support:cases': { filters: { state: ['open', 'triaged', 'waiting_on_requester', 'grant_requested', 'in_progress', 'resolved', 'closed'] }, columns: ['number', 'state', 'category', 'openedAt'] },
+  'pipelines:runs': {
+    filters: {
+      state: ['queued', 'running', 'succeeded', 'partially_succeeded', 'failed', 'cancelled', 'skipped_window', 'skipped_budget', 'stopped_by_kill_switch'],
+      trigger: ['schedule', 'manual', 'dry_run', 'retry', 'backfill', 'event'],
+    },
+    columns: ['state', 'trigger', 'dryRun', 'queuedAt', 'finishedAt'],
+  },
+} as const satisfies Record<ConsoleViewSurface, { filters: Readonly<Record<string, readonly string[]>>; columns: readonly string[] }>;
+
+const ViewKeySchema = z.string().regex(/^[a-z][a-zA-Z0-9]{0,63}$/, 'a filter or column key');
+const ViewValueSchema = z.string().regex(/^[a-z0-9][a-z0-9_-]{0,79}$/, 'a filter value is a code');
+
+/**
+ * What a saved view remembers: filters, columns and a sort. It stores no search text and no identifier, because a view
+ * is shared and a shared view is read by people who did not type it: every key and value comes from
+ * `CONSOLE_VIEW_VOCABULARY`. The rows a view shows are computed for each reader at read time, under that reader's own
+ * permissions; it stores none.
  */
 export const ConsoleViewConfigurationSchema = z.strictObject({
   filters: z.record(ViewKeySchema, z.array(ViewValueSchema).min(1).max(20)).refine((filters) => Object.keys(filters).length <= 20, { message: 'at most 20 filters' }),
@@ -181,9 +228,12 @@ export const ConsoleViewConfigurationSchema = z.strictObject({
 });
 export type ConsoleViewConfiguration = z.infer<typeof ConsoleViewConfigurationSchema>;
 
-const UUID_ANYWHERE = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
-export function consoleViewShareable(configuration: ConsoleViewConfiguration): boolean {
-  return !Object.values(configuration.filters).flat().some((value) => UUID_ANYWHERE.test(value));
+/** Is every filter, value and column of this configuration on the surface's list? */
+export function consoleViewConfigurationAllowed(surface: ConsoleViewSurface, configuration: ConsoleViewConfiguration): boolean {
+  const { filters, columns } = CONSOLE_VIEW_VOCABULARY[surface] as { filters: Readonly<Record<string, readonly string[]>>; columns: readonly string[] };
+  return Object.entries(configuration.filters).every(([key, values]) => Object.hasOwn(filters, key) && values.every((value) => filters[key]?.includes(value)))
+    && configuration.columns.every((column) => columns.includes(column))
+    && (configuration.sort === null || columns.includes(configuration.sort.column));
 }
 
 /** A view's name is shown to its team: no address and no telephone number. */
@@ -214,11 +264,11 @@ const viewFields = {
   teamRole: HubStaffRoleSchema.nullable(),
   isDefault: z.boolean(),
 };
-const shareRule = (view: { teamRole: unknown; configuration: ConsoleViewConfiguration }): boolean => view.teamRole === null || consoleViewShareable(view.configuration);
-const shareMessage = { message: 'a view shared with a team holds no identifier', path: ['configuration'] };
-export const CreateConsoleViewCommandSchema = consoleCommand({ scope: CommandScopeSchema, surface: ConsoleViewSurfaceSchema, ...viewFields }).refine(shareRule, shareMessage);
+export const CreateConsoleViewCommandSchema = consoleCommand({ scope: CommandScopeSchema, surface: ConsoleViewSurfaceSchema, ...viewFields })
+  .refine((view) => consoleViewConfigurationAllowed(view.surface, view.configuration), { message: 'a filter, value or column this surface does not have', path: ['configuration'] });
 export type CreateConsoleViewCommand = z.infer<typeof CreateConsoleViewCommandSchema>;
-export const UpdateConsoleViewCommandSchema = consoleCommand({ expectedRevision: RevisionSchema, ...viewFields }).refine(shareRule, shareMessage);
+/** The surface is the stored view's, so the database checks the configuration against it (`admin.view_configuration`). */
+export const UpdateConsoleViewCommandSchema = consoleCommand({ expectedRevision: RevisionSchema, ...viewFields });
 export type UpdateConsoleViewCommand = z.infer<typeof UpdateConsoleViewCommandSchema>;
 export const RemoveConsoleViewCommandSchema = consoleCommand({ expectedRevision: RevisionSchema });
 export type RemoveConsoleViewCommand = z.infer<typeof RemoveConsoleViewCommandSchema>;
@@ -247,6 +297,14 @@ export type SetConsoleNotificationsCommand = z.infer<typeof SetConsoleNotificati
 
 /* ---------- Flag rollout ---------- */
 
+/**
+ * Keys a flag may not have, on top of the access and ranking words `feature_flag` already refuses: ranking, matching,
+ * reputation, payment and what follows from them. Payment never changes ranking, matching or reputation, so no flag can
+ * reach those subjects at all. A word counts at the start of a segment (`ui.payment_form`, `matching.v2`), so
+ * `ops.dispatch` and `retrieval.rerank_model` stay possible. The table holds the same pattern for every writer.
+ */
+export const FLAG_REFUSED_KEY = /(^|[._])(rank|match|reput|payment|payout|sponsor|recommend)/;
+
 export const ConsoleFlagSchema = z.strictObject({
   id: UuidSchema,
   key: CodeSchema,
@@ -255,14 +313,14 @@ export const ConsoleFlagSchema = z.strictObject({
   stage: FlagRolloutStageSchema,
   sharePercent: FlagSharePercentSchema.nullable(),
   expiresAt: TimestampSchema,
-  /** An expired flag is off whatever its stage, and listed for removal from code. */
+  /** An expired flag is in force for nobody, and listed for removal from code. Extending it brings it back at off. */
   expired: z.boolean(),
   revision: RevisionSchema,
 });
 export type ConsoleFlag = z.infer<typeof ConsoleFlagSchema>;
 
 /**
- * A stage names a share of sessions at most: nothing here can name a person, a company, a session or a list of them,
+ * A stage names a share of people at most: nothing here can name a person, a company, a session or a list of them,
  * and the table it is stored in has no column that could (tested). `expectedRevision` protects a widening from racing
  * a change someone else made; it is ignored for `off`, which always wins so that a flag can be stopped at once.
  */
@@ -273,8 +331,8 @@ export const SetFlagStageCommandSchema = consoleCommand({
 }).refine((c) => (c.stage === 'share') === (c.sharePercent !== null), { message: 'a share names its percent, and only a share does', path: ['sharePercent'] });
 export type SetFlagStageCommand = z.infer<typeof SetFlagStageCommandSchema>;
 
-/** The session read takes nothing: the hub is the one this API serves, and the session is the caller's own. */
+/** The session read takes nothing: the hub is the one this API serves, and the person is the caller. */
 export const ActiveFlagsQuerySchema = z.strictObject({});
-/** The flags in force for this session at the served hub, and nothing about the others. */
+/** The flags in force for the caller at the served hub, and nothing about the others. */
 export const ActiveFlagsSchema = z.strictObject({ flags: z.array(z.strictObject({ key: CodeSchema, value: z.unknown() })) });
 export type ActiveFlags = z.infer<typeof ActiveFlagsSchema>;

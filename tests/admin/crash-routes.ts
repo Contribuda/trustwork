@@ -194,7 +194,7 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
   // Console navigation (ADM-005): flag stage, saved views and notification settings.
   await run('admin.console.flag_stage', c.owner, `/v1/admin/console/flags/${flag.flag.id}/stage`, { stage: 'share', sharePercent: 5, expectedRevision: 1 },
     () => count(admin, "SELECT 1 FROM trustwork.feature_flag_rollout WHERE stage = 'share'"));
-  const viewBody = { name: 'Synthetic crash view', configuration: { filters: { state: ['open'] }, columns: ['id'], sort: null }, teamRole: null, isDefault: false };
+  const viewBody = { name: 'Synthetic crash view', configuration: { filters: { state: ['open'] }, columns: ['number'], sort: null }, teamRole: null, isDefault: false };
   const view = (await run('admin.console.view_create', c.lead, '/v1/admin/console/views', { scope: hub, surface: 'support:cases', ...viewBody },
     () => count(admin, 'SELECT 1 FROM trustwork.console_saved_view'))).body as { view: { id: string } };
   await run('admin.console.view_update', c.lead, `/v1/admin/console/views/${view.view.id}`, { ...viewBody, name: 'Synthetic crash view renamed', expectedRevision: 1 },

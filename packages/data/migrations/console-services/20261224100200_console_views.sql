@@ -4,9 +4,9 @@
 -- A saved view remembers filters, columns and a sort for one surface at one scope, for its owner or for the holders of
 -- one role covering that scope (a team). It stores no rows, counts or search text: what a view shows is computed for
 -- each reader, under that reader's own permissions, when they open it. Sharing never carries a value someone typed:
--- filter values are codes (no space, no `@`, no plus, no long run of digits) in every view, and a view shared with a
--- team holds no identifier at all, so it cannot tell a team who or what its owner was looking at. The name, the one free
--- text, refuses an address or a telephone number. The checks are on the table, for every writer.
+-- every filter, value and column is on the surface's list (console_view_vocabulary), because no pattern can tell a code
+-- from a name made to look like one. So a view cannot tell a team who or what its owner was looking at. The name, the one
+-- free text, refuses an address or a telephone number. The checks are on the table, for every writer.
 --
 -- Only the owner changes a view, and only while they are staff covering its scope and, for a team view, hold the role.
 -- Notification settings belong to one person and are read only by them; nothing is sent until they opt in.
@@ -20,36 +20,38 @@ CREATE FUNCTION trustwork.console_notification_categories() RETURNS text[]
 LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
   SELECT ARRAY['approvals', 'case_grants', 'recovery', 'access_reviews', 'assigned_cases', 'appeals', 'incidents', 'alerts']::text[]
 $$;
-CREATE FUNCTION trustwork.console_view_value_ok(p_value jsonb) RETURNS boolean
-LANGUAGE sql IMMUTABLE PARALLEL SAFE SET search_path = trustwork, pg_temp AS $$
-  SELECT jsonb_typeof(p_value) = 'string' AND (p_value #>> '{}') ~ '^[A-Za-z0-9][A-Za-z0-9_.:-]{0,79}$' AND (p_value #>> '{}') !~ '^[0-9]{7,}$'
+-- CONSOLE_VIEW_VOCABULARY: every filter, value and column a view may hold, per surface (tested equal to the contract).
+CREATE FUNCTION trustwork.console_view_vocabulary() RETURNS jsonb
+LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT '{"inbox:waiting":{"filters":{"kind":["approval","recovery_escalation","case_grant","access_review_item","staff_activation","support_case","moderation_case","appeal","incident","pipeline_alert"],"severity":["sev1","sev2","sev3","sev4"],"role":["platform-owner","staff-admin","editor-in-chief","editor","moderator","trust-reviewer","support-agent","support-lead","commercial-admin","data-steward","ops-engineer","privacy-officer","auditor","hub-owner","compliance-officer","node-operator"]},"columns":["kind","state","action","severity","role","at","expiresAt","reason"]},"inbox:mine":{"filters":{"kind":["approval","recovery_escalation","case_grant","access_review_item","staff_activation","support_case","moderation_case","appeal","incident","pipeline_alert"],"severity":["sev1","sev2","sev3","sev4"],"role":["platform-owner","staff-admin","editor-in-chief","editor","moderator","trust-reviewer","support-agent","support-lead","commercial-admin","data-steward","ops-engineer","privacy-officer","auditor","hub-owner","compliance-officer","node-operator"]},"columns":["kind","state","action","severity","role","at","expiresAt","reason"]},"inbox:assigned":{"filters":{"kind":["approval","recovery_escalation","case_grant","access_review_item","staff_activation","support_case","moderation_case","appeal","incident","pipeline_alert"],"severity":["sev1","sev2","sev3","sev4"],"role":["platform-owner","staff-admin","editor-in-chief","editor","moderator","trust-reviewer","support-agent","support-lead","commercial-admin","data-steward","ops-engineer","privacy-officer","auditor","hub-owner","compliance-officer","node-operator"]},"columns":["kind","state","action","severity","role","at","expiresAt","reason"]},"inbox:done":{"filters":{"kind":["approval","recovery_escalation","case_grant","access_review_item","staff_activation","support_case","moderation_case","appeal","incident","pipeline_alert"],"severity":["sev1","sev2","sev3","sev4"],"role":["platform-owner","staff-admin","editor-in-chief","editor","moderator","trust-reviewer","support-agent","support-lead","commercial-admin","data-steward","ops-engineer","privacy-officer","auditor","hub-owner","compliance-officer","node-operator"]},"columns":["kind","state","action","severity","role","at","expiresAt","reason"]},"users:people":{"filters":{},"columns":["displayName","joinedAt"]},"users:companies":{"filters":{},"columns":["displayName","joinedAt"]},"users:staff":{"filters":{"role":["platform-owner","staff-admin","editor-in-chief","editor","moderator","trust-reviewer","support-agent","support-lead","commercial-admin","data-steward","ops-engineer","privacy-officer","auditor","hub-owner","compliance-officer","node-operator"],"secondFactor":["enrolled","none"]},"columns":["displayName","role","scope","secondFactor","validUntil"]},"users:clients":{"filters":{},"columns":["displayName","state"]},"audit:events":{"filters":{"outcome":["applied","denied","failed"],"scopeKind":["platform","node","hub"],"period":["day","week","month","quarter"],"secondPerson":["yes"],"breakglass":["yes"]},"columns":["sequence","occurredAt","action","outcome","actorRole","scope","objectType"]},"audit:access":{"filters":{"kind":["case_read","dispute_evidence_read","audit_read","evidence_view"],"period":["day","week","month","quarter"]},"columns":["sequence","occurredAt","kind","objectType"]},"flags":{"filters":{"stage":["off","staff_only","share","on"],"declaredEffect":["ui","behaviour","content","operations"],"expired":["yes","no"]},"columns":["key","stage","sharePercent","declaredEffect","expiresAt"]},"incidents":{"filters":{"state":["open","mitigated","resolved","closed"],"severity":["sev1","sev2","sev3","sev4"],"kind":["security","privacy_breach","provider","content","availability"]},"columns":["severity","kind","state","openedAt"]},"moderation:cases":{"filters":{"state":["open","in_review","decided","appealed","appeal_decided","closed"],"decision":["no_action","warning","content_removed","content_restored","sanction"]},"columns":["state","decision","openedAt","decidedAt"]},"support:cases":{"filters":{"state":["open","triaged","waiting_on_requester","grant_requested","in_progress","resolved","closed"]},"columns":["number","state","category","openedAt"]},"pipelines:runs":{"filters":{"state":["queued","running","succeeded","partially_succeeded","failed","cancelled","skipped_window","skipped_budget","stopped_by_kill_switch"],"trigger":["schedule","manual","dry_run","retry","backfill","event"]},"columns":["state","trigger","dryRun","queuedAt","finishedAt"]}}'::jsonb
 $$;
--- ConsoleViewConfigurationSchema, for every writer.
-CREATE FUNCTION trustwork.console_view_configuration_ok(p_configuration jsonb) RETURNS boolean
+-- ConsoleViewConfigurationSchema and the surface's list, for every writer.
+CREATE FUNCTION trustwork.console_view_configuration_ok(p_surface text, p_configuration jsonb) RETURNS boolean
 LANGUAGE plpgsql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
 DECLARE
+  v_allowed jsonb := trustwork.console_view_vocabulary() -> p_surface;
   v_key text;
   v_values jsonb;
   v_sort jsonb := p_configuration -> 'sort';
 BEGIN
-  IF jsonb_typeof(p_configuration) <> 'object' OR (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(p_configuration) k) IS DISTINCT FROM ARRAY['columns', 'filters', 'sort']
+  IF v_allowed IS NULL OR jsonb_typeof(p_configuration) <> 'object' OR (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(p_configuration) k) IS DISTINCT FROM ARRAY['columns', 'filters', 'sort']
      OR jsonb_typeof(p_configuration -> 'filters') <> 'object' OR jsonb_typeof(p_configuration -> 'columns') <> 'array' OR octet_length(p_configuration::text) > 8192 THEN
     RETURN false;
   END IF;
-  IF (SELECT count(*) FROM jsonb_object_keys(p_configuration -> 'filters')) > 20 OR jsonb_array_length(p_configuration -> 'columns') > 40 THEN
+  IF jsonb_array_length(p_configuration -> 'columns') > 40 THEN
     RETURN false;
   END IF;
   FOR v_key, v_values IN SELECT e.key, e.value FROM jsonb_each(p_configuration -> 'filters') e LOOP
-    IF v_key !~ '^[a-z][a-zA-Z0-9_.]{0,63}$' OR jsonb_typeof(v_values) <> 'array' OR jsonb_array_length(v_values) NOT BETWEEN 1 AND 20
-       OR EXISTS (SELECT 1 FROM jsonb_array_elements(v_values) v WHERE NOT trustwork.console_view_value_ok(v)) THEN
+    IF NOT (v_allowed -> 'filters') ? v_key OR jsonb_typeof(v_values) <> 'array' OR jsonb_array_length(v_values) NOT BETWEEN 1 AND 20
+       OR EXISTS (SELECT 1 FROM jsonb_array_elements(v_values) v WHERE jsonb_typeof(v) <> 'string' OR NOT ((v_allowed -> 'filters' -> v_key) @> v)) THEN
       RETURN false;
     END IF;
   END LOOP;
-  IF EXISTS (SELECT 1 FROM jsonb_array_elements(p_configuration -> 'columns') c WHERE jsonb_typeof(c) <> 'string' OR (c #>> '{}') !~ '^[a-z][a-zA-Z0-9_.]{0,63}$') THEN
+  IF EXISTS (SELECT 1 FROM jsonb_array_elements(p_configuration -> 'columns') c WHERE jsonb_typeof(c) <> 'string' OR NOT ((v_allowed -> 'columns') @> c)) THEN
     RETURN false;
   END IF;
   IF jsonb_typeof(v_sort) <> 'null' AND (jsonb_typeof(v_sort) <> 'object' OR (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(v_sort) k) IS DISTINCT FROM ARRAY['column', 'direction']
-     OR coalesce(v_sort ->> 'column', '') !~ '^[a-z][a-zA-Z0-9_.]{0,63}$' OR coalesce(v_sort ->> 'direction', '') NOT IN ('ascending', 'descending')) THEN
+     OR jsonb_typeof(v_sort -> 'column') <> 'string' OR NOT ((v_allowed -> 'columns') @> (v_sort -> 'column')) OR coalesce(v_sort ->> 'direction', '') NOT IN ('ascending', 'descending')) THEN
     RETURN false;
   END IF;
   RETURN true;
@@ -64,7 +66,7 @@ CREATE TABLE trustwork.console_saved_view (
   owner_person_id uuid NOT NULL REFERENCES trustwork.person (id) ON DELETE CASCADE,
   team_role text NULL CHECK (team_role = ANY (trustwork.admin_staff_roles())),
   name text NOT NULL CHECK (length(name) BETWEEN 1 AND 80 AND name = btrim(name) AND position('@' IN name) = 0 AND name !~ '[0-9][0-9 ()./-]{5,}[0-9]'),
-  configuration jsonb NOT NULL CHECK (trustwork.console_view_configuration_ok(configuration)),
+  configuration jsonb NOT NULL,
   is_default boolean NOT NULL DEFAULT false,
   removed_at timestamptz NULL,
   revision integer NOT NULL DEFAULT 1 CHECK (revision >= 1),
@@ -72,7 +74,7 @@ CREATE TABLE trustwork.console_saved_view (
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT console_saved_view_scope_shape CHECK ((scope_kind = 'platform' AND node_id IS NULL AND hub_id IS NULL)
     OR (scope_kind = 'node' AND node_id IS NOT NULL AND hub_id IS NULL) OR (scope_kind = 'hub' AND hub_id IS NOT NULL AND node_id IS NULL)),
-  CONSTRAINT console_saved_view_team_no_identifier CHECK (team_role IS NULL OR configuration::text !~ '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
+  CONSTRAINT console_saved_view_configuration CHECK (trustwork.console_view_configuration_ok(surface, configuration))
 );
 CREATE INDEX console_saved_view_owner_idx ON trustwork.console_saved_view (owner_person_id, surface) WHERE removed_at IS NULL;
 CREATE INDEX console_saved_view_team_idx ON trustwork.console_saved_view (hub_id, surface) WHERE team_role IS NOT NULL AND removed_at IS NULL;
@@ -136,6 +138,14 @@ BEGIN
   END IF;
 END $$;
 
+CREATE FUNCTION trustwork.console_view_require_configuration(p_surface text, p_configuration jsonb) RETURNS void
+LANGUAGE plpgsql STABLE SET search_path = trustwork, pg_temp AS $$
+BEGIN
+  IF NOT trustwork.console_view_configuration_ok(p_surface, p_configuration) THEN
+    RAISE EXCEPTION 'a filter, value or column this surface does not have' USING ERRCODE = 'check_violation', HINT = 'admin.view_configuration';
+  END IF;
+END $$;
+
 CREATE FUNCTION trustwork.console_view_create(p_ctx jsonb, p_node uuid, p_hub uuid, p_surface text, p_name text, p_configuration jsonb, p_team_role text, p_is_default boolean)
 RETURNS trustwork.console_saved_view
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
@@ -145,6 +155,7 @@ DECLARE
   v_row trustwork.console_saved_view%ROWTYPE;
 BEGIN
   PERFORM trustwork.console_view_require_team(v_actor, p_team_role, v_node, p_hub);
+  PERFORM trustwork.console_view_require_configuration(p_surface, p_configuration);
   PERFORM trustwork.console_lock_person(v_actor.person_id);
   IF (SELECT count(*) FROM trustwork.console_saved_view v WHERE v.owner_person_id = v_actor.person_id AND v.removed_at IS NULL) >= 100 THEN
     RAISE EXCEPTION 'a person keeps at most 100 views' USING ERRCODE = 'check_violation', HINT = 'admin.view_limit';
@@ -175,6 +186,7 @@ BEGIN
   END IF;
   v_actor := trustwork.console_actor(p_ctx, v_before.node_id, v_before.hub_id);
   PERFORM trustwork.console_view_require_team(v_actor, p_team_role, v_before.node_id, v_before.hub_id);
+  PERFORM trustwork.console_view_require_configuration(v_before.surface, p_configuration);
   IF p_expected_revision IS DISTINCT FROM v_before.revision THEN
     RAISE EXCEPTION 'the view changed' USING ERRCODE = 'check_violation', HINT = 'admin.invalid_transition';
   END IF;
