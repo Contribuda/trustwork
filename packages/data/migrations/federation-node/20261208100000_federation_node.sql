@@ -553,6 +553,7 @@ $$;
 CREATE FUNCTION trustwork.federation_peer_current(p_peer trustwork.federation_peer) RETURNS boolean
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
   SELECT p_peer.admission_state = 'admitted' AND p_peer.attestation_expires_at > now() AND p_peer.refresh_due_at + trustwork.federation_admission_stale_after() > now()
+    AND p_peer.equivocation_at IS NULL
 $$;
 
 -- The hubs the manifest publishes and the only hubs a peer may address: launched hubs (soft_launch, public, suspended,
@@ -572,16 +573,23 @@ CREATE FUNCTION trustwork.federation_hub_by_slug(p_slug text) RETURNS uuid
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
   SELECT h.id FROM trustwork.hub h JOIN trustwork.hub_profile p ON p.hub_id = h.id WHERE h.slug = p_slug AND h.lifecycle = ANY (trustwork.federation_published_lifecycles())
 $$;
--- The sealed material of one key (default: the current key). Only the runtime role may call this; the plaintext never
--- exists outside the memory of the process that opens it.
+-- The sealed material of one key (default: the current key), for the signer path only: the caller sets the
+-- transaction-local marker trustwork.federation_signer = 'on' in the same transaction (the repository's signingMaterial
+-- does), so an ordinary query of the runtime role gets nothing. This is a guard against accidental reads, not a second
+-- role: the material is ciphertext under the KEK, which never enters the database, and the plaintext exists only in the
+-- memory of the process that opens it.
 CREATE FUNCTION trustwork.federation_node_signing_material(p_key_id text DEFAULT NULL)
 RETURNS TABLE (key_id text, public_key text, ciphertext bytea, iv bytea, auth_tag bytea, wrapped_key bytea, kek_id text)
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
-  SELECT k.key_id, k.public_key, s.ciphertext, s.iv, s.auth_tag, s.wrapped_key, s.kek_id
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+BEGIN
+  IF current_setting('trustwork.federation_signer', true) IS DISTINCT FROM 'on' THEN
+    RAISE EXCEPTION 'sealed key material is read by the signer path only' USING ERRCODE = 'insufficient_privilege', HINT = 'federation.signer_only';
+  END IF;
+  RETURN QUERY SELECT k.key_id, k.public_key, s.ciphertext, s.iv, s.auth_tag, s.wrapped_key, s.kek_id
   FROM trustwork.node_key k JOIN trustwork.node_key_secret s ON s.node_id = k.node_id AND s.key_id = k.key_id
   WHERE k.node_id = (SELECT id FROM trustwork.admin_node LIMIT 1) AND ((p_key_id IS NULL AND k.retired_at IS NULL) OR k.key_id = p_key_id)
-  ORDER BY k.position DESC LIMIT 1
-$$;
+  ORDER BY k.position DESC LIMIT 1;
+END $$;
 
 -- Records a signed manifest as the next version; the same document (same digest) is recorded once.
 CREATE FUNCTION trustwork.federation_node_record_manifest(p_document jsonb, p_digest text, p_key_id text, p_issued_at timestamptz) RETURNS trustwork.node_manifest
@@ -617,6 +625,10 @@ BEGIN
     RAISE EXCEPTION 'a refusal states why flows pause' USING ERRCODE = 'invalid_parameter_value', HINT = 'federation.context_invalid';
   END IF;
   PERFORM pg_advisory_xact_lock(hashtextextended('trustwork.federation_peer:' || p_peer, 0));
+  -- A manifest older than the one held is never recorded (the process checks the chain's continuity; this is the backstop).
+  IF EXISTS (SELECT 1 FROM trustwork.federation_peer f WHERE f.node_id = v_node AND f.peer_node = p_peer AND f.manifest_issued_at > p_issued_at) THEN
+    RAISE EXCEPTION 'the manifest is older than the one held' USING ERRCODE = 'check_violation', HINT = 'federation.manifest_rollback';
+  END IF;
   INSERT INTO trustwork.federation_peer (node_id, peer_node, manifest, manifest_digest, manifest_issued_at, manifest_fetched_at, refresh_due_at, current_key_id, attestation_expires_at,
     admission_state, admission_decided_at, admission_judged, admission_trigger)
   VALUES (v_node, p_peer, p_manifest, p_digest, p_issued_at, now(), now() + interval '24 hours', p_current_key, p_attestation_expires,
@@ -1223,7 +1235,20 @@ BEGIN
   END LOOP;
 END $$;
 
--- 10. Row-level security and grants ------------------------------------------------------------------------------------
+-- 10. Privacy inventory ----------------------------------------------------------------------------------------------
+-- The database twin of PRIVACY_MODULE_INVENTORY (packages/contracts/src/privacy.ts) now lists federation, so privacy
+-- subject plans cover it. The module holds no participant data: peering records, events, the key chain and the identity
+-- reference local staff identifiers only (requester, second approver, who ended, who created a key), and peers' manifests
+-- name operator legal entities with role contacts. The function is replaced whole: the list below is main's plus federation.
+CREATE OR REPLACE FUNCTION trustwork.privacy_module_inventory() RETURNS text[]
+LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
+  SELECT ARRAY['agent-modules','approval-routes','assistant','assistant-goals','billing','catalogue','communications','connections','consultations',
+    'content','datasets','directory','execution','federation','files','hubs','identity','jurisdiction','models','payments','pipelines','plans','platform-admin',
+    'procurement','profiles','projects','providers','registers','reputation','sales','screening','screening-gates','sources',
+    'supplier-base','support','tasks','transactions','trust','verification']::text[]
+$$;
+
+-- 11. Row-level security and grants ------------------------------------------------------------------------------------
 ALTER TABLE trustwork.node_identity ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trustwork.node_identity FORCE ROW LEVEL SECURITY;
 ALTER TABLE trustwork.node_key ENABLE ROW LEVEL SECURITY;

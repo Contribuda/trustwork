@@ -43,6 +43,8 @@ const HINTS: Readonly<Record<string, ErrorCode>> = {
   'federation.unknown_peer': 'access.not_found',
   'federation.unknown_hub': 'access.not_found',
   'federation.subject_is_address': 'validation.schema',
+  'federation.manifest_rollback': 'validation.revision_conflict',
+  'federation.signer_only': 'access.forbidden',
   'kernel.restricted_place': 'validation.schema',
 };
 

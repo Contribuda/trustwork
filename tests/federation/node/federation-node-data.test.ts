@@ -62,6 +62,8 @@ test('federation node persistence', { skip: db ? false : SKIP_REASON }, async (t
     // Nobody reads the sealed seed directly; the runtime process reads the material through the definer and the owner cannot UPDATE or DELETE it.
     await assert.rejects(runtime.query('SELECT * FROM trustwork.node_key_secret'), /permission denied/);
     assert.equal((await nodeKeys.signingMaterial(runtime))?.key_id, 'k1');
+    // The sealed material (ciphertext under the KEK) is readable only on the signer path, which marks its own transaction; a plain query gets nothing.
+    await rejects(runtime.query('SELECT * FROM trustwork.federation_node_signing_material(NULL)'), '42501', 'federation.signer_only');
     await assert.rejects(withMaintenance(db.admin, (trx) => trx.deleteFrom('node_key_secret').execute()), /append-only/);
     // The chain appends in order and never edits an entry; a retired key retires once.
     await rejects(withMaintenance(db.admin, (trx) => trx.insertInto('node_key').values({ node_id: w.nodeId, key_id: 'k9', position: 5, public_key: 'B'.repeat(43), valid_from: new Date(), created_by: p.operator }).execute()), '23514', 'federation.chain_order');
