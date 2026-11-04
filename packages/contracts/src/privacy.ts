@@ -72,7 +72,7 @@ export type PrivacyPropagation = z.infer<typeof PrivacyPropagationSchema>;
 export const PRIVACY_MODULE_INVENTORY = [
   'agent-extensions', 'agent-modules', 'approval-routes', 'assistant', 'assistant-goals', 'billing', 'catalogue', 'communications', 'connections', 'consultations',
   'content', 'datasets', 'directory', 'execution', 'federation', 'files', 'hubs', 'identity', 'jurisdiction', 'models', 'payments', 'pipelines', 'plans', 'platform-admin',
-  'procurement', 'profiles', 'projects', 'providers', 'registers', 'reputation', 'sales', 'screening', 'screening-gates', 'sources',
+  'procurement', 'profiles', 'projects', 'providers', 'registers', 'reputation', 'sales', 'screening', 'screening-gates', 'sources', 'sourcing',
   'supplier-base', 'support', 'tasks', 'transactions', 'trust', 'verification',
 ] as const;
 

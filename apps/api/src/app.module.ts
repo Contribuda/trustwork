@@ -21,6 +21,7 @@ import { ApprovalRoutesModule } from './modules/approval-routes/approval-routes.
 import { FilesModule, type FilesModuleOptions } from './modules/files/files.module.js';
 import { SalesModule } from './modules/sales/sales.module.js';
 import { SourcesModule } from './modules/sources/sources.module.js';
+import { SourcingModule } from './modules/sourcing/sourcing.module.js';
 import { SupplierBaseModule } from './modules/supplier-base/supplier-base.module.js';
 import { SupportModule } from './modules/support/support.module.js';
 import { SupportService } from './modules/support/support.service.js';
@@ -99,6 +100,7 @@ export class AppModule {
         ApprovalRoutesModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-001
         SalesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
         SourcesModule.forRoot(ctx, identity), // SRC-001
+        SourcingModule.forRoot(ctx, identity, { mandates: store.port(['sourcing_desk']) }), // PRC-004
         SupplierBaseModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-003
         SupportModule.forRoot(ctx, identity),
         TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),

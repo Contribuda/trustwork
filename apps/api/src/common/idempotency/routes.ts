@@ -347,6 +347,12 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'sources.link_propose': IN_TRANSACTION,
   'sources.link_decide': IN_TRANSACTION,
   'sources.sponsored_policy_set': IN_TRANSACTION,
+  // PRC-004: sourcing events. Every route runs in one PrincipalService.runAs transaction (the owner-run command and its
+  // audit row) and returns its result unchanged.
+  'sourcing.eligibility_save': IN_TRANSACTION,
+  'sourcing.sheet_draft': IN_TRANSACTION,
+  'sourcing.sheet_freeze': IN_TRANSACTION,
+  'sourcing.sheet_save': IN_TRANSACTION,
   // PRC-003: the supplier base. Every route runs in one PrincipalService.runAs transaction (the owner-run command, its
   // audit row; no outbox event) and returns its result unchanged; an import writes all its rows in that transaction.
   'supplier_base.maintain': IN_TRANSACTION,

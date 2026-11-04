@@ -352,7 +352,7 @@ Each company keeps a **private supplier base**: the suppliers it works with or c
 
 ## Sourcing events and bid levelling
 
-Status: **Proposed** (PRC-004), built on RFQs and quotes (COM-001, COM-002).
+Status: **Live** in the API for sealed RFQs, levelling sheets and eligibility (PRC-004, [module](../../apps/api/src/modules/sourcing/README.md)); no interface yet (WEB-011). Not yet live: captured off-platform quotes as columns (PRC-005), prequalification evidence (PREQ-001; those rules answer unknown), candidates from matching (MATCH-001).
 
 A **sourcing event** is an RFQ with its invitations, clarifications, quotes, levelling and award; no new top-level object is needed. What is added:
 
