@@ -73,6 +73,11 @@ test('no payments table or function holds, pools or credits a balance of Trustwo
   assert.match(guard, /trustwork\.kernel_place_restricted\(v\)/);
   assert.match(guard, /NEW\.custody <> 'provider_connected_accounts'/);
   assert.match(guard, /\(NEW\.evidence_mode = 'synthetic'\) <> \(c\.mode = 'fake'\)/);
+  // The current guard keeps every rule above and adds real places and restricted currencies from the same list.
+  const currentGuard = readFileSync('packages/data/migrations/payments/20261214100200_payment_rail_places.sql', 'utf8');
+  for (const rule of [/trustwork\.kernel_place_restricted\(v\)/, /NEW\.custody <> 'provider_connected_accounts'/, /\(NEW\.evidence_mode = 'synthetic'\) <> \(c\.mode = 'fake'\)/,
+    /FROM trustwork\.jurisdiction j/, /trustwork\.kernel_place_restricted\(left\(v, 2\)\)/]) assert.match(currentGuard, rule);
+  assert.doesNotMatch(currentGuard, /'RUB'|'IRR'|'CUP'|'KPW'/, 'no second list of restricted currencies');
   // The route check refuses an operator account in the funds flow and funds held by anyone but a licensed provider.
   const routeDefinitions = PAYMENT_MIGRATIONS.filter((p) => /FUNCTION trustwork\.payments_route_available\(|FUNCTION trustwork\.payments_candidate_routes\(|'fundsHeldBy'/.test(readFileSync(p, 'utf8')));
   assert.ok(routeDefinitions.length >= 4);

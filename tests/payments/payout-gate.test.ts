@@ -6,6 +6,7 @@ import { seedPersonas, login } from '../backend/helpers/personas.js';
 import { kernelReference, kernelSync } from '../../packages/data/src/repositories/kernel.js';
 import { decideMatches, LISTED_PERSON_NAME, rename, screen, screenEveryoneClear, setBaselineStale } from '../screening-gates/helpers.js';
 import { COUNTERPARTY_FORBIDDEN_GATE_KEYS } from '../../packages/contracts/src/screening-gates.js';
+import { RESTRICTED } from '../../packages/country-packs/src/index.js';
 import { workerLogin } from '../assistant/helpers.js';
 import { agreement, paymentHub, paymentVerifier, ok } from './helpers.js';
 import type { PaymentBinding, PaymentView } from '../../packages/contracts/src/payments.js';
@@ -164,6 +165,17 @@ test('PAY-001 payout account and payout ask the SANC-004 gate; restricted places
       [{ connection_id: other, countries: ['US', 'RU'] }, /restricted or unknown place/],
       [{ connection_id: other, countries: ['CU'] }, /restricted or unknown place/],
       [{ connection_id: other, countries: ['us'] }, /restricted or unknown place/],
+      // Every place of the authoritative list, whatever else the rail declares.
+      ...RESTRICTED.places.map((place) => [{ connection_id: other, countries: ['US', place.code] }, /restricted or unknown place/] as const),
+      // A real shape is not a real place, and a place below a restricted country is still that country.
+      [{ connection_id: other, countries: ['ZZ'] }, /restricted or unknown place/],
+      [{ connection_id: other, countries: ['US', 'XX'] }, /restricted or unknown place/],
+      [{ connection_id: other, countries: ['US-ZZZ'] }, /restricted or unknown place/],
+      [{ connection_id: other, countries: ['RU-MOW'] }, /restricted or unknown place/],
+      // Rails match payers by country, so a country with a restricted region is refused as a whole.
+      [{ connection_id: other, countries: ['UA'] }, /restricted or unknown place/],
+      // The currency of every restricted country, including the retired and parallel codes.
+      ...['RUB', 'RUR', 'CUP', 'CUC', 'IRR', 'KPW'].map((currency) => [{ connection_id: other, capabilities: ['create'], currencies: ['USD', currency] }, /currency of a restricted place/] as const),
       [{ connection_id: other, evidence_mode: 'licensed_provider' }, /evidence mode must match/],
       [{ connection_id: other, custody: 'operator_account' }, /connected accounts|check constraint/],
       [{ connection_id: other, capabilities: ['create', 'payout'] }, /payouts-capable/],
@@ -175,6 +187,11 @@ test('PAY-001 payout account and payout ask the SANC-004 gate; restricted places
     await assert.rejects(q("UPDATE trustwork.provider_connection SET processing_country='RU' WHERE id=$1", [other]), /restricted place/);
     await insert({ connection_id: other, capabilities: ['create'] });
     await assert.rejects(q("UPDATE trustwork.payment_rail SET countries=array_append(countries,'RU') WHERE connection_id=$1", [other]), /restricted or unknown place/);
+    await assert.rejects(q("UPDATE trustwork.payment_rail SET countries=array_append(countries,'ZZ') WHERE connection_id=$1", [other]), /restricted or unknown place/);
+    await assert.rejects(q("UPDATE trustwork.payment_rail SET currencies=array_append(currencies,'RUB') WHERE connection_id=$1", [other]), /currency of a restricted place/);
+    // The guard refuses what is restricted or invented, nothing else: real places and other currencies stay declarable.
+    await q("UPDATE trustwork.payment_rail SET countries=ARRAY['US','CA','GB'], currencies=ARRAY['USD','CAD','EUR','XOF'] WHERE connection_id=$1", [other]);
+    await q("UPDATE trustwork.payment_rail SET countries=ARRAY['US'], currencies=ARRAY['USD'] WHERE connection_id=$1", [other]);
     await assert.rejects(q("UPDATE trustwork.payment_rail SET evidence_mode='licensed_provider' WHERE connection_id=$1", [other]), /evidence mode/);
     await assert.rejects(q('UPDATE trustwork.payment_rail SET connection_id=$2 WHERE connection_id=$1', [other, hub.connectionId]), /immutable|duplicate key/);
     assert.deepEqual((await q('SELECT countries FROM trustwork.payment_rail WHERE connection_id=$1', [other]))[0], { countries: ['US'] });
