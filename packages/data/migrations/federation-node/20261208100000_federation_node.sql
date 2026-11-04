@@ -609,9 +609,11 @@ BEGIN
 END $$;
 
 -- Stores a peer's validated manifest with the outcome of our admission check. A refusal (or an expired attestation)
--- suspends every active record with the peer; a renewed admission lifts the suspensions that admission caused.
+-- suspends every active record with the peer; a renewed admission lifts the suspensions that admission caused. Only a
+-- real fetch from the peer's origin (p_fetched) moves manifest_fetched_at and refresh_due_at: a re-admission on an
+-- inbound handshake or a deal keeps the refresh due, so a stolen key cannot keep an archived manifest alive.
 CREATE FUNCTION trustwork.federation_peer_record(p_peer text, p_manifest jsonb, p_digest text, p_issued_at timestamptz, p_current_key text, p_attestation_expires timestamptz,
-  p_admitted boolean, p_judged text[], p_trigger text, p_suspension_reason text DEFAULT NULL) RETURNS trustwork.federation_peer
+  p_admitted boolean, p_judged text[], p_trigger text, p_suspension_reason text DEFAULT NULL, p_fetched boolean DEFAULT true) RETURNS trustwork.federation_peer
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
   v_node uuid := trustwork.federation_node();
@@ -633,8 +635,14 @@ BEGIN
     admission_state, admission_decided_at, admission_judged, admission_trigger)
   VALUES (v_node, p_peer, p_manifest, p_digest, p_issued_at, now(), now() + interval '24 hours', p_current_key, p_attestation_expires,
     CASE WHEN p_admitted THEN 'admitted' ELSE 'refused' END, now(), p_judged, p_trigger)
-  ON CONFLICT (node_id, peer_node) DO UPDATE SET manifest = EXCLUDED.manifest, manifest_digest = EXCLUDED.manifest_digest, manifest_issued_at = EXCLUDED.manifest_issued_at,
-    manifest_fetched_at = now(), refresh_due_at = now() + interval '24 hours', current_key_id = EXCLUDED.current_key_id, attestation_expires_at = EXCLUDED.attestation_expires_at,
+  ON CONFLICT (node_id, peer_node) DO UPDATE SET
+    manifest = CASE WHEN p_fetched THEN EXCLUDED.manifest ELSE trustwork.federation_peer.manifest END,
+    manifest_digest = CASE WHEN p_fetched THEN EXCLUDED.manifest_digest ELSE trustwork.federation_peer.manifest_digest END,
+    manifest_issued_at = CASE WHEN p_fetched THEN EXCLUDED.manifest_issued_at ELSE trustwork.federation_peer.manifest_issued_at END,
+    manifest_fetched_at = CASE WHEN p_fetched THEN now() ELSE trustwork.federation_peer.manifest_fetched_at END,
+    refresh_due_at = CASE WHEN p_fetched THEN now() + interval '24 hours' ELSE trustwork.federation_peer.refresh_due_at END,
+    current_key_id = CASE WHEN p_fetched THEN EXCLUDED.current_key_id ELSE trustwork.federation_peer.current_key_id END,
+    attestation_expires_at = CASE WHEN p_fetched THEN EXCLUDED.attestation_expires_at ELSE trustwork.federation_peer.attestation_expires_at END,
     admission_state = EXCLUDED.admission_state, admission_decided_at = now(), admission_judged = EXCLUDED.admission_judged, admission_trigger = EXCLUDED.admission_trigger,
     revision = trustwork.federation_peer.revision + 1
   RETURNING * INTO v_row;
@@ -1041,14 +1049,19 @@ END $$;
 CREATE FUNCTION trustwork.federation_accept_peering(p_ctx jsonb, p_record uuid, p_expected_revision integer, p_level text, p_approval_id uuid) RETURNS trustwork.peering_record
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
+  v_hub uuid;
   v_actor trustwork.admin_actor;
   v_before trustwork.peering_record%ROWTYPE;
   v_row trustwork.peering_record%ROWTYPE;
   v_approval trustwork.second_person_approval%ROWTYPE;
   v_identity trustwork.node_identity%ROWTYPE;
 BEGIN
+  SELECT local_hub_id INTO v_hub FROM trustwork.peering_record WHERE id = p_record;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no such peering record' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
+  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_hub);
   v_before := trustwork.federation_require_record(p_record, p_expected_revision);
-  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_before.local_hub_id);
   IF v_before.direction <> 'incoming' OR v_before.state <> 'pending_approval' OR v_before.phase NOT IN ('awaiting_acceptance', 'awaiting_second_approver') THEN
     RAISE EXCEPTION 'only an incoming request awaiting a person is accepted' USING ERRCODE = 'check_violation', HINT = 'federation.invalid_transition';
   END IF;
@@ -1084,11 +1097,16 @@ END $$;
 CREATE FUNCTION trustwork.federation_await_second_approver(p_ctx jsonb, p_record uuid, p_expected_revision integer) RETURNS trustwork.peering_record
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
+  v_hub uuid;
   v_before trustwork.peering_record%ROWTYPE;
   v_row trustwork.peering_record%ROWTYPE;
 BEGIN
+  SELECT local_hub_id INTO v_hub FROM trustwork.peering_record WHERE id = p_record;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no such peering record' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
+  PERFORM trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_hub);
   v_before := trustwork.federation_require_record(p_record, p_expected_revision);
-  PERFORM trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_before.local_hub_id);
   IF v_before.direction <> 'incoming' OR v_before.phase <> 'awaiting_acceptance' THEN
     RETURN v_before;
   END IF;
@@ -1099,12 +1117,17 @@ END $$;
 CREATE FUNCTION trustwork.federation_decline_peering(p_ctx jsonb, p_record uuid, p_expected_revision integer) RETURNS trustwork.peering_record
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
+  v_hub uuid;
   v_actor trustwork.admin_actor;
   v_before trustwork.peering_record%ROWTYPE;
   v_row trustwork.peering_record%ROWTYPE;
 BEGIN
+  SELECT local_hub_id INTO v_hub FROM trustwork.peering_record WHERE id = p_record;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no such peering record' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
+  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_hub);
   v_before := trustwork.federation_require_record(p_record, p_expected_revision);
-  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_before.local_hub_id);
   IF v_before.state <> 'pending_approval' THEN
     RAISE EXCEPTION 'only a pending request is declined; end an active peering' USING ERRCODE = 'check_violation', HINT = 'federation.invalid_transition';
   END IF;
@@ -1118,12 +1141,17 @@ END $$;
 CREATE FUNCTION trustwork.federation_lower_peering(p_ctx jsonb, p_record uuid, p_expected_revision integer, p_level text) RETURNS trustwork.peering_record
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
+  v_hub uuid;
   v_actor trustwork.admin_actor;
   v_before trustwork.peering_record%ROWTYPE;
   v_row trustwork.peering_record%ROWTYPE;
 BEGIN
+  SELECT local_hub_id INTO v_hub FROM trustwork.peering_record WHERE id = p_record;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no such peering record' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
+  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_hub);
   v_before := trustwork.federation_require_record(p_record, p_expected_revision);
-  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_before.local_hub_id);
   IF v_before.state <> 'active' OR trustwork.federation_level_rank(p_level) >= trustwork.federation_level_rank(v_before.level) THEN
     RAISE EXCEPTION 'lowering names a level below the current one of an active peering' USING ERRCODE = 'check_violation', HINT = 'federation.invalid_transition';
   END IF;
@@ -1136,12 +1164,17 @@ END $$;
 CREATE FUNCTION trustwork.federation_suspend_peering(p_ctx jsonb, p_record uuid, p_expected_revision integer) RETURNS trustwork.peering_record
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
+  v_hub uuid;
   v_actor trustwork.admin_actor;
   v_before trustwork.peering_record%ROWTYPE;
   v_row trustwork.peering_record%ROWTYPE;
 BEGIN
+  SELECT local_hub_id INTO v_hub FROM trustwork.peering_record WHERE id = p_record;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no such peering record' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
+  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_hub);
   v_before := trustwork.federation_require_record(p_record, p_expected_revision);
-  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_before.local_hub_id);
   IF v_before.state <> 'active' OR v_before.suspended_at IS NOT NULL THEN
     RAISE EXCEPTION 'only an active, unsuspended peering is suspended' USING ERRCODE = 'check_violation', HINT = 'federation.invalid_transition';
   END IF;
@@ -1155,12 +1188,17 @@ END $$;
 CREATE FUNCTION trustwork.federation_lift_suspension(p_ctx jsonb, p_record uuid, p_expected_revision integer) RETURNS trustwork.peering_record
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
+  v_hub uuid;
   v_actor trustwork.admin_actor;
   v_before trustwork.peering_record%ROWTYPE;
   v_row trustwork.peering_record%ROWTYPE;
 BEGIN
+  SELECT local_hub_id INTO v_hub FROM trustwork.peering_record WHERE id = p_record;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no such peering record' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
+  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_hub);
   v_before := trustwork.federation_require_record(p_record, p_expected_revision);
-  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, v_before.local_hub_id);
   IF v_before.state <> 'active' OR v_before.suspension_reason IS DISTINCT FROM 'operator' THEN
     RAISE EXCEPTION 'only an operator suspension is lifted by a person; the admission check lifts its own' USING ERRCODE = 'check_violation', HINT = 'federation.invalid_transition';
   END IF;
@@ -1178,12 +1216,17 @@ END $$;
 CREATE FUNCTION trustwork.federation_end_peering(p_ctx jsonb, p_record uuid, p_expected_revision integer) RETURNS trustwork.peering_record
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
+  v_hub uuid;
   v_actor trustwork.admin_actor;
   v_before trustwork.peering_record%ROWTYPE;
   v_row trustwork.peering_record%ROWTYPE;
 BEGIN
+  SELECT local_hub_id INTO v_hub FROM trustwork.peering_record WHERE id = p_record;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'no such peering record' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
+  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.defederate'], NULL, v_hub);
   v_before := trustwork.federation_require_record(p_record, p_expected_revision);
-  v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.defederate'], NULL, v_before.local_hub_id);
   UPDATE trustwork.peering_record SET state = 'ended', end_reason = 'defederated', phase = 'complete', ended_by = v_actor.person_id, revision = revision + 1 WHERE id = p_record RETURNING * INTO v_row;
   PERFORM trustwork.federation_event(v_row.id, 'peering.defederated', v_actor.person_id, v_before.state, 'ended', p_ctx ->> 'reasonText');
   PERFORM trustwork.admin_record(v_actor, p_ctx, NULL, v_row.local_hub_id, 'federation.defederated', 'peering_record', v_row.id, to_jsonb(v_before), to_jsonb(v_row));
@@ -1311,7 +1354,7 @@ GRANT EXECUTE ON FUNCTION
   trustwork.federation_note_refresh(jsonb, text, text),
   -- node-run commands and protocol readers
   trustwork.federation_node_signing_material(text), trustwork.federation_node_record_manifest(jsonb, text, text, timestamptz),
-  trustwork.federation_peer_record(text, jsonb, text, timestamptz, text, timestamptz, boolean, text[], text, text), trustwork.federation_peer_equivocation(text),
+  trustwork.federation_peer_record(text, jsonb, text, timestamptz, text, timestamptz, boolean, text[], text, text, boolean), trustwork.federation_peer_equivocation(text),
   trustwork.federation_handshake_received(text, text, uuid, text, jsonb, integer, integer, text, text), trustwork.federation_peer_answered(uuid, text, text, text, text),
   trustwork.federation_refusal_record(text, text, timestamptz, jsonb, jsonb), trustwork.federation_note_nonce(text, text, text, timestamptz), trustwork.federation_purge_nonces(),
   trustwork.federation_deal_admission(text, text, text), trustwork.federation_revocation_noticed(text, text, timestamptz, timestamptz, integer),

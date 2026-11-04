@@ -84,3 +84,15 @@ export class FederationProtocolError extends Error {
     return FederationErrorSchema.parse({ protocol: MESH_PROTOCOL, code: this.code, message: this.message.slice(0, 500), requestId });
   }
 }
+
+/**
+ * The node cannot judge an outbound address: the configured jurisdiction gate (SANC-001) answers for inbound requests
+ * only (`edge_header`, `upstream_gate`) or is not configured. Federation fails closed: no peer is contacted until an
+ * address-judging gate (`TRUSTWORK_JURISDICTION_GATE=ranges_file`) is configured. No provider, account or external call.
+ */
+export class FederationConfigurationError extends Error {
+  constructor(readonly gateMode: string) {
+    super(`address judgement must be configured before federation goes live: the ${gateMode} jurisdiction gate cannot judge an outbound address; set TRUSTWORK_JURISDICTION_GATE=ranges_file`);
+    this.name = 'FederationConfigurationError';
+  }
+}

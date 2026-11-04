@@ -171,6 +171,8 @@ export interface FakePeer {
   manifestStatus?: number;
   /** Raw manifest bytes override (an oversized or malformed answer). */
   manifestBytes?: () => Uint8Array;
+  /** A peer that drips: the manifest answer arrives only after this many milliseconds. */
+  manifestDelayMs?: number;
 }
 export interface HandshakeCall { host: string; body: Record<string, unknown>; fields: SignedFields }
 
@@ -205,6 +207,7 @@ export class FakePeerTransport implements PeerTransport {
     if (!peer) throw new Error(`fake transport: no such peer ${host}`);
     this.manifestFetches.push(host);
     this.connections.push({ host, address });
+    if (peer.manifestDelayMs) await new Promise<void>((resolve) => setTimeout(resolve, peer.manifestDelayMs));
     const bytes = peer.manifestBytes ? peer.manifestBytes() : utf8Encode(canonicalize(peer.manifest()));
     return { status: peer.manifestStatus ?? 200, header: () => null, body: bytes, remoteAddress: address };
   }
