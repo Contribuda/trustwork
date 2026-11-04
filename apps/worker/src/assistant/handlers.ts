@@ -13,9 +13,9 @@ import { ProviderRejectedError, type EffectProvider, type LookupResult } from '.
  * Worker side of the agent runtime (AST-001).
  *
  * - `assistant.dispatch` (external job): `jurisdiction_begin_attempt` applies the jurisdiction binding and consent to
- *   a deal context and the holds of its parties, then `assistant_begin_attempt` rechecks the mandate, its revision and
- *   expiry, the company basis, the principal's holds, kill switches and the person's stop, the approval and the
- *   reservation, and persists the attempt (operation id, fencing token) before the provider call. The provider result is recorded fenced by the job's token.
+ *   a quote or agreement context, then `assistant_begin_attempt` rechecks the mandate, its revision and expiry, the
+ *   company basis, the holds of the principal and a deal's parties, kill switches and the person's stop, the approval
+ *   and the reservation, and persists the attempt (operation id, fencing token) before the provider call. The provider result is recorded fenced by the job's token.
  *   A refused recheck revokes the action without any call. An ambiguous error or timeout records `outcome_unknown`.
  * - `assistant.reconcile` (transactional job): a provider lookup by the stable correlation key turns an unknown
  *   outcome into a reconciliation record (final, still acknowledged, or still unknown). Lookups have no effect, so a

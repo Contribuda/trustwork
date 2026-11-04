@@ -80,6 +80,6 @@ export async function createQuote(as:<T>(personId:string,fn:(trx:Transaction)=>P
     return {rfq,inv};
   });
   const quote=await as(seller,trx=>quotes.insert(trx,{rfq_id:published.rfq.id,seller_person_id:seller,seller_company_id:null,invitation_id:published.inv.id,creator_person_id:seller}));
-  return {quoteId:quote.id,projectId:project.id};
+  return {quoteId:quote.id,projectId:project.id,rfqId:published.rfq.id};
 }
 export { computeDigest };
