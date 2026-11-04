@@ -128,7 +128,7 @@ export default {
       await trx.insertInto('hub_profile').values({ hub_id: row.id, node_id: nodeId, name: { en: 'Synthetic launched hub' }, default_locale: 'en', locales: ['en'], time_zone: 'UTC', currency: 'USD', created_by: founder.person_id }).execute();
       return row.id;
     });
-    const draftDoc = await as(h, people.steward, (trx, ctx) => legalDocuments.draft(trx, ctx, launched, { kind: 'terms', locale: 'en', body: 'Synthetic terms of the launched hub' }));
+    const draftDoc = await as(h, people.chief, (trx, ctx) => legalDocuments.draft(trx, ctx, launched, { kind: 'terms', locale: 'en', body: 'Synthetic terms of the launched hub' }));
     const counsel = await as(h, people.chief, (trx, ctx) => legalDocuments.recordCounselApproval(trx, ctx, launched, { documentVersionIds: [draftDoc.id], counselName: 'Synthetic Counsel', firm: 'Synthetic Firm LLP', approvedOn: new Date(Date.now() - 86_400_000).toISOString().slice(0, 10), scopeNote: 'Synthetic review' }));
     const digest = computeDigest(legalActivationDigestInput({ id: draftDoc.id, hubId: launched, kind: 'terms', locale: 'en', version: draftDoc.version, bodyDigest: draftDoc.body_digest, counselApprovalId: counsel.id })).value;
     const stewardCtx = await ctxOf(h, people.steward);
