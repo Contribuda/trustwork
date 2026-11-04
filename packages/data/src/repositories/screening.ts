@@ -156,6 +156,15 @@ export function matchView(row: ScreeningMatchRow, decisions: readonly ScreeningD
 }
 
 export const screeningStaff = {
+  /**
+   * May the caller open a named subject's compliance panel? A compliance officer of this node, decided from the
+   * assignment: a role name on the principal also counts a hub-scoped assignment. Row-level security then removes every
+   * subject the officer is conflicted with, so these reads answer as if that subject had no record.
+   */
+  async panelReader(trx: Transaction): Promise<boolean> {
+    const { rows } = await sql<{ v: boolean }>`SELECT trustwork.screening_panel_reader() AS v`.execute(trx);
+    return rows[0]?.v === true;
+  },
   /** Exact lookup in the existing staff-only state table, with no participant/profile join or bypass of RLS. */
   subjectStateFor(trx: Transaction, subject: ScreeningSubjectRef): Promise<ScreeningSubjectStateRow | undefined> {
     return trx.selectFrom('screening_subject_state').selectAll()

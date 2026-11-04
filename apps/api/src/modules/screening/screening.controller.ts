@@ -8,6 +8,7 @@ import { auditEvents } from '../../deps/data.js';
 import { PrincipalService } from '../identity/principal.service.js';
 import { Elevation, ElevationGuard } from '../identity/second-factor/elevation.guard.js';
 import type { SessionElevationRow } from '../identity/second-factor/deps.js';
+import type { Transaction } from '../../../../../packages/data/src/pool.js';
 import {
   AppealComplianceDecisionCommandSchema, complianceAppealReceipt, ConfirmScreeningMatchCommandSchema, DecideScreeningAppealCommandSchema, DecideScreeningProposalCommandSchema, ownComplianceStatus,
   ProposeNotSamePersonCommandSchema, ReviewServiceLevelSchema, REVIEW_SERVICE_LEVEL_BOUNDS, screeningStaff, screeningSubjects, type ScreeningReportDraftRow,
@@ -78,7 +79,9 @@ const draftView = (r: ScreeningReportDraftRow) => ({
  * matches with the entry and the screened name side by side, report drafts, and the decisions. Behind an elevated
  * session; the database checks the compliance-officer role at the node, refuses the subject, members of the subject
  * company and conflicted reviewers, requires a second person for "not the same person" and reversals, serialises
- * concurrent reviewers and writes the audit row in the same transaction.
+ * concurrent reviewers and writes the audit row in the same transaction. The same people are filtered out of every read
+ * by row-level security. The queue, the subject and the match are the compliance panel (console design, section 4.1):
+ * the compliance officer's alone, so an auditor gets the answer any other staff member gets.
  */
 @Controller('v1/admin/screening')
 @Authenticated()
@@ -87,9 +90,16 @@ export class ScreeningStaffController {
   private readonly serviceLevelDays = reviewServiceLevel();
   constructor(@Inject(PrincipalService) private readonly principals: PrincipalService) {}
 
+  private panel<T>(state: RequestState, fn: (trx: Transaction) => Promise<T>) {
+    return this.principals.runAs(state, async (trx) => {
+      if (!await screeningStaff.panelReader(trx)) throw new ApiError('access.not_found');
+      return fn(trx);
+    });
+  }
+
   @Get('queue')
   queue(@Query(QueueQuery) query: z.infer<typeof QueueQuery>, @ReqState() state: RequestState) {
-    return this.principals.runAs(state, async (trx) => ({
+    return this.panel(state, async (trx) => ({
       serviceLevelDays: this.serviceLevelDays,
       items: await screeningStaff.queue(trx, { serviceLevelDays: this.serviceLevelDays, now: new Date(), ...(query.limit ? { limit: query.limit } : {}) }),
     }));
@@ -97,7 +107,7 @@ export class ScreeningStaffController {
 
   @Get('subjects/:id')
   subject(@Params(UuidParams) params: z.infer<typeof UuidParams>, @ReqState() state: RequestState) {
-    return this.principals.runAs(state, async (trx) => {
+    return this.panel(state, async (trx) => {
       const row = await screeningStaff.subjectState(trx, params.id);
       if (!row) throw new ApiError('access.not_found');
       const subject = row.subject_person_id ? { kind: 'person' as const, id: row.subject_person_id } : { kind: 'company' as const, id: row.subject_company_id as string };
@@ -110,7 +120,7 @@ export class ScreeningStaffController {
 
   @Get('matches/:id')
   match(@Params(UuidParams) params: z.infer<typeof UuidParams>, @ReqState() state: RequestState) {
-    return this.principals.runAs(state, async (trx) => {
+    return this.panel(state, async (trx) => {
       const view = await screeningStaff.match(trx, params.id);
       if (!view) throw new ApiError('access.not_found');
       const decisions = await screeningStaff.decisions(trx, params.id);
@@ -120,7 +130,7 @@ export class ScreeningStaffController {
 
   @Get('matches/:id/appeal-assignment')
   assignment(@Params(UuidParams) params: z.infer<typeof UuidParams>, @ReqState() state: RequestState) {
-    return this.principals.runAs(state, async (trx) => {
+    return this.panel(state, async (trx) => {
       if (!await screeningStaff.match(trx, params.id)) throw new ApiError('access.not_found');
       return { assignment: await appealAssignment(trx, params.id) };
     });

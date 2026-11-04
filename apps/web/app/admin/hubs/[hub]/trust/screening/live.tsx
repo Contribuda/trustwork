@@ -39,7 +39,9 @@ export async function readScreening(hubSlug: string, query: Query, transport = c
   for (const list of lists.items) versions.set(list.id, ScreeningVersionsSchema.parse(await transport.get(`/v1/admin/screening/lists/${list.id}/versions`)).items);
   const geo = ScreeningGeolocationSchema.parse(await transport.get('/v1/admin/jurisdiction/geolocation'));
   const metrics = ScreeningMetricsSchema.parse(await transport.get(`/v1/admin/screening/metrics?hubId=${hub.id}`));
-  const queue = QueueSchema.parse(await transport.get('/v1/admin/screening/queue'));
+  // The queue names subjects, so it is part of the compliance officer's panel: an auditor's page has no queue.
+  const queueBody = await transport.get('/v1/admin/screening/queue');
+  const queue = queueBody === null ? null : QueueSchema.parse(queueBody);
   const holds = HoldsSchema.parse(await transport.get('/v1/admin/jurisdiction/holds'));
   const runs = RunsSchema.parse(await transport.get('/v1/admin/screening/rescreen-runs'));
   const reports = ReportDraftsSchema.parse(await transport.get('/v1/admin/screening/report-drafts'));
@@ -85,7 +87,7 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
   const fmtDate = (s: string | null) => s ? new Intl.DateTimeFormat(active.locale, { dateStyle: 'medium', timeStyle: 'short', timeZone: data.hub.timeZone }).format(new Date(s)) : c.unknown;
   const number = (n: number) => new Intl.NumberFormat(active.locale).format(n);
   const approvalView = query.view === 'approvals';
-  const queue = data.queue.items.filter((item) => !approvalView || item.states.some((state) => state === 'pending_second' || state === 'pending_reversal'));
+  const queue = data.queue?.items.filter((item) => !approvalView || item.states.some((state) => state === 'pending_second' || state === 'pending_reversal')) ?? null;
   const visibleHolds = data.holds.filter((hold) => !subject || subject.subject.kind === 'person' && hold.personId === subject.subject.id);
   const visibleReports = data.reports.filter((report) => !subject || report.subject.id === subject.subject.id);
   return <div className="screening-console">
@@ -95,7 +97,7 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
       <p>{data.hub.name[active.locale] ?? data.hub.name[data.hub.defaultLocale]}</p>
       <p>{c.api} · {c.nodeScope}</p>
       <nav aria-label={c.title}>
-        <a href={base}>{c.queue}</a><a href={`${base}?view=approvals`}>{c.approvals}</a><a href={`${base}#holds`}>{c.holds}</a><a href={`${base}#reports`}>{c.reports.title}</a><a href={`${base}#runs`}>{c.runs}</a>
+        {queue ? <><a href={base}>{c.queue}</a><a href={`${base}?view=approvals`}>{c.approvals}</a></> : null}<a href={`${base}#holds`}>{c.holds}</a><a href={`${base}#reports`}>{c.reports.title}</a><a href={`${base}#runs`}>{c.runs}</a>
       </nav>
     </header>
     {participantPage ? <p>{c.participantScope}</p> : <aside className="screening-warning"><strong>{c.incomplete}</strong><p>{c.unavailable}</p></aside>}
@@ -156,14 +158,14 @@ export async function LiveScreening({ hub, query = {} }: { hub: string; query?: 
       <h3>{c.runDuration}</h3><p>{c.nodeScope}</p>
       {data.metrics.rescreenDurations.length ? <ul>{data.metrics.rescreenDurations.map((run) => <li key={run.runId}><code>{run.runId}</code> · {number(run.seconds)}</li>)}</ul> : <p>{c.noEligibleDurations}</p>}
     </section>
-    <section aria-labelledby="queue-heading"><h2 id="queue-heading">{approvalView ? c.approvals : c.queue}</h2>
+    {queue ? <section aria-labelledby="queue-heading"><h2 id="queue-heading">{approvalView ? c.approvals : c.queue}</h2>
       <p>{c.notifications}</p>
       {!queue.length ? <p>{c.noMatches}</p> : <ul>{queue.map((item) => <li key={item.subjectStateId} className="screening-card">
         <a href={`${base}?subject=${item.subjectStateId}${approvalView ? '&view=approvals' : ''}`}>{c.subjectKinds[item.subject.kind]} · <code>{item.subject.id}</code></a>
         <p>{fmtDate(item.dueAt)} {item.late ? <strong>{c.late}</strong> : null}</p>
         <p>{item.states.map((s) => c.states[s]).join(' · ')}</p>
       </li>)}</ul>}
-    </section>
+    </section> : null}
     </> : null}
     {subject ? <CompliancePanel subject={subject} details={data.details} access={access} mayAct={mayAct} c={c} hub={hub} fmtDate={fmtDate} /> : null}
     <section id="holds" aria-labelledby="holds-heading"><h2 id="holds-heading">{c.holds}</h2>
