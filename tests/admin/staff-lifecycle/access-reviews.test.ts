@@ -75,10 +75,14 @@ test('access-review campaigns (ADM-004 part 4)', { skip: db ? false : SKIP_REASO
     const kept = await decide(p.hubOwner, (await itemOf(first, p.moderator)).id, 'keep');
     assert.deepEqual([kept.verdict, kept.effect, kept.decided_by, kept.decision_reason], ['keep', 'kept', p.hubOwner, 'Synthetic test action']);
     assert.equal((await assignment(kept.assignment_id)).revoked_at, null);
+    // The second lead is also eligible for the role under review; removal takes the eligibility with it.
+    const eligible = await as(p.owner, async (trx) => staffLifecycle.grantEligible(trx, await elevate(p.owner), { personId: p.lead2, role: 'support-lead', scope: hub, definitionVersion: 1, maxActivationSeconds: 3600, validForSeconds: null }));
     const removed = await decide(p.admin, (await itemOf(first, p.lead2)).id, 'remove');
     assert.deepEqual([removed.verdict, removed.effect], ['remove', 'revoked']);
     const gone = await assignment(removed.assignment_id);
     assert.deepEqual([gone.revoked_by, gone.revoke_reason], [p.admin, 'Synthetic test action']);
+    const eligibility = await owner((trx) => trx.selectFrom('staff_eligible_role').select(['revoked_at', 'revoked_by']).where('id', '=', eligible.id).executeTakeFirstOrThrow());
+    assert.ok(eligibility.revoked_at !== null && eligibility.revoked_by === p.admin, 'the eligibility for the removed role ended with it');
     await rejects(decide(p.admin, removed.id, 'keep'), '23514', 'admin.invalid_transition');
     // The ops engineer's role ends through the ordinary revocation before the review reaches it.
     const ops = await itemOf(first, p.ops);
@@ -127,20 +131,42 @@ test('access-review campaigns (ADM-004 part 4)', { skip: db ? false : SKIP_REASO
   });
 
   await t.test('a campaign opened by mistake is withdrawn with a reason; its items are left undecided and the roles untouched', async () => {
-    const third = await open(p.hubOwner, { title: 'Synthetic mistaken review' });
-    await rejects(as(p.moderator, async (trx) => staffLifecycle.withdrawAccessReview(trx, await elevate(p.moderator), third.id)), '42501', 'admin.forbidden');
-    const withdrawn = await as(p.hubOwner, async (trx) => staffLifecycle.withdrawAccessReview(trx, await elevate(p.hubOwner), third.id));
+    const withdraw = (by: string, id: string) => as(by, async (trx) => staffLifecycle.withdrawAccessReview(trx, await elevate(by), id));
+    const third = await open(p.hubOwner, { title: 'Synthetic mistaken review', roles: ['moderator'] });
+    await rejects(withdraw(p.moderator, third.id), '42501', 'admin.forbidden');
+    const withdrawn = await withdraw(p.hubOwner, third.id);
     assert.deepEqual([withdrawn.status, withdrawn.closed_by], ['withdrawn', p.hubOwner]);
-    await rejects(decide(p.admin, (await itemOf(third.id, p.lead)).id, 'remove'), '23514', 'admin.invalid_transition');
-    assert.equal((await assignment((await itemOf(third.id, p.lead)).assignment_id)).revoked_at, null);
-    await rejects(as(p.hubOwner, async (trx) => staffLifecycle.withdrawAccessReview(trx, await elevate(p.hubOwner), third.id)), '23514', 'admin.invalid_transition');
+    await rejects(decide(p.admin, (await itemOf(third.id, p.moderator)).id, 'remove'), '23514', 'admin.invalid_transition');
+    assert.equal((await assignment((await itemOf(third.id, p.moderator)).assignment_id)).revoked_at, null);
+    await rejects(withdraw(p.hubOwner, third.id), '23514', 'admin.invalid_transition');
+  });
+
+  await t.test('withdrawal is no way around the review: not by a person whose own access is undecided, and after the deadline only by the owner role', async () => {
+    const withdraw = (by: string, id: string) => as(by, async (trx) => staffLifecycle.withdrawAccessReview(trx, await elevate(by), id));
+    // The hub owner's own hub-owner role is under review here: they cannot withdraw the campaign.
+    const own = await open(p.admin, { title: 'Synthetic review with the owner in it', roles: ['hub-owner', 'moderator'] });
+    await rejects(withdraw(p.hubOwner, own.id), '42501', 'admin.self_review');
+    await decide(p.admin, (await itemOf(own.id, p.hubOwner)).id, 'keep');
+    const ok = await withdraw(p.hubOwner, own.id);
+    assert.equal(ok.status, 'withdrawn', 'once their own item is decided they may withdraw');
+    // An escalated campaign (deadline passed, items undecided) is withdrawn only by the owner role it escalated to.
+    const late = await open(p.admin, { title: 'Synthetic overdue review', roles: ['support-lead'], dueInSeconds: DAY });
+    await owner(async (trx) => {
+      await sql`ALTER TABLE trustwork.staff_access_review_campaign DISABLE TRIGGER staff_access_review_campaign_guard`.execute(trx);
+      await sql`UPDATE trustwork.staff_access_review_campaign SET due_at = now() - interval '1 hour' WHERE id = ${late.id}::uuid`.execute(trx);
+      await sql`ALTER TABLE trustwork.staff_access_review_campaign ENABLE TRIGGER staff_access_review_campaign_guard`.execute(trx);
+    });
+    await rejects(withdraw(p.admin, late.id), '42501', 'admin.review_escalated');
+    await rejects(withdraw(p.owner, late.id), '42501', 'admin.review_escalated');
+    assert.equal((await campaign(late.id)).status, 'open');
+    assert.equal((await withdraw(p.hubOwner, late.id)).status, 'withdrawn');
   });
 
   await t.test('reads need admin.staff.read at the scope; nothing describes what a holder did', async () => {
     assert.deepEqual(await as(p.moderator, (trx) => staffLifecycle.accessReviews(trx, w.hubId)), []);
     assert.deepEqual(await as(p.customer, (trx) => staffLifecycle.accessReviewItems(trx, [first])), []);
     const seen = await as(p.hubOwner, (trx) => staffLifecycle.accessReviews(trx, w.hubId));
-    assert.equal(seen.length, 3);
+    assert.equal(seen.length, 5);
     assert.deepEqual(Object.keys((await as(p.hubOwner, (trx) => staffLifecycle.accessReviewItems(trx, [first])))[0]!).filter((k) => /last|seen|login|count|used/i.test(k)), []);
   });
 
