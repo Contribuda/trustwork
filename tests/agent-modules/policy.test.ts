@@ -20,6 +20,7 @@ import { UnavailableModel, UnavailableRetrieval } from '../../apps/api/src/modul
 import { stateOf } from '../assistant/helpers.js';
 import { PLANNER_COMMIT, PROFILE, runtimeHubPolicy, usHubPolicy, withSwitch } from './fixtures.js';
 import { buildAgentWorld, command, documentFor, ok, type AgentWorld } from './helpers.js';
+import { assertCardBinds } from '../admin/approval-change-helpers.js';
 
 /**
  * AGT-003 administration through the HTTP API on real PostgreSQL under the runtime role: the hub agent policy is drafted
@@ -47,6 +48,9 @@ test('agent product administration: policy versions with previews, second person
     const pending = ok<CommandBody>(await command(staff.officer, `${base}/policy/${v.versionId}/activate`, { expectedRevision: v.revision, approvalId: null }));
     assert.equal(pending.result.outcome, 'pending_second_person');
     const approvalId = pending.result.approvalRequestId as string;
+    const shown = (await staff.owner.get(`/v1/admin/approvals/${approvalId}`)).body as { approval: { change: { bound: boolean } } };
+    assert.equal(shown.approval.change.bound, true, 'the second person reads the version the digest binds');
+    await assertCardBinds(h.db.admin, approvalId);
     ok(await command(staff.owner, `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: v.activation.actionDigest }));
     return command(staff.officer, `${base}/policy/${v.versionId}/activate`, { expectedRevision: v.revision, approvalId });
   };
@@ -223,6 +227,9 @@ test('agent product administration: policy versions with previews, second person
     assert.equal(pending.result.outcome, 'pending_second_person');
     expectRefusal(await command(staff.officer, `/v1/admin/approvals/${pending.result.approvalRequestId}/approve`, { actionDigest: 'f'.repeat(64) }), 403, 'access.second_approver_required');
     const digest = (await h.db.admin.query<{ action_digest: string }>('SELECT action_digest FROM trustwork.second_person_approval WHERE id = $1', [pending.result.approvalRequestId])).rows[0]!.action_digest;
+    const shown = (await staff.owner.get(`/v1/admin/approvals/${pending.result.approvalRequestId}`)).body as { approval: { change: { fields: Array<{ field: string }> } } };
+    assert.ok(shown.approval.change.fields.some((f) => f.field === 'incidentNote'), 'the release shows its bound note');
+    await assertCardBinds(h.db.admin, pending.result.approvalRequestId as string);
     ok(await command(staff.owner, `/v1/admin/approvals/${pending.result.approvalRequestId}/approve`, { actionDigest: digest }));
     const released = ok<CommandBody & { killSwitch: { state: string } }>(await command(staff.officer, url, { incidentNote: 'Synthetic incident resolved', approvalId: pending.result.approvalRequestId }));
     assert.equal(released.killSwitch.state, 'released');

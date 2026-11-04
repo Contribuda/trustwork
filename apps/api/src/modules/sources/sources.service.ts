@@ -359,8 +359,9 @@ export class SourcesService {
       const current = await sponsoredPolicy.current(trx, hubId);
       const version = (current?.version ?? 0) + 1;
       if (body.allowed && body.approvalId === null) {
-        const digest = computeDigest(sponsoredPolicyDigestInput({ hubId, version, allowed: true, maxSlotsPerPage: body.maxSlotsPerPage, requireVerifiedSponsor: body.requireVerifiedSponsor })).value;
-        const request = await approvals.request(trx, cmd, { action: 'sponsored.enable', scope: { kind: 'hub', hubId }, actionDigest: digest });
+        const input = sponsoredPolicyDigestInput({ hubId, version, allowed: true, maxSlotsPerPage: body.maxSlotsPerPage, requireVerifiedSponsor: body.requireVerifiedSponsor });
+        const digest = computeDigest(input).value;
+        const request = await approvals.request(trx, cmd, { action: 'sponsored.enable', scope: { kind: 'hub', hubId }, actionDigest: digest, subject: input });
         return { result: await this.result(trx, cmd, 'pending_second_person', request.id, version, request.id), policy: toSponsoredPolicy(hubId, current), approvalDigest: digest };
       }
       const row = await sponsoredPolicy.set(trx, cmd, hubId, body);

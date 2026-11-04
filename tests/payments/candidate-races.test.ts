@@ -48,8 +48,8 @@ test('PAY-001 verified candidate absence serializes actual second consent with o
   const releaseKill = async () => {
     const [k] = await w.q("SELECT id,scope_kind FROM trustwork.kill_switch WHERE state='engaged' AND (connection_id=$1 OR scope_kind='node')", [w.connectionId]);
     if (!k) return;
-    const note = 'Synthetic independent candidate race release', digest = adminDigests.killSwitchRelease(k.id as string, note);
-    const approval = await w.a.cmd(w.w.people.owner, (trx, ctx) => approvals.request(trx, ctx, { action: 'kill_switch.release', scope: k.scope_kind === 'node' ? { kind: 'node', nodeId: w.w.nodeId } : { kind: 'hub', hubId: w.hubId }, actionDigest: digest }));
+    const note = 'Synthetic independent candidate race release', digest = adminDigests.killSwitchRelease(k.id as string, note), subject = adminDigests.killSwitchReleaseInput(k.id as string, note);
+    const approval = await w.a.cmd(w.w.people.owner, (trx, ctx) => approvals.request(trx, ctx, { action: 'kill_switch.release', scope: k.scope_kind === 'node' ? { kind: 'node', nodeId: w.w.nodeId } : { kind: 'hub', hubId: w.hubId }, actionDigest: digest, subject }));
     await w.a.cmd(w.w.people.officer, (trx, ctx) => approvals.decide(trx, ctx, approval.id, 'approve', digest));
     await w.a.cmd(w.w.people.owner, (trx, ctx) => killSwitches.release(trx, ctx, k.id as string, approval.id, note));
   };

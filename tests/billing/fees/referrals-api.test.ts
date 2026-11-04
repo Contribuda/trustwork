@@ -6,6 +6,7 @@ import { startHarness, SKIP_REASON } from '../../backend/helpers/app.js';
 import { PublicPricingSchema, StaffReferralSchema, type PublicReferral } from '../../../packages/contracts/src/billing-fees.js';
 import { approvals } from '../../../packages/data/src/repositories/admin.js';
 import { feeHttpWorld } from './http-helpers.js';
+import { assertCardBinds } from '../../admin/approval-change-helpers.js';
 
 const h = await startHarness('fee_referral_api');
 test('BILL-003 referral commands over HTTP use actual authentication, scope and elevation', { skip: h ? false : SKIP_REASON }, async (t) => {
@@ -53,6 +54,10 @@ test('BILL-003 referral commands over HTTP use actual authentication, scope and 
     assert.equal((await w.clients.owner.post(`${url}/${r.id}/activate`, action)).status, 403);
   });
   const request = await w.a.cmd(w.p.officer, (trx, ctx) => approvals.request(trx, ctx, { action: 'growth.activate_referral_terms', scope: { kind: 'hub', hubId: w.hubA }, actionDigest: r.digest }));
+  const shown = (await w.a.as(w.p.owner, (trx) => approvals.changes(trx, [request.id]))).get(request.id) as { bound: boolean; fields: Array<{ field: string }> };
+  assert.ok(shown.bound && shown.fields.some((f) => f.field === 'terms.referrerRewardMinor'), 'the second person reads the terms the digest binds');
+  for (const key of ['terms.maxRewardsPerReferrer', 'terms.publicTerms', 'legalReviewRef']) assert.ok(shown.fields.some((f) => f.field === key || f.field.startsWith(`${key}.`)), key);
+  await assertCardBinds(h.db.admin, request.id);
   await w.a.cmd(w.p.owner, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', r.digest));
   await t.test('the exact approval activates; anonymous and signed-in readers see the same disclosure without private fields', async () => {
     const action = { reason: body.reason, digest: r.digest, approvalId: request.id };

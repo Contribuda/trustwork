@@ -142,7 +142,7 @@ export class FederationNodeService {
   }
   /** Asks a second person for exactly this action and answers `pending_second_person`. */
   private async pending(trx: Transaction, cmd: CommandContext, action: string, scope: { kind: 'hub'; hubId: string } | { kind: 'node'; nodeId: string }, digestInput: unknown, objectId: string, revision: number) {
-    const request = await approvals.request(trx, cmd, { action, scope, actionDigest: computeDigest(digestInput).value });
+    const request = await approvals.request(trx, cmd, { action, scope, actionDigest: computeDigest(digestInput).value, subject: digestInput });
     return this.result(trx, cmd, 'pending_second_person', objectId, revision, request.id, request.id);
   }
   private async restricted(): Promise<RestrictedPlaces> {
@@ -858,7 +858,8 @@ export class FederationNodeService {
       if (!peeringLevelAtLeast(current.level, body.level)) throw new ApiError('validation.schema', 'acceptance grants at most the requested level', { reason: 'level_above_request' });
       if (needsSecond && body.approvalId === null) {
         const row = await peeringRecords.awaitSecondApprover(trx, cmd, id, body.expectedRevision);
-        const request = await approvals.request(trx, cmd, { action: 'federation.raise_peering_level', scope: { kind: 'hub', hubId: row.local_hub_id }, actionDigest: computeDigest(peeringLevelDigestInput({ localHubId: row.local_hub_id, peerNode: row.peer_node, peerHubId: row.peer_hub_id, level: body.level })).value });
+        const input = peeringLevelDigestInput({ localHubId: row.local_hub_id, peerNode: row.peer_node, peerHubId: row.peer_hub_id, level: body.level });
+        const request = await approvals.request(trx, cmd, { action: 'federation.raise_peering_level', scope: { kind: 'hub', hubId: row.local_hub_id }, actionDigest: computeDigest(input).value, subject: input });
         return this.view(trx, cmd, row, 'pending_second_person', request.id);
       }
       const row = await peeringRecords.accept(trx, cmd, id, body.expectedRevision, body.level as PeeringLevelCode, body.approvalId);

@@ -1,5 +1,6 @@
 import { createHmac, randomUUID } from 'node:crypto';
 import { expect, test, type APIRequestContext, type BrowserContext, type Page } from '@playwright/test';
+import { SOFT_LAUNCH_GATES } from '../../../packages/contracts/src/hub.js';
 import { HUBS } from '../../../apps/web/app/admin/_fixtures/hubs.js';
 import { CONTROL_ORIGIN, WEB_ORIGIN } from './ports.js';
 import { expectAccessible, expectNoHorizontalOverflow, msg, PASSWORD, SAME_ORIGIN, shot, verifiedAccount } from './support.js';
@@ -162,8 +163,9 @@ test('the console configures a live hub: modes applied, a residency draft activa
   await pageA.goto(`/admin/hubs/${SLUG}/approvals`);
   const card = pageA.locator('#for-me li').first();
   await expect(card).toBeVisible();
-  await expect(card.locator('.admin-diff')).toContainText(residencyAction);
-  await expect(card).toContainText(msg('admin.approvals.fields.action', LANG));
+  const diff = card.getByTestId('approval-change');
+  await expect(diff).toContainText(msg('admin.approvals.fields.hostingCountry', LANG));
+  await expect(diff).toContainText('GE');
   await card.locator('select[name="f.decision"]').selectOption('approve');
   await card.getByLabel(msg('admin.common.reason', LANG)).fill('Checked the residency change');
   await card.getByRole('button', { name: msg('admin.approvals.decide', LANG) }).click();
@@ -271,6 +273,105 @@ test('the console configures a live hub: modes applied, a residency draft activa
   }
 
   for (const ctx of [operatorCtx, aCtx, bCtx, cCtx]) await ctx.close();
+});
+
+test('an approved lifecycle transition is finished from the console: one request, the change on the card, applied by the requester', async ({ browser }) => {
+  test.setTimeout(240_000);
+  const slug = `synthetic-launch-${Date.now().toString(36)}`;
+  const operatorCtx = await browser.newContext();
+  const operator = await enrolled(operatorCtx, 'Synthetic Launch Operator');
+  await control('/staff', { personId: operator.personId, role: 'ops-engineer', permissions: ['admin.node.hubs.manage'], scope: { kind: 'node' } });
+  await operator.elevate();
+  const created = await staffPost(operatorCtx.request, '/v1/admin/hubs', { slug, name: { ka: 'სინთეზური გაშვების ჰაბი' }, defaultLocale: 'ka', locales: ['ka'], timeZone: 'Asia/Tbilisi', currency: 'GEL', countryPack: null, territories: [{ level: 'country', code: 'GE' }] });
+  const hubId = (created.result as { objectId: string }).objectId;
+  const base = `/v1/admin/hubs/${hubId}`;
+
+  // Two stewards of different roles: each the other's second person, in any separation-of-duties mode.
+  const aCtx = await browser.newContext();
+  const bCtx = await browser.newContext();
+  const a = await enrolled(aCtx, 'Synthetic Launch Steward A');
+  const b = await enrolled(bCtx, 'Synthetic Launch Steward B');
+  const launch = [...HUB_PERMISSIONS, 'admin.hub.legal.activate', 'admin.providers.egress.edit'];
+  await control('/staff', { personId: a.personId, role: 'data-steward', permissions: launch, scope: { kind: 'node' } });
+  await control('/staff', { personId: b.personId, role: 'ops-engineer', permissions: launch, scope: { kind: 'node' } });
+  await a.elevate();
+  await b.elevate();
+
+  // Everything the soft launch rests on, through the API: B activates what A drafted, A approves what B asks.
+  type Draft = { id: string; revision: number };
+  const secondPerson = async (route: string, draft: Draft) => {
+    const asked = await staffPost(bCtx.request, route, { expectedRevision: draft.revision, approvalId: null });
+    const approvalId = (asked.result as { approvalRequestId: string }).approvalRequestId;
+    const { approval } = (await (await aCtx.request.get(`/v1/admin/approvals/${approvalId}`)).json()) as { approval: { actionDigest: string } };
+    await staffPost(aCtx.request, `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: approval.actionDigest });
+    await staffPost(bCtx.request, route, { expectedRevision: draft.revision, approvalId });
+  };
+  const configure = async (domain: string, payload: Record<string, unknown>) => {
+    const draft = (await staffPost(aCtx.request, `${base}/config`, { domain, payload })).version as Draft;
+    await secondPerson(`${base}/config/${draft.id}/activate`, draft);
+  };
+  await configure('legal', { operatorEntity: { name: 'Synthetic Operator LLC', registrationRef: null, legalNoticeContact: 'legal@example.invalid' }, operatorEntityCountry: 'GE', operatorEntityRegion: null });
+  await configure('residency', { hostingCountry: 'GE', hostingRegion: null, personalDataCountries: ['GE'] });
+  await configure('egress', { defaultNonPublic: 'deny' });
+  const modes = (await staffPost(aCtx.request, `${base}/config`, { domain: 'modes', payload: { ...HUBS[0]!.modes, dataMode: 'live', registration: 'closed', searchEngineIndexing: false } })).version as Draft;
+  await staffPost(aCtx.request, `${base}/config/${modes.id}/activate`, { expectedRevision: modes.revision, approvalId: null });
+  const documents: Draft[] = [];
+  for (const kind of ['terms', 'privacy_notice', 'sanctions_section', 'community_rules']) documents.push((await staffPost(aCtx.request, `${base}/legal`, { kind, locale: 'ka', body: `სინთეზური ტექსტი ${kind}` })).document as Draft);
+  await staffPost(aCtx.request, `${base}/legal/counsel-approvals`, { documentVersionIds: documents.map((d) => d.id), counselName: 'Synthetic Counsel', firm: 'Synthetic Firm LLP', approvedOn: new Date(Date.now() - 86_400_000).toISOString().slice(0, 10), scopeNote: 'Synthetic scope' });
+  for (const d of documents) await secondPerson(`${base}/legal/${d.id}/activate`, d);
+  for (const gate of SOFT_LAUNCH_GATES) await staffPost(aCtx.request, `${base}/launch/check`, { gate, evidenceRef: randomUUID() });
+  const hubOf = async () => ((await (await aCtx.request.get(base)).json()) as { hub: { lifecycle: string; revision: number } }).hub;
+  await staffPost(aCtx.request, `${base}/lifecycle`, { to: 'preparing', expectedRevision: (await hubOf()).revision, approvalId: null });
+
+  for (const ctx of [aCtx, bCtx]) await inGeorgian(ctx);
+  const action = msg('admin.approvals.actions.hub.transition_soft_launch', LANG);
+  const pageA = await aCtx.newPage();
+  const requestLaunch = async () => {
+    await pageA.goto(`/admin/hubs/${slug}/hub/launch`);
+    const form = pageA.locator('#request-launch form');
+    await form.locator('select[name="f.to"]').selectOption('soft_launch');
+    await form.getByLabel(msg('admin.common.reason', LANG)).fill('The hub is ready');
+    await form.getByRole('button', { name: msg('admin.hub.launch.request', LANG) }).click();
+    await expect(form.locator('.admin-form__result')).toHaveText(msg('admin.common.sentToSecondPerson', LANG, { action }));
+  };
+  const asked = async () => ((await (await aCtx.request.get(`/v1/admin/approvals?hubId=${hubId}`)).json()) as { mine: Array<{ action: string }> }).mine.filter((r) => r.action === 'hub.transition_soft_launch').length;
+  await requestLaunch();
+  expect(await asked()).toBe(1);
+  await requestLaunch();
+  expect(await asked(), 'retrying opens no second request').toBe(1);
+
+  // B reads where the hub goes on the card and approves.
+  const pageB = await bCtx.newPage();
+  await pageB.goto(`/admin/hubs/${slug}/approvals`);
+  const card = pageB.locator('#for-me li').first();
+  const diff = card.getByTestId('approval-change');
+  await expect(diff).toContainText(msg('admin.approvals.fields.lifecycle', LANG));
+  await expect(diff).toContainText(msg('admin.lifecycle.preparing', LANG));
+  await expect(diff).toContainText(msg('admin.lifecycle.soft_launch', LANG));
+  await pageB.setViewportSize({ width: 375, height: 900 });
+  await expectNoHorizontalOverflow(pageB);
+  await shot(pageB, 'console-07-lifecycle-card-375-ka');
+  await pageB.setViewportSize({ width: 1280, height: 900 });
+  await card.locator('select[name="f.decision"]').selectOption('approve');
+  await card.getByLabel(msg('admin.common.reason', LANG)).fill('Checked the launch');
+  await card.getByRole('button', { name: msg('admin.approvals.decide', LANG) }).click();
+  await expect(card.locator('.admin-form__result')).toHaveText(msg('admin.common.applied', LANG));
+
+  // A, the requester, finishes it: the hub is in soft launch and the approval is used.
+  await pageA.goto(`/admin/hubs/${slug}/approvals`);
+  const ready = pageA.locator('#ready');
+  await expect(ready).toContainText(msg('admin.lifecycle.soft_launch', LANG));
+  await expectAccessible(pageA);
+  await shot(pageA, 'console-07-lifecycle-ready-ka');
+  await ready.getByLabel(msg('admin.common.reason', LANG)).fill('Apply the approved launch');
+  await ready.getByRole('button', { name: msg('admin.approvals.apply', LANG) }).click();
+  await expect(ready.locator('.admin-form__result')).toHaveText(msg('admin.common.applied', LANG));
+  expect((await hubOf()).lifecycle).toBe('soft_launch');
+  expect(await asked(), 'finishing opened no other request').toBe(1);
+  await pageA.goto(`/admin/hubs/${slug}/approvals`);
+  await expect(pageA.locator('#ready')).toHaveCount(0);
+
+  for (const ctx of [operatorCtx, aCtx, bCtx]) await ctx.close();
 });
 
 /** Creates an invitation on the staff screen; returns its status line. */
@@ -433,7 +534,14 @@ test('staff invitations: invited in the console, answered in the workspace with 
   await expect(invitationOf(secondPage, officer.email)).toContainText(stage('second_person'));
   await secondPage.goto(`/admin/hubs/${SLUG}/approvals`);
   const approval = secondPage.locator('#for-me li').first();
-  await expect(approval.locator('.admin-diff')).toContainText(msg('admin.approvals.actions.staff.assign_sensitive_role', LANG));
+  await expect(approval).toContainText('Synthetic invitation journey');
+  const change = approval.getByTestId('approval-change');
+  await expect(change).toContainText(sensitiveRole);
+  await expect(change).toContainText('Synthetic Invited Officer');
+  // A display name is chosen at sign-up: what the second person can tell a person by is what is rendered.
+  await expect(change).toContainText(officer.personId);
+  await expect(change).toContainText(`${officer.email.slice(0, 2)}***@${officer.email.split('@')[1]}`);
+  await expect(change).not.toContainText('Synthetic invitation journey');
   await approval.locator('select[name="f.decision"]').selectOption('approve');
   await approval.getByLabel(msg('admin.common.reason', LANG)).fill('Checked the compliance role');
   await approval.getByRole('button', { name: msg('admin.approvals.decide', LANG) }).click();

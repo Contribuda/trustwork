@@ -5,6 +5,7 @@ import { startHarness, SKIP_REASON } from '../../backend/helpers/app.js';
 import { PublicPricingSchema, StaffFeeSchema, StaffSalePriceSchema, type SalePriceVersion } from '../../../packages/contracts/src/billing-fees.js';
 import { approvals } from '../../../packages/data/src/repositories/admin.js';
 import { feeHttpWorld } from './http-helpers.js';
+import { assertCardBinds } from '../../admin/approval-change-helpers.js';
 
 const h = await startHarness('fee_sale_api');
 test('BILL-003 sale price commands and console reads over HTTP', { skip: h ? false : SKIP_REASON }, async (t) => {
@@ -51,6 +52,9 @@ test('BILL-003 sale price commands and console reads over HTTP', { skip: h ? fal
     assert.equal((await w.clients.owner.post(`${url}/${v.id}/activate`, action)).status, 403);
   });
   const request = await w.a.cmd(w.p.officer, (trx, ctx) => approvals.request(trx, ctx, { action: 'commerce.activate_price_version', scope: { kind: 'hub', hubId: w.hubA }, actionDigest: v.activationDigest }));
+  const shown = (await w.a.as(w.p.owner, (trx) => approvals.changes(trx, [request.id]))).get(request.id) as { bound: boolean; fields: Array<{ field: string }> };
+  assert.ok(shown.bound && shown.fields.some((f) => f.field === 'terms.amountMinor'), 'the second person reads the price the digest binds');
+  await assertCardBinds(h.db.admin, request.id);
   await w.a.cmd(w.p.owner, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', v.activationDigest));
   await t.test('the exact approval publishes the pack with its validity; every reader sees the same version', async () => {
     const action = { reason: body.reason, digest: v.digest, approvalId: request.id };

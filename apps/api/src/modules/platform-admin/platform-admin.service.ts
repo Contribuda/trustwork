@@ -283,21 +283,23 @@ export class PlatformAdminService {
   /* ---------- Second-person approvals ---------- */
 
   /** The digest and scope a described action binds (computed here, recomputed by the database at execution). */
-  private async bind(trx: Transaction, subject: ApprovalSubject): Promise<{ scope: StaffScope; digest: string }> {
+  private async bind(trx: Transaction, subject: ApprovalSubject): Promise<{ scope: StaffScope; digest: string; input?: unknown }> {
     switch (subject.action) {
-      case 'staff.assign_sensitive_role':
-        return { scope: subject.scope, digest: adminDigests.assignment({ breakglass: false, personId: subject.personId, role: subject.role, scope: subject.scope, definitionVersion: subject.definitionVersion, validForSeconds: subject.validForSeconds ?? null }) };
-      case 'staff.grant_breakglass':
-        return {
-          scope: subject.scope,
-          digest: adminDigests.assignment({ breakglass: true, personId: subject.personId, role: subject.role, scope: subject.scope, definitionVersion: subject.definitionVersion, incidentId: subject.incidentId, validForSeconds: subject.validForSeconds }),
-        };
+      case 'staff.assign_sensitive_role': {
+        const assignment = { breakglass: false, personId: subject.personId, role: subject.role, scope: subject.scope, definitionVersion: subject.definitionVersion, validForSeconds: subject.validForSeconds ?? null };
+        return { scope: subject.scope, digest: adminDigests.assignment(assignment), input: adminDigests.assignmentInput(assignment) };
+      }
+      case 'staff.grant_breakglass': {
+        const assignment = { breakglass: true, personId: subject.personId, role: subject.role, scope: subject.scope, definitionVersion: subject.definitionVersion, incidentId: subject.incidentId, validForSeconds: subject.validForSeconds };
+        return { scope: subject.scope, digest: adminDigests.assignment(assignment), input: adminDigests.assignmentInput(assignment) };
+      }
       case 'moderation.apply_sanction_l4': {
         const c = await this.caseRow(trx, subject.moderationCaseId);
         if (!c) throw new ApiError('access.not_found', 'moderation case not found');
         const party = c.subject_person_id ? { kind: 'person' as const, id: c.subject_person_id } : c.subject_company_id ? { kind: 'company' as const, id: c.subject_company_id } : null;
         if (!party) throw new ApiError('validation.schema', 'the case names no subject', { reason: 'case_mismatch' });
-        return { scope: { kind: 'hub', hubId: c.hub_id }, digest: adminDigests.sanction({ moderationCaseId: c.id, subject: party, level: 4, featureScope: subject.featureScope, durationSeconds: subject.durationSeconds }) };
+        const sanction = { moderationCaseId: c.id, subject: party, level: 4, featureScope: subject.featureScope, durationSeconds: subject.durationSeconds };
+        return { scope: { kind: 'hub', hubId: c.hub_id }, digest: adminDigests.sanction(sanction), input: adminDigests.sanctionInput(sanction) };
       }
       default:
         return { scope: subject.scope, digest: subject.actionDigest };
@@ -306,33 +308,51 @@ export class PlatformAdminService {
 
   requestApproval(e: Elevated, body: z.infer<typeof RequestApprovalCommandSchema>) {
     return this.staff(e, body, null, async (trx, p, cmd) => {
-      const { scope, digest } = await this.bind(trx, body.subject);
-      const row = await approvals.request(trx, cmd, { action: body.subject.action, scope, actionDigest: digest });
+      const { scope, digest, input } = await this.bind(trx, body.subject);
+      const row = await approvals.request(trx, cmd, { action: body.subject.action, scope, actionDigest: digest, subject: input });
       await this.notice(trx, { kind: 'second_person_approval', id: row.id }, 'admin.approval_requested', { action: row.action, scopeKind: row.scope_kind, hubId: row.hub_id, requestedBy: p.personId });
-      return { approval: toApproval(row) };
+      return { approval: await this.approvalRecord(trx, row) };
     });
   }
 
-  approvalsFor(state: RequestState, filter: { hubId?: string | undefined }) {
+  approvalsFor(state: RequestState, filter: { hubId?: string | undefined }, elevationId: string) {
     return this.read(state, async (trx, p) => {
       let query = trx.selectFrom('second_person_approval').selectAll();
       if (filter.hubId) query = query.where('hub_id', '=', filter.hubId);
       const rows = await query.orderBy('requested_at', 'desc').limit(500).execute();
       const now = this.now.getTime();
+      const view = await this.approvalViews(trx, rows, elevationId);
       return {
-        forMe: rows.filter((r) => r.status === 'pending' && r.requested_by !== p.personId && new Date(r.request_expires_at).getTime() > now).map(toApproval),
-        mine: rows.filter((r) => r.requested_by === p.personId).map(toApproval),
-        decided: rows.filter((r) => r.status !== 'pending' && r.requested_by !== p.personId).slice(0, 100).map(toApproval),
+        forMe: rows.filter((r) => r.status === 'pending' && r.requested_by !== p.personId && new Date(r.request_expires_at).getTime() > now).map(view),
+        mine: rows.filter((r) => r.requested_by === p.personId).map(view),
+        decided: rows.filter((r) => r.status !== 'pending' && r.requested_by !== p.personId).slice(0, 100).map(view),
       };
     });
   }
 
-  approval(state: RequestState, id: string) {
+  approval(state: RequestState, id: string, elevationId: string) {
     return this.read(state, async (trx) => {
       const row = await approvals.get(trx, id);
       if (!row) throw new ApiError('access.not_found', 'approval not found');
-      return { approval: toApproval(row) };
+      return { approval: (await this.approvalViews(trx, [row], elevationId))(row) };
     });
+  }
+
+  /** Open approvals carry the change their digest binds; a decided one no longer needs reading (`change: null`). */
+  private async approvalViews(trx: Transaction, rows: SecondPersonApprovalRow[], elevationId: string) {
+    const changes = await approvals.changes(trx, rows.filter((r) => r.status === 'pending' || r.status === 'approved').map((r) => r.id), elevationId);
+    const records = await this.approvalRecords(trx, rows);
+    return (row: SecondPersonApprovalRow) => ({ ...records(row), change: changes.get(row.id) ?? null });
+  }
+
+  /** Free text says what the change is, so it has the readers of the change: whoever does not read its domain gets neither, in any state. */
+  private async approvalRecords(trx: Transaction, rows: SecondPersonApprovalRow[]) {
+    const readable = await approvals.readable(trx, rows.map((r) => r.id));
+    return (row: SecondPersonApprovalRow) => (readable.has(row.id) ? toApproval(row) : { ...toApproval(row), reason: null, declineReason: null });
+  }
+
+  private async approvalRecord(trx: Transaction, row: SecondPersonApprovalRow) {
+    return (await this.approvalRecords(trx, [row]))(row);
   }
 
   approve(e: Elevated, id: string, body: z.infer<typeof ApproveCommandSchema>) {
@@ -353,7 +373,7 @@ export class PlatformAdminService {
       }
       const row = await approvals.decide(trx, cmd, id, 'approve', body.actionDigest, body.validForSeconds ?? SEVENTY_TWO_HOURS);
       await this.notice(trx, { kind: 'person', id: row.requested_by }, 'admin.approval_decided', { approvalId: row.id, action: row.action, decision: 'approve' });
-      return { approval: toApproval(row), sod: { verified: sod.verified, mode: sod.evaluation?.mode ?? null, staffCount: sod.evaluation?.staffCount ?? null } };
+      return { approval: await this.approvalRecord(trx, row), sod: { verified: sod.verified, mode: sod.evaluation?.mode ?? null, staffCount: sod.evaluation?.staffCount ?? null } };
     }).catch(async (error: unknown) => {
       if (error instanceof ApiError && isAuthorityRefusal(error)) await this.recordApprovalDenied(e, body, id, error);
       throw error;
@@ -378,7 +398,7 @@ export class PlatformAdminService {
       if (!before) throw new ApiError('access.not_found', 'approval not found');
       const row = await approvals.decide(trx, cmd, id, 'decline', before.action_digest);
       await this.notice(trx, { kind: 'person', id: row.requested_by }, 'admin.approval_decided', { approvalId: row.id, action: row.action, decision: 'decline' });
-      return { approval: toApproval(row) };
+      return { approval: await this.approvalRecord(trx, row) };
     }).catch(async (error: unknown) => {
       if (error instanceof ApiError && isAuthorityRefusal(error)) await this.recordApprovalDenied(e, body, id, error);
       throw error;
@@ -390,7 +410,7 @@ export class PlatformAdminService {
       const row = await approvals.withdraw(trx, id);
       const permission = (await this.actionPermissions(trx, row.action))[0] ?? 'admin.session.elevate';
       await this.recordApplied(trx, p, cmd, { target: scopeOf(row), permission, action: 'approval.withdrawn', objectType: 'second_person_approval', objectId: row.id });
-      return { approval: toApproval(row) };
+      return { approval: await this.approvalRecord(trx, row) };
     });
   }
 
@@ -456,7 +476,10 @@ export class PlatformAdminService {
       if (q.afterSequence) query = query.where(sql<boolean>`sequence > ${q.afterSequence}::bigint`);
       const limit = Math.min(Math.max(Number(q.limit ?? 200), 1), 500);
       const rows = await query.orderBy('sequence').limit(limit + 1).execute();
-      const events = rows.slice(0, limit).map(toAuditEvent);
+      // The reason says what the change is: the reader of the audit gets it only where they read the change.
+      const page = rows.slice(0, limit);
+      const reasons = await approvals.auditReasons(trx, page.map((r) => r.id));
+      const events = page.map((r) => (reasons.has(r.id) ? toAuditEvent(r) : { ...toAuditEvent(r), reasonText: null }));
       return { events, nextAfterSequence: rows.length > limit ? String(events[events.length - 1]?.sequence) : null };
     });
   }

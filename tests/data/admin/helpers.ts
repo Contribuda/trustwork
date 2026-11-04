@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { computeDigest } from '@trustwork/contracts';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { withMaintenance, withPrincipal, type DataPool, type Principal, type Transaction } from '@trustwork/data';
 import type { ConsolePermission, HubStaffRole } from '@trustwork/contracts';
@@ -89,8 +90,9 @@ export function actors(adminPool: DataPool, runtime: DataPool, world: AdminWorld
   const assignSensitive = async (input: { personId: string; role: HubStaffRole; scope: StaffScope }) => {
     const ownerCtx = await elevate(world.people.owner);
     const adminCtx = await elevate(world.people.admin);
-    const digest = adminDigests.assignment({ breakglass: false, personId: input.personId, role: input.role, scope: input.scope, definitionVersion: 1 });
-    const request = await as(world.people.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest }));
+    const digestInput = adminDigests.assignmentInput({ breakglass: false, personId: input.personId, role: input.role, scope: input.scope, definitionVersion: 1 });
+    const digest = computeDigest(digestInput).value;
+    const request = await as(world.people.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest, subject: digestInput }));
     await as(world.people.admin, (trx) => approvals.decide(trx, adminCtx, request.id, 'approve', digest));
     return as(world.people.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { ...input, definitionVersion: 1, approvalId: request.id }));
   };

@@ -4,8 +4,10 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createApiConsolePort, type ConsoleApi } from '../../../../apps/web/app/admin/_data/api-adapter.js';
 import { invitationStage } from '../../../../apps/web/app/admin/_data/commands.js';
+import { changePersonLabel, staffPersonLabel } from '../../../../apps/web/app/admin/_data/schemas.js';
 import { SECTIONS } from '../../../../apps/web/app/admin/_data/sections.js';
 import { HUBS } from '../../../../apps/web/app/admin/_fixtures/hubs.js';
+import { LAUNCH_GATES } from '../../../../packages/contracts/src/hub.js';
 
 /**
  * HUBC-007 first slice: the console's live adapter reads the API with the visitor's session and never serves a fixture
@@ -42,10 +44,12 @@ function fakeApi(routes: Routes): ConsoleApi & { calls: string[] } {
   };
 }
 
+/** What the API reports for an open approval whose digest it could prove. */
+const provenChange = (digest: string) => ({ bound: true, visible: true, complete: true, current: true, currentDigest: digest, apply: null, fields: [{ field: 'providerMode', before: { kind: 'none' }, after: { kind: 'text', value: 'live' } }] });
 const approval = (overrides: Record<string, unknown> = {}) => ({
   id: '55555555-5555-4555-8555-555555555555', action: 'providers.enable_non_fake', scope: { kind: 'hub', hubId: HUB_ID }, actionDigest: DIGEST, reason: 'Enable the mail provider',
   requestedBy: OTHER, requestedAt: '2026-11-01T10:00:00.000Z', requestExpiresAt: '2026-11-02T10:00:00.000Z', status: 'pending', approvedBy: null, approvedAt: null, expiresAt: null,
-  declinedBy: null, declineReason: null, revokedAt: null, consumedAt: null, revision: 1, ...overrides,
+  declinedBy: null, declineReason: null, revokedAt: null, consumedAt: null, revision: 1, change: provenChange((overrides.actionDigest as string | undefined) ?? DIGEST), ...overrides,
 });
 
 const staffRoutes = (extra: Routes = {}): Routes => ({
@@ -135,6 +139,96 @@ test('approvals: pending requests and approvals of this hub only, bound to their
   const { requests, decisions } = await p.approvals(HUB_ID);
   assert.deepEqual(requests.map((r) => [r.id, r.state, r.actionDigest.value, r.synthetic]), [['55555555-5555-4555-8555-555555555555', 'pending', DIGEST, false]]);
   assert.deepEqual(decisions.map((d) => [d.requestId, d.decision, d.approval?.approvedBy]), [['66666666-6666-4666-8666-666666666666', 'approve', STAFF]]);
+});
+
+test('two people with one name read differently on the card, a person with no name keeps the card, and a hidden reason stays hidden', async () => {
+  const twin = '77777777-7777-4777-8777-777777777777';
+  const person = (personId: string, displayName: string | null, maskedEmail: string | null) => ({ field: 'personId', before: { kind: 'none' }, after: { kind: 'person', personId, displayName, maskedEmail } });
+  const card = (id: string, field: ReturnType<typeof person>) => approval({ id, action: 'staff.assign_sensitive_role', change: { ...provenChange(DIGEST), fields: [field] } });
+  const { port: p } = port(staffRoutes({ [`/v1/admin/approvals?hubId=${HUB_ID}`]: { mine: [], decided: [], forMe: [
+    card('55555555-5555-4555-8555-555555555551', person(OTHER, 'Synthetic Moderator', 'sy***@example.invalid')),
+    card('55555555-5555-4555-8555-555555555552', person(twin, 'Synthetic Moderator', null)),
+    card('55555555-5555-4555-8555-555555555553', person(twin, null, null)),
+    approval({ id: '55555555-5555-4555-8555-555555555554', reason: null, change: { bound: false, visible: false, complete: false, current: false, currentDigest: null, fields: [], apply: null } }),
+  ] } }));
+  const { requests } = await p.approvals(HUB_ID);
+  assert.equal(requests.length, 4, 'no card is dropped');
+  assert.equal(requests[3]?.reason, null);
+  const shown = requests.slice(0, 3).map((r) => {
+    const value = r.changes[0]!.after;
+    assert.equal(value.kind, 'person');
+    return changePersonLabel(value as Extract<typeof value, { kind: 'person' }>, 'Unknown person');
+  });
+  assert.ok(shown[0]!.includes(OTHER) && shown[0]!.includes('sy***@example.invalid'), shown[0]);
+  assert.ok(shown[1]!.includes(twin) && !shown[1]!.includes(OTHER), shown[1]);
+  assert.notEqual(shown[0], shown[1], 'the same name is not the same person');
+  assert.ok(shown[2]!.includes('Unknown person') && shown[2]!.includes(twin), shown[2]);
+  assert.equal(staffPersonLabel(twin, { displayName: 'Synthetic Moderator' }, 'A staff member'), `Synthetic Moderator · ${twin}`);
+  assert.equal(staffPersonLabel(twin, undefined, 'A staff member'), `A staff member · ${twin}`);
+  for (const [screen, uses] of [['approvals/_screen.tsx', 1], ['inbox/_screen.tsx', 3]] as const) {
+    const source = readFileSync(resolve(`apps/web/app/admin/hubs/[hub]/${screen}`), 'utf8');
+    assert.equal(source.split('staffPersonLabel(').length - 1, uses, `the requester and decider on ${screen}`);
+    assert.ok(!/(requester|decidedBy\)|person)\??\.displayName/.test(source.replace(/ctx\.viewer\.person\.displayName/g, '')), `no name alone on ${screen}`);
+  }
+  // Every screen that renders a change renders a person through that label, never the name alone (the live journey reads the page).
+  for (const screen of ['approvals/_screen.tsx', 'inbox/_screen.tsx', 'modules/_kit/parts.tsx']) {
+    const source = readFileSync(resolve(`apps/web/app/admin/hubs/[hub]/${screen}`), 'utf8');
+    assert.ok(source.includes("value.kind === 'person') return <span data-testid=\"change-person\">{changePersonLabel(value,"), screen);
+  }
+});
+
+test('the card gets what the digest binds from the server, never from the reason; a person and a role survive the mapping', async () => {
+  const bound = {
+    bound: true, visible: true, complete: true, current: true, currentDigest: DIGEST, apply: null,
+    fields: [
+      { field: 'person', before: { kind: 'none' }, after: { kind: 'person', personId: OTHER, displayName: 'Synthetic Friend' } },
+      { field: 'role', before: { kind: 'none' }, after: { kind: 'key', key: 'roles.hub-owner' } },
+      { field: 'validFor', before: { kind: 'none' }, after: { kind: 'duration', seconds: 86_400 } },
+      { field: 'scope', before: { kind: 'none' }, after: { kind: 'text', value: 'hub' } },
+    ],
+  };
+  const { port: p } = port(staffRoutes({ [`/v1/admin/approvals?hubId=${HUB_ID}`]: { mine: [], decided: [], forMe: [approval({ action: 'staff.assign_sensitive_role', reason: 'Weekend moderator', change: bound })] } }));
+  const [request] = (await p.approvals(HUB_ID)).requests;
+  assert.equal(request?.bound, true);
+  assert.equal(request?.reason?.value, 'Weekend moderator');
+  assert.deepEqual(request?.changes.map((c) => [c.field, c.after]), [
+    ['person', { kind: 'person', personId: OTHER, displayName: 'Synthetic Friend', maskedEmail: null }], ['role', { kind: 'key', key: 'roles.hub-owner' }], ['validFor', { kind: 'duration', seconds: 86_400 }],
+    ['scope', { kind: 'text', value: 'hub', lang: 'und' }],
+  ]);
+});
+
+test('an unproven or missing change is not approvable: the console says so and sends nothing', async () => {
+  for (const change of [null, undefined, { bound: false, visible: true, complete: false, current: false, currentDigest: null, fields: [], apply: null }]) {
+    const { sent, port: p } = commandPort({ status: 200, code: null }, { [`/v1/admin/approvals?hubId=${HUB_ID}`]: { mine: [], decided: [], forMe: [approval({ change })] } });
+    const [request] = (await p.approvals(HUB_ID)).requests;
+    assert.equal(request?.bound, false);
+    assert.equal(request?.currentDigest, null);
+    assert.deepEqual(request?.changes.map((c) => c.field), ['action'], 'only the action, which the server knows; never the reason as a stand-in');
+    assert.equal(((await p.command(live, decide({ requestId: REQUEST, decision: 'approve', digest: DIGEST }))) as { code: string }).code, 'change_unbound');
+    assert.deepEqual(sent, []);
+  }
+});
+
+test('a card that hides part of the change, or the whole of it, is not approvable: the console says which and sends nothing', async () => {
+  const cases: Array<[Record<string, unknown>, string]> = [
+    [{ ...provenChange(DIGEST), complete: false }, 'change_incomplete'],
+    [{ bound: false, visible: false, complete: false, current: false, currentDigest: null, fields: [], apply: null }, 'change_hidden'],
+  ];
+  for (const [change, code] of cases) {
+    const { sent, port: p } = commandPort({ status: 200, code: null }, { [`/v1/admin/approvals?hubId=${HUB_ID}`]: { mine: [], decided: [], forMe: [approval({ change })] } });
+    assert.equal(((await p.command(live, decide({ requestId: REQUEST, decision: 'approve', digest: DIGEST }))) as { code: string }).code, code);
+    assert.deepEqual(sent, []);
+  }
+});
+
+test('a request whose object moved on is void: the server gives no current digest, and approving is refused before any call', async () => {
+  const { sent, port: p } = commandPort({ status: 200, code: null }, {
+    [`/v1/admin/approvals?hubId=${HUB_ID}`]: { mine: [], decided: [], forMe: [approval({ change: { ...provenChange(DIGEST), current: false, currentDigest: null } })] },
+  });
+  const [request] = (await p.approvals(HUB_ID)).requests;
+  assert.deepEqual([request?.bound, request?.currentDigest], [true, null]);
+  assert.equal(((await p.command(live, decide({ requestId: REQUEST, decision: 'approve', digest: DIGEST }))) as { code: string }).code, 'request_void');
+  assert.deepEqual(sent, []);
 });
 
 test('live mode refuses every command and serves no fixture data for unwired sections', async () => {
@@ -360,6 +454,48 @@ test('apply after approval: one\'s own approved request whose draft still matche
   assert.deepEqual([sent[0]!.path, sent[0]!.body.expectedRevision, sent[0]!.body.approvalId], [`/v1/admin/hubs/${HUB_ID}/config/${RESIDENCY}/activate`, 3, APPROVED]);
   assert.deepEqual(await p.command(live, settings('approvals.apply', { requestId: FOREIGN }, null)), { status: 'not_found' }, 'someone else\'s approval is not offered');
   assert.equal(sent.length, 1);
+});
+
+test('an approved transition is finished from the console with its approval; retrying never opens another request', async () => {
+  const APPROVED = '99999999-9999-4999-8999-999999999994';
+  const WAITING = '99999999-9999-4999-8999-999999999995';
+  const lifecycle = (revision: number) => ({ field: 'lifecycle', before: { kind: 'key', key: 'lifecycle.preparing' }, after: { kind: 'key', key: 'lifecycle.soft_launch' }, revision });
+  const transition = (revision: number, current = true) => ({ bound: true, visible: true, complete: true, current, currentDigest: current ? 'e'.repeat(64) : null, fields: [{ field: 'lifecycle', before: lifecycle(revision).before, after: lifecycle(revision).after }], apply: { kind: 'lifecycle', to: 'soft_launch', revision } });
+  const mine = (over: Record<string, unknown>) => approval({ id: APPROVED, action: 'hub.transition_soft_launch', actionDigest: 'e'.repeat(64), requestedBy: STAFF, status: 'approved', approvedBy: OTHER,
+    approvedAt: '2026-11-01T11:00:00.000Z', expiresAt: '2026-11-01T13:00:00.000Z', change: transition(hub.revision), ...over });
+  const preparing = { ...hub, lifecycle: 'preparing' };
+  const passed = LAUNCH_GATES.map((gate) => ({ hubId: HUB_ID, gate, state: 'passed', evidenceRef: OTHER, checkedBy: OTHER, checkedAt: '2026-11-01T09:00:00.000Z', invalidatedAt: null, invalidationReason: null }));
+  const open = { [`/v1/admin/hubs/${HUB_ID}/launch`]: { hubId: HUB_ID, lifecycle: 'preparing', gates: passed, blockers: { soft_launch: [], public: [] } }, '/v1/admin/hubs': { items: [{ hub: preparing, territoryIds: {}, profileRevision: 1, createdAt: '2026-10-01T00:00:00.000Z' }] } };
+  const access = { [`/v1/admin/access?hubId=${HUB_ID}`]: { personId: STAFF, roles: ['hub-owner'], permissions: ['admin.hub.lifecycle.request'], breakglassOnly: [] } };
+  const setup = (rows: Record<string, unknown>) => {
+    const api = fakeApi(staffRoutes({ [`/v1/admin/approvals?hubId=${HUB_ID}`]: rows, ...open, ...access }));
+    const sent: Sent[] = [];
+    const p = createApiConsolePort({ api: { get: api.get, async post(path, body, key) { sent.push({ path, body, key }); return { status: 200, code: null, body: applied(HUB_ID) }; } },
+      siteHost: () => 'sandiego.example.org', engineVersion: '0.1.0', now: () => NOW, newKey: () => 'key-life' });
+    return { sent, p };
+  };
+  const request = { command: 'lifecycle.request', hubSlug: 'san-diego', setupToken: null, reason: 'Go', expectedRevision: hub.revision, fields: { to: 'soft_launch' } } as const;
+
+  const ready = setup({ forMe: [], mine: [mine({})], decided: [] });
+  assert.deepEqual((await ready.p.approvals(HUB_ID)).ready?.map((r) => [r.requestId, r.action, r.target.kind, r.target.label, r.target.revision]),
+    [[APPROVED, 'hub.transition_soft_launch', 'lifecycle', 'soft_launch', hub.revision]]);
+  assert.deepEqual(await ready.p.command(live, settings('approvals.apply', { requestId: APPROVED }, null)), { status: 'applied' });
+  assert.deepEqual([ready.sent[0]!.path, ready.sent[0]!.body.to, ready.sent[0]!.body.expectedRevision, ready.sent[0]!.body.approvalId], [`/v1/admin/hubs/${HUB_ID}/lifecycle`, 'soft_launch', hub.revision, APPROVED]);
+
+  const retried = setup({ forMe: [], mine: [mine({})], decided: [] });
+  assert.deepEqual(await retried.p.command(live, request), { status: 'applied' });
+  assert.equal(retried.sent[0]!.body.approvalId, APPROVED, 'the retry finishes the approved transition instead of asking again');
+
+  const stale = setup({ forMe: [], mine: [mine({ change: transition(hub.revision, false) })], decided: [] });
+  assert.deepEqual((await stale.p.approvals(HUB_ID)).ready, [], 'a hub that moved on is not offered: the approval no longer fits');
+
+  const pending = setup({ forMe: [], decided: [], mine: [approval({ id: WAITING, action: 'hub.transition_soft_launch', actionDigest: 'e'.repeat(64), requestedBy: STAFF, change: transition(hub.revision) })] });
+  assert.deepEqual(await pending.p.command(live, request), { status: 'pending_second_person', secondPerson: 'hub.transition_soft_launch' });
+  assert.deepEqual(pending.sent, [], 'one open request is enough');
+
+  const fresh = setup({ forMe: [], mine: [], decided: [] });
+  await fresh.p.command(live, request);
+  assert.equal(fresh.sent[0]!.body.approvalId, null, 'with nothing open, the request is opened');
 });
 
 test('waiting for activation: another staff member\'s sensitive draft is offered once; requesting it activates without an approval, which opens the request', async () => {

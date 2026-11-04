@@ -102,13 +102,13 @@ export class AdminStaffController {
   /* ---------- Second-person approvals ---------- */
 
   @Get('approvals')
-  approvals(@Query(ApprovalsQuerySchema) q: z.infer<typeof ApprovalsQuerySchema>, @ReqState() state: RequestState) {
-    return this.admin.approvalsFor(state, q);
+  approvals(@Query(ApprovalsQuerySchema) q: z.infer<typeof ApprovalsQuerySchema>, @ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow) {
+    return this.admin.approvalsFor(state, q, elevation.id);
   }
 
   @Get('approvals/:id')
-  approval(@Params(UuidParams) params: Id, @ReqState() state: RequestState) {
-    return this.admin.approval(state, params.id);
+  approval(@Params(UuidParams) params: Id, @ReqState() state: RequestState, @Elevation() elevation: SessionElevationRow) {
+    return this.admin.approval(state, params.id, elevation.id);
   }
 
   @Post('approvals') @HttpCode(201) @Idempotent('admin.approval.request')

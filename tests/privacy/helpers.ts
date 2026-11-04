@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
+import { computeDigest } from '@trustwork/contracts';
 import assert from 'node:assert/strict';
 import { withMaintenance, withPrincipal } from '@trustwork/data';
 import type { Harness } from '../backend/helpers/app.js';
@@ -34,12 +35,14 @@ export async function privacyWorld(h: Harness) {
   });
   const ownerCtx = await context(owner); const adminCtx = await context(admin);
   const scope = { kind: 'platform' as const };
-  const digest = adminDigests.assignment({ personId: people.officer, role: 'privacy-officer', scope, definitionVersion: 137, breakglass: false });
-  const approval = await as(owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope, actionDigest: digest }));
+  const digestInput = adminDigests.assignmentInput({ personId: people.officer, role: 'privacy-officer', scope, definitionVersion: 137, breakglass: false });
+  const digest = computeDigest(digestInput).value;
+  const approval = await as(owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope, actionDigest: digest, subject: digestInput }));
   await as(admin, (trx) => approvals.decide(trx, adminCtx, approval.id, 'approve', digest));
   await as(owner, (trx) => staffAssignments.assign(trx, ownerCtx, { personId: people.officer, role: 'privacy-officer', scope, definitionVersion: 137, approvalId: approval.id }));
-  const reviewerDigest = adminDigests.assignment({ personId: people.reviewer, role: 'privacy-officer', scope, definitionVersion: 137, breakglass: false });
-  const reviewerApproval = await as(owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope, actionDigest: reviewerDigest }));
+  const reviewerDigestInput = adminDigests.assignmentInput({ personId: people.reviewer, role: 'privacy-officer', scope, definitionVersion: 137, breakglass: false });
+  const reviewerDigest = computeDigest(reviewerDigestInput).value;
+  const reviewerApproval = await as(owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope, actionDigest: reviewerDigest, subject: reviewerDigestInput }));
   await as(admin, (trx) => approvals.decide(trx, adminCtx, reviewerApproval.id, 'approve', reviewerDigest));
   await as(owner, (trx) => staffAssignments.assign(trx, ownerCtx, { personId: people.reviewer, role: 'privacy-officer', scope, definitionVersion: 137, approvalId: reviewerApproval.id }));
   h.staff.set(people.officer, ['privacy-officer']);

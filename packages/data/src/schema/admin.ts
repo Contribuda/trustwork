@@ -57,6 +57,8 @@ export interface IncidentTable {
   notified_at: Timestamp | null; post_review_ref: string | null; opened_by: string; opened_at: GeneratedTimestamp; closed_by: string | null; closed_at: Timestamp | null;
   revision: GeneratedInt; updated_at: GeneratedTimestamp;
 }
+/** What an approval's digest was computed from, for what no row holds yet; the database refuses an input that does not hash to it. */
+export interface SecondPersonApprovalSubjectTable { approval_id: string; subject: ColumnType<Record<string, unknown>, string, never>; created_at: GeneratedTimestamp }
 export interface SecondPersonApprovalTable {
   id: GeneratedUuid; action: string; scope_kind: StaffScopeKind; node_id: string | null; hub_id: string | null; action_digest: string; reason: string; requested_by: string;
   requested_at: GeneratedTimestamp; request_expires_at: GeneratedTimestamp; status: Generated<ApprovalStatus>; approved_by: string | null; approved_at: Timestamp | null;
@@ -144,6 +146,7 @@ export interface AdminDatabase {
   staff_role_definition_version: StaffRoleDefinitionVersionTable;
   incident: IncidentTable;
   second_person_approval: SecondPersonApprovalTable;
+  second_person_approval_subject: SecondPersonApprovalSubjectTable;
   staff_role_assignment: StaffRoleAssignmentTable;
   staff_conflict_declaration: StaffConflictDeclarationTable;
   admin_sequence: AdminSequenceTable;
@@ -192,6 +195,7 @@ export const TABLE_COLUMNS: TableColumns<AdminDatabase> = {
     'post_review_ref', 'opened_by', 'opened_at', 'closed_by', 'closed_at', 'revision', 'updated_at']),
   second_person_approval: columns('second_person_approval', ['id', 'action', 'scope_kind', 'node_id', 'hub_id', 'action_digest', 'reason', 'requested_by', 'requested_at', 'request_expires_at',
     'status', 'approved_by', 'approved_at', 'expires_at', 'declined_by', 'decline_reason', 'revoked_at', 'revoked_by', 'consumed_at', 'consumed_ref', 'revision', 'updated_at']),
+  second_person_approval_subject: columns('second_person_approval_subject', ['approval_id', 'subject', 'created_at']),
   staff_role_assignment: columns('staff_role_assignment', ['id', 'person_id', 'role', 'scope_kind', 'node_id', 'hub_id', 'definition_version', 'granted_by', 'approved_by', 'approval_id',
     'reason', 'breakglass', 'incident_id', 'setup_bootstrap', 'valid_from', 'valid_until', 'revoked_at', 'revoked_by', 'revoke_reason', 'created_at']),
   staff_conflict_declaration: columns('staff_conflict_declaration', ['id', 'staff_person_id', 'conflict_person_id', 'conflict_company_id', 'reason', 'declared_at', 'ended_at']),

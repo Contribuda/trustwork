@@ -14,6 +14,7 @@ import {
 } from '@trustwork/contracts/client';
 import { isRestricted } from '@trustwork/country-packs';
 import { ResidencyConfigPayloadSchema } from '../../../../../packages/contracts/src/hub-core.js';
+import { ApprovalChangeSchema, type ApprovalChangeValue } from '../../../../../packages/contracts/src/approval-change.js';
 import { EffectiveAccessSchema, StaffDirectorySchema, StaffInvitationViewSchema } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import { evaluateCommand, invitationSeconds, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
@@ -76,7 +77,10 @@ const ApprovalViewSchema = z.object({
   action: z.string(),
   scope: z.object({ kind: z.string(), hubId: z.string().optional(), nodeId: z.string().optional() }),
   actionDigest: z.string().regex(/^[a-f0-9]{64}$/),
-  reason: z.string().min(1),
+  /** Null for a viewer who does not read the change's domain. */
+  reason: z.string().min(1).nullable(),
+  /** What the digest binds, computed by the server; an open approval without it is not approvable here. */
+  change: ApprovalChangeSchema.nullable().optional(),
   requestedBy: z.string(),
   requestedAt: z.iso.datetime(),
   requestExpiresAt: z.iso.datetime(),
@@ -125,6 +129,9 @@ const ScreeningListsSchema = z.object({ items: z.array(z.object({ hubId: z.strin
 /** Staff decide these moderation cases and support cases; a case waiting for its requester is not waiting for staff. */
 const OPEN_MODERATION = new Set(['open', 'in_review', 'appealed']);
 const OPEN_SUPPORT = new Set(['open', 'triaged', 'in_progress']);
+
+/** A value of a server-computed change as the console shows it; stored values carry no language of their own. */
+const changeValue = (value: ApprovalChangeValue) => (value.kind === 'text' ? { ...value, lang: 'und' } : value);
 
 /** The keys a strict contract schema allows, so an API view with extra fields (activation hints, digests) still parses. */
 function pick(row: Record<string, unknown>, schema: { shape: Record<string, unknown> }): Record<string, unknown> {
@@ -266,8 +273,15 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     const ready: ReadyApproval[] = [];
     for (const a of approved) {
       const action = ConsoleSecondPersonActionSchema.safeParse(a.action);
+      if (!action.success) continue;
+      // A transition has no draft: the approval itself says where the hub goes, while the hub is still where it was approved.
+      const apply = a.change?.current ? a.change.apply : null;
+      if (apply) {
+        ready.push({ requestId: a.id, action: action.data, target: { kind: 'lifecycle', id: hubId, revision: apply.revision, label: apply.to } });
+        continue;
+      }
       const match = targets.find((t) => t.v.activation!.actionDigest === a.actionDigest && t.v.activation!.secondPersonAction === a.action);
-      if (action.success && match) ready.push({ requestId: a.id, action: action.data, target: target(match) });
+      if (match) ready.push({ requestId: a.id, action: action.data, target: target(match) });
     }
     const waiting: WaitingActivation[] = [];
     for (const t of targets) {
@@ -293,11 +307,16 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       const digest = { algorithm: DIGEST_ALGORITHM, value: a.data.actionDigest };
       const scope = { kind: 'hub' as const, hubId };
       if (a.data.status === 'pending' || a.data.status === 'withdrawn') {
+        // What the digest binds, as the server read it; without that proof the card shows only the action and refuses.
+        const change = a.data.change;
+        const bound = change?.bound === true && change.fields.length > 0;
+        const visible = change?.visible !== false;
         const parsed = ApprovalRequestSchema.safeParse({
           id: a.data.id, hubId, action: action.data, scope, actionDigest: digest,
-          // The API voids a request whose action changed; what it still lists is current.
-          currentDigest: digest, requestedBy: a.data.requestedBy, reason: { value: a.data.reason, lang: 'und' }, requestedAt: a.data.requestedAt,
-          expiresAt: a.data.requestExpiresAt, changes: [{ field: 'action', before: { kind: 'none' }, after: { kind: 'key', key: `approvals.actions.${action.data}` } }],
+          currentDigest: change?.currentDigest ? { algorithm: DIGEST_ALGORITHM, value: change.currentDigest } : null, requestedBy: a.data.requestedBy, reason: a.data.reason === null ? null : { value: a.data.reason, lang: 'und' },
+          requestedAt: a.data.requestedAt, expiresAt: a.data.requestExpiresAt, bound, visible, complete: bound && change.complete,
+          changes: bound ? change.fields.map((f) => ({ field: f.field, before: changeValue(f.before), after: changeValue(f.after) }))
+            : [{ field: 'action', before: { kind: 'none' }, after: { kind: 'key', key: `approvals.actions.${action.data}` } }],
           state: a.data.status, synthetic: false,
         });
         if (parsed.success) requests.push(parsed.data);
@@ -479,6 +498,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     if (input.command === 'approvals.apply') {
       // The approved change itself, with the approval: the version's own activation route and its current revision.
       const item = ready.find((r) => r.requestId === f.requestId)!;
+      if (item.target.kind === 'lifecycle') return settled(await send(`${hubPath}/lifecycle`, { to: item.target.label, expectedRevision: item.target.revision, approvalId: item.requestId }));
       const route = item.target.kind === 'config' ? `${hubPath}/config/${encodeURIComponent(item.target.id)}/activate` : `${hubPath}/legal/${encodeURIComponent(item.target.id)}/activate`;
       return settled(await send(route as `/v1/${string}`, { expectedRevision: item.target.revision, approvalId: item.requestId }));
     }
@@ -512,6 +532,13 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
       return settled(await send(`${hubPath}/territories`, { territory: { level: territory!.level, code: territory!.code } }));
     }
     if (input.command === 'lifecycle.request') {
+      // A transition the viewer already has approved is finished with that approval; one still waiting is not asked twice.
+      const approved = ready.find((r) => r.target.kind === 'lifecycle' && r.target.label === f.to);
+      if (approved) return settled(await send(`${hubPath}/lifecycle`, { to: f.to, expectedRevision: approved.target.revision, approvalId: approved.requestId }));
+      const action = checked.secondPerson;
+      if (action && requests.some((r) => r.action === action && r.state === 'pending' && r.currentDigest?.value === r.actionDigest.value && Date.parse(r.expiresAt) > now().getTime())) {
+        return { status: 'pending_second_person', secondPerson: action };
+      }
       return settled(await send(`${hubPath}/lifecycle`, { to: f.to, expectedRevision: hub.hub.revision, approvalId: null }));
     }
     if (input.command === 'launch.mark_passed') {

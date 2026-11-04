@@ -11,6 +11,7 @@ import { Client, SKIP_REASON, startHarness, type Response } from '../backend/hel
 import { codeNow } from '../backend/second-factor/helpers.js';
 import { addLogins, enrolNow, expectRefusal, PASSWORD, signIn } from '../admin/helpers.js';
 import { activateResidency, actors, buildProvidersWorld, setUpHubs, syncKernel, VENDOR_US, type HubWorld } from './helpers.js';
+import { assertCardBinds } from '../admin/approval-change-helpers.js';
 
 const h = await startHarness('providers_api');
 type Staff = 'owner' | 'officer' | 'moderator';
@@ -52,6 +53,13 @@ test('providers API', { skip: h ? false : SKIP_REASON }, async (t) => {
   t.after(async () => { await app.close(); await h.close(); });
 
   const clients = {} as Record<Staff | 'outsider' | 'otherOwner', Client>;
+  /** The fields of the change the second person reads for an approval. */
+  const boundFields = async (actor: Staff, approvalId: string, fields: string[]) => {
+    const { change } = ((await clients[actor].get(`/v1/admin/approvals/${approvalId}`)).body as { approval: { change: { bound: boolean; fields: Array<{ field: string }> } } }).approval;
+    assert.equal(change.bound, true);
+    for (const field of fields) assert.ok(change.fields.some((f) => f.field === field), `the second person reads ${field}`);
+    await assertCardBinds(h.db.admin, approvalId);
+  };
   const totp = {} as Record<Staff, Buffer>;
   for (const key of [...STAFF, 'outsider', 'otherOwner'] as const) {
     clients[key] = new Client(app);
@@ -133,6 +141,7 @@ test('providers API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.equal(pending.result.outcome, 'pending_second_person');
     const approvalId = pending.result.approvalRequestId as string;
     expectRefusal(await command('owner', `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: tested.connection.enable.actionDigest }), 403, 'access.second_approver_required');
+    await boundFields('officer', approvalId, ['adapterId', 'mode', 'endpoint', 'hosting.zeroRetention', 'hosting.trainsOnInputs', 'hosting.broker']);
     ok(await command('officer', `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: tested.connection.enable.actionDigest }));
     const enabled = ok(await command('owner', `${base}/connections/${connectionId}/enable`, { expectedRevision: tested.connection.revision, approvalId })) as unknown as { connection: { status: string } };
     assert.equal(enabled.connection.status, 'enabled');
@@ -163,6 +172,7 @@ test('providers API', { skip: h ? false : SKIP_REASON }, async (t) => {
     // The drafter alone cannot activate a route that may carry non-public data.
     expectRefusal(await command('owner', `${base}/routes/${route.route.id}/activate`, { expectedRevision: route.route.revision, approvalId: null }), 403, 'access.second_approver_required', 'drafter_cannot_activate');
     const pending = ok(await command('officer', `${base}/routes/${route.route.id}/activate`, { expectedRevision: route.route.revision, approvalId: null }));
+    await boundFields('owner', pending.result.approvalRequestId as string, ['job', 'allowedDataClasses', 'limits.maxInputTokens', 'budgetId']);
     ok(await command('owner', `/v1/admin/approvals/${pending.result.approvalRequestId}/approve`, { actionDigest: route.route.activation.actionDigest }));
     const active = ok(await command('officer', `${base}/routes/${route.route.id}/activate`, { expectedRevision: route.route.revision, approvalId: pending.result.approvalRequestId })) as unknown as { route: { status: string } };
     assert.equal(active.route.status, 'active');
@@ -197,6 +207,7 @@ test('providers API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.deepEqual([killed.connection.status, killed.connection.killSwitchId], ['killed', kill.killSwitch.id]);
     const note = 'Synthetic incident: provider outage reviewed';
     const pending = ok(await command('owner', `${base}/kill-switches/${kill.killSwitch.id}/release`, { approvalId: null, incidentNote: note }));
+    await boundFields('officer', pending.result.approvalRequestId as string, ['killSwitchId', 'incidentNote']);
     ok(await command('officer', `/v1/admin/approvals/${pending.result.approvalRequestId}/approve`, { actionDigest: computeDigest(providerKillReleaseDigestInput({ killSwitchId: kill.killSwitch.id, incidentNote: note })).value }));
     const released = ok(await command('owner', `${base}/kill-switches/${kill.killSwitch.id}/release`, { approvalId: pending.result.approvalRequestId, incidentNote: note })) as unknown as { killSwitch: { state: string } };
     assert.equal(released.killSwitch.state, 'released');

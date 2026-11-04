@@ -96,7 +96,7 @@ export class HubsService {
 
   /** Asks a second person for exactly this action and answers `pending_second_person`. */
   private async pending(trx: Transaction, cmd: CommandContext, action: string, hubId: string, digestInput: unknown, objectId: string, revision: number) {
-    const request = await approvals.request(trx, cmd, { action, scope: { kind: 'hub', hubId }, actionDigest: computeDigest(digestInput).value });
+    const request = await approvals.request(trx, cmd, { action, scope: { kind: 'hub', hubId }, actionDigest: computeDigest(digestInput).value, subject: digestInput });
     return this.result(trx, cmd, 'pending_second_person', objectId, revision, request.id, request.id);
   }
 

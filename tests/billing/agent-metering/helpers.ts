@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { computeDigest } from '@trustwork/contracts';
 import { withMaintenance, type DataPool } from '@trustwork/data';
 import { adminDigests, approvals, staffAssignments, staffRoleDefinitions } from '../../../packages/data/src/repositories/admin.js';
 import { meteredPrices } from '../../../packages/data/src/repositories/agent-metering.js';
@@ -10,6 +12,9 @@ import { registerFeeServingHubs } from '../fees/helpers.js';
 import { Client, type Harness } from '../../backend/helpers/app.js';
 import { addLogins, enrolNow, signIn } from '../../admin/helpers.js';
 import { codeNow } from '../../backend/second-factor/helpers.js';
+import { assertCardBinds, forged, forgedDigest } from '../../admin/approval-change-helpers.js';
+
+const FIELD_LABELS = (JSON.parse(readFileSync('apps/web/locales/en/admin.json', 'utf8')) as { admin: { approvals: { fields: Record<string, string> } } }).admin.approvals.fields;
 
 export const COMMERCE_PERMISSIONS = [
   'admin.commerce.price.draft', 'admin.commerce.price.activate', 'admin.commerce.plan.activate', 'admin.commerce.offer.edit', 'admin.commerce.usage.read', 'admin.moderation.read', 'admin.moderation.case.open', 'admin.audit.read',
@@ -30,13 +35,20 @@ export async function meteringWorld(admin: DataPool, runtime: DataPool) {
   }));
   for (const [personId, hubId] of [[p.owner, hubA], [p.officer, hubA], [p.otherOwner, hubB], [p.moderator, hubB]] as const) {
     const scope = { kind: 'hub', hubId } as const;
-    const digest = adminDigests.assignment({ breakglass: false, personId, role: 'hub-owner', scope, definitionVersion: 2 });
-    const request = await a.cmd(p.founder, (trx, ctx) => approvals.request(trx, ctx, { action: 'staff.assign_sensitive_role', scope, actionDigest: digest }));
+    const digestInput = adminDigests.assignmentInput({ breakglass: false, personId, role: 'hub-owner', scope, definitionVersion: 2 });
+    const digest = computeDigest(digestInput).value;
+    const request = await a.cmd(p.founder, (trx, ctx) => approvals.request(trx, ctx, { action: 'staff.assign_sensitive_role', scope, actionDigest: digest, subject: digestInput }));
     await a.cmd(p.founder2, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     await a.cmd(p.founder, (trx, ctx) => staffAssignments.assign(trx, ctx, { personId, role: 'hub-owner', scope, definitionVersion: 2, approvalId: request.id }));
   }
   const approve = async (digest: string, hubId = hubA, requester = p.officer, approver = p.owner) => {
-    const r = await a.cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action: 'commerce.activate_price_version', scope: { kind: 'hub', hubId }, actionDigest: digest }));
+    const r = await a.cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action: 'commerce.activate_price_version', scope: { kind: 'hub', hubId }, actionDigest: digest, ...(digest === forgedDigest ? { subject: forged } : {}) }));
+    // Every price and plan: each field the digest binds is on the card, and each step of its name has a label.
+    if (digest !== forgedDigest) {
+      for (const field of await assertCardBinds(admin, r.id)) {
+        for (const step of field.field.split('.').filter((part) => !/^\d+$/.test(part))) assert.ok(step in FIELD_LABELS, `the card names ${field.field}: no label for ${step}`);
+      }
+    }
     await a.cmd(approver, (trx, ctx) => approvals.decide(trx, ctx, r.id, 'approve', digest));
     return r.id;
   };

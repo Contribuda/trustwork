@@ -85,7 +85,8 @@ export async function buildHubWorld(admin: DataPool): Promise<HubWorld> {
   });
 }
 
-export function actors(adminPool: DataPool, runtime: DataPool, world: HubWorld) {
+/** `digestInputs: false` for a world on a historical schema, from before approvals recorded them. */
+export function actors(adminPool: DataPool, runtime: DataPool, world: HubWorld, { digestInputs = true } = {}) {
   const principal = (personId: string): Promise<Principal> => principalFor(adminPool, personId);
   const as = async <T>(personId: string, fn: (trx: Transaction) => Promise<T>): Promise<T> => withPrincipal(runtime, await principal(personId), fn);
   const keyOf = (personId: string) => KEYS.find((k) => world.people[k] === personId) as Key;
@@ -102,16 +103,17 @@ export function actors(adminPool: DataPool, runtime: DataPool, world: HubWorld) 
   const assign = async (input: { personId: string; role: HubStaffRole; scope: StaffScope }) =>
     cmd(world.people.founder, (trx, ctx) => staffAssignments.assign(trx, ctx, { ...input, definitionVersion: 1 }));
   const assignSensitive = async (input: { personId: string; role: HubStaffRole; scope: StaffScope }) => {
-    const digest = adminDigests.assignment({ breakglass: false, personId: input.personId, role: input.role, scope: input.scope, definitionVersion: 1 });
+    const digestInput = adminDigests.assignmentInput({ breakglass: false, personId: input.personId, role: input.role, scope: input.scope, definitionVersion: 1 });
+    const digest = computeDigest(digestInput).value;
     const ownerCtx = await elevate(world.people.founder);
-    const request = await as(world.people.founder, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest }));
+    const request = await as(world.people.founder, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest, ...(digestInputs ? { subject: digestInput } : {}) }));
     await cmd(world.people.founder2, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     return as(world.people.founder, (trx) => staffAssignments.assign(trx, ownerCtx, { ...input, definitionVersion: 1, approvalId: request.id }));
   };
   /** Second person: `requester` asks for the action at the hub with the digest, `approver` approves; returns the approval id. */
   const approve = async (requester: string, approver: string, action: ConsoleSecondPersonAction, hubId: string, digestInput: unknown): Promise<string> => {
     const digest = computeDigest(digestInput).value;
-    const request = await cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId }, actionDigest: digest }));
+    const request = await cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId }, actionDigest: digest, ...(digestInputs ? { subject: digestInput } : {}) }));
     await cmd(approver, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     return request.id;
   };

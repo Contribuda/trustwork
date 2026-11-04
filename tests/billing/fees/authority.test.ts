@@ -11,6 +11,7 @@ import { FeeTermsSchema } from '../../../packages/contracts/src/billing-fees.js'
 import { directory } from '../../../packages/data/src/repositories/directory.js';
 import { neutralOutputs } from './neutrality.js';
 import { feeWorld, syntheticTerms } from './helpers.js';
+import { forgedDigest } from '../../admin/approval-change-helpers.js';
 
 const db = await provisionTestDatabase('fee_authority', { weight: 2 });
 test('BILL-003 fee authority on real PostgreSQL', { skip: db ? false : SKIP_REASON }, async (t) => {
@@ -48,7 +49,7 @@ test('BILL-003 fee authority on real PostgreSQL', { skip: db ? false : SKIP_REAS
   await t.test('drafter, forged approval and wrong digest cannot activate', async () => {
     await rejects(activate(f, randomUUID(), p.owner), '42501', 'admin.self_approval');
     await rejects(activate(f, randomUUID()), '42501', 'admin.not_requester');
-    const wrong = await approve(f, 'f'.repeat(64));
+    const wrong = await approve(f, forgedDigest);
     await rejects(activate(f, wrong), '23514', 'admin.approval_mismatch');
     const correct = await approve(f);
     await rejects(activate(f, correct, p.officer, 'a'.repeat(64)), '42501', 'admin.approval_mismatch');

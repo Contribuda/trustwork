@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { computeDigest } from '@trustwork/contracts';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { bindTransaction, createPool, type DataPool, type Transaction } from '@trustwork/data';
@@ -84,8 +85,9 @@ test('moderation, sanctions, appeals, feature flags, maintenance windows and kil
     await rejects(as(p.moderator, (trx) => moderation.applySanction(trx, modCtx, { caseId, level: 3, featureScope: 'posting', durationSeconds: 86_400 })), '42501', 'admin.sanction_level_not_allowed');
     await as(p.hubOwner, (trx) => moderation.applySanction(trx, hubOwnerCtx, { caseId, level: 3, featureScope: 'posting', durationSeconds: 86_400 }));
     await rejects(as(p.hubOwner, (trx) => moderation.applySanction(trx, hubOwnerCtx, { caseId, level: 4, featureScope: 'account', durationSeconds: null })), '42501', 'admin.approval_required');
-    const digest = adminDigests.sanction({ moderationCaseId: caseId, subject: { kind: 'person', id: p.employee }, level: 4, featureScope: 'account', durationSeconds: null });
-    const req = await as(p.hubOwner, (trx) => approvals.request(trx, hubOwnerCtx, { action: 'moderation.apply_sanction_l4', scope: hubScope, actionDigest: digest }));
+    const digestInput = adminDigests.sanctionInput({ moderationCaseId: caseId, subject: { kind: 'person', id: p.employee }, level: 4, featureScope: 'account', durationSeconds: null });
+    const digest = computeDigest(digestInput).value;
+    const req = await as(p.hubOwner, (trx) => approvals.request(trx, hubOwnerCtx, { action: 'moderation.apply_sanction_l4', scope: hubScope, actionDigest: digest, subject: digestInput }));
     await rejects(as(p.hubOwner, (trx) => approvals.decide(trx, hubOwnerCtx, req.id, 'approve', digest)), '42501', 'admin.self_approval');
     await as(p.moderator, (trx) => approvals.decide(trx, modCtx, req.id, 'approve', digest));
     await rejects(as(p.hubOwner, (trx) => moderation.applySanction(trx, hubOwnerCtx, { caseId, level: 4, featureScope: 'posting', durationSeconds: null, approvalId: req.id })), '23514', 'admin.approval_mismatch');
@@ -173,8 +175,9 @@ test('moderation, sanctions, appeals, feature flags, maintenance windows and kil
       client.release(true);
     }
     const note = 'Synthetic: provider fixed, module re-tested';
-    const digest = adminDigests.killSwitchRelease(engaged.id, note);
-    const req = await as(p.hubOwner, (trx) => approvals.request(trx, hubOwnerCtx, { action: 'kill_switch.release', scope: hubScope, actionDigest: digest }));
+    const digestInput = adminDigests.killSwitchReleaseInput(engaged.id, note);
+    const digest = computeDigest(digestInput).value;
+    const req = await as(p.hubOwner, (trx) => approvals.request(trx, hubOwnerCtx, { action: 'kill_switch.release', scope: hubScope, actionDigest: digest, subject: digestInput }));
     await rejects(as(p.hubOwner, (trx) => approvals.decide(trx, hubOwnerCtx, req.id, 'approve', digest)), '42501', 'admin.self_approval');
     await rejects(as(p.moderator, (trx) => approvals.decide(trx, modCtx, req.id, 'approve', digest)), '42501', 'admin.forbidden');
     await as(p.owner, (trx) => approvals.decide(trx, ownerCtx, req.id, 'approve', digest));

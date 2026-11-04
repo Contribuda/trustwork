@@ -118,7 +118,7 @@ export const REJECT_CODES = [
   'denied', 'elevation_required', 'offline', 'reason_required', 'stale', 'invalid', 'territory_restricted', 'transition_not_allowed', 'gates_open',
   'modes_violation', 'module_requires', 'module_required_by', 'counsel_missing', 'language_missing', 'own_request', 'not_own_request', 'request_void',
   'request_expired', 'digest_mismatch', 'setup_blocked', 'second_factor_required', 'self_grant', 'sensitive_role', 'role_held',
-  'invitation_open', 'invitation_expired', 'invitation_closed', 'not_inviter', 'second_person_pending',
+  'invitation_open', 'invitation_expired', 'invitation_closed', 'not_inviter', 'second_person_pending', 'change_unbound', 'change_incomplete', 'change_hidden',
   ...PRODUCT_REJECT_CODES,
 ] as const;
 export type RejectCode = (typeof REJECT_CODES)[number];
@@ -170,11 +170,11 @@ export type CommandContext = {
   decisions?: readonly ApprovalDecision[];
 };
 
-/** An approved request of the viewer and the change it unlocks: a configuration version or a legal document version. */
+/** An approved request of the viewer and the change it unlocks: a configuration version, a legal document version or a lifecycle transition. */
 export type ReadyApproval = { requestId: string; action: ConsoleSecondPersonAction; target: ActivationTarget };
 
-/** A stored draft whose activation needs a second person: a configuration version or a legal document version. */
-export type ActivationTarget = { kind: 'config' | 'legal'; id: string; revision: number; label: string };
+/** What a second person's approval applies to; a transition's label is the lifecycle it enters, its revision the hub's. */
+export type ActivationTarget = { kind: 'config' | 'legal' | 'lifecycle'; id: string; revision: number; label: string };
 
 /**
  * A sensitive draft with no open request yet. Its drafter never activates it: another staff member requests the
@@ -202,7 +202,10 @@ export function holdsAny(access: ConsoleAccess, permissions: readonly ConsolePer
 export function approvalBlocker(request: ApprovalRequest, viewerId: string, access: ConsoleAccess, now: Date): RejectCode | null {
   if (request.requestedBy === viewerId) return 'own_request';
   if (!holdsAny(access, APPROVER_PERMISSIONS[request.action])) return 'denied';
-  if (request.state !== 'pending' || request.currentDigest.value !== request.actionDigest.value) return 'request_void';
+  if (!request.visible) return 'change_hidden';
+  if (!request.bound) return 'change_unbound';
+  if (!request.complete) return 'change_incomplete';
+  if (request.state !== 'pending' || request.currentDigest?.value !== request.actionDigest.value) return 'request_void';
   if (Date.parse(request.expiresAt) <= now.getTime()) return 'request_expired';
   return null;
 }

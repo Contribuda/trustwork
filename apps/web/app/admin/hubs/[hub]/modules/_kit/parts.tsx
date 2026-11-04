@@ -6,11 +6,11 @@ import { intlTag } from '@trustwork/ui/i18n';
 import { t, tDynamic } from '@/app/_lib/i18n';
 import { submitConsoleCommand } from '../../../../_data/actions';
 import type { CommandId } from '../../../../_data/commands';
-import type { ChangeValue } from '../../../../_data/schemas';
+import { changePersonLabel, type ChangeValue } from '../../../../_data/schemas';
 import { ConsoleForm } from '../../../../_components/ConsoleForm';
 import type { HubContext } from '../../../../_components/context';
 import { formLabels } from '../../../../_components/forms';
-import { dateTime, list } from '../../../../_components/format';
+import { dateTime, duration, list } from '../../../../_components/format';
 import { Panel } from '../../../../_components/shell';
 import type { ActivationPreview, Cohort as CohortValue, HubProduct } from './schemas';
 
@@ -55,6 +55,8 @@ export function MarginText({ margin, currency }: { margin: string; currency: str
 export function ChangeValueText({ value }: { value: ChangeValue }) {
   if (value.kind === 'none') return <span className="admin-meta">{t('admin.common.none')}</span>;
   if (value.kind === 'text') return <span lang={value.lang}>{value.value}</span>;
+  if (value.kind === 'person') return <span data-testid="change-person">{changePersonLabel(value, t('admin.common.unknownPerson'))}</span>;
+  if (value.kind === 'duration') return <span>{duration(value.seconds)}</span>;
   return <span>{tDynamic(`admin.${value.key}`, value.key)}</span>;
 }
 

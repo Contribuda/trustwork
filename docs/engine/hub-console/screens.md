@@ -127,7 +127,8 @@ Hub console routes below are relative to `/admin/hubs/[hub]`.
 - **Purpose**: second-person decisions.
 - **Data**: requests for me (action, requester, reason, exact diff, digest, expiry), my pending requests, recent decisions.
 - **Actions**: approve, decline with reason, ask a question in the request thread; withdraw my own request.
-- **States**: own request → approve disabled with "You cannot approve your own request"; changed since request → void, "The action changed; a new request is required"; expired.
+- **States**: own request → approve disabled with "You cannot approve your own request"; changed since request → void, "The action changed; a new request is required"; expired; the server cannot prove what the digest binds → approve disabled, and the card says so.
+- **Live** (HUBC-007): the exact diff is what the digest binds, computed by the server from the bound data, never from the reason (`admin_approval_change`). The requester finishes an approved change from the Ready panel, a lifecycle transition included.
 - **Mobile**: full support; diff shown as a list of changed fields.
 - **Locale**: `admin.approvals.*`
 

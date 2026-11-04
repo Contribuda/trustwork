@@ -8,6 +8,7 @@ import { PROVIDER_CAPABILITIES } from '@trustwork/contracts';
 import { provisionTestDatabase, SKIP_REASON } from '../../data/helpers/postgres.js';
 import { rejects } from '../../hubs/helpers.js';
 import { approvals } from '../../../packages/data/src/repositories/admin.js';
+import { digestInputOf, forged, forgedDigest } from '../../admin/approval-change-helpers.js';
 import { catalogue } from '../../../packages/data/src/repositories/billing.js';
 import { billingFees, billingSalePrices } from '../../../packages/data/src/repositories/billing-fees.js';
 import { directory } from '../../../packages/data/src/repositories/directory.js';
@@ -49,8 +50,8 @@ test('BILL-003 model, capability and credit-pack sale versions on real PostgreSQ
   assert.ok(peopleBefore.length >= 2);
   const neutralBefore = neutralOutputs(p.outsider);
   const draft = (input: SalePriceTerms, hubId = hubA, person = p.owner) => a.cmd(person, (trx, ctx) => billingSalePrices.draft(trx, ctx, hubId, input));
-  const approve = async (v: SalePriceVersion, digest = v.activationDigest, action: 'commerce.activate_price_version' | 'billing.activate_fee_version' = 'commerce.activate_price_version') => {
-    const request = await a.cmd(p.officer, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId: v.hubId }, actionDigest: digest }));
+  const approve = async (v: SalePriceVersion, digest = v.activationDigest, action: 'commerce.activate_price_version' | 'billing.activate_fee_version' = 'commerce.activate_price_version', subject: Record<string, unknown> | undefined = digest === forgedDigest ? forged : undefined) => {
+    const request = await a.cmd(p.officer, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId: v.hubId }, actionDigest: digest, ...(subject ? { subject } : {}) }));
     await a.cmd(p.owner, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     return request.id;
   };
@@ -104,9 +105,12 @@ test('BILL-003 model, capability and credit-pack sale versions on real PostgreSQ
   await t.test('the drafter, a forged or foreign approval and a changed digest cannot activate', async () => {
     await rejects(activate(model, randomUUID(), p.owner), '42501', 'admin.self_approval');
     await rejects(activate(model, randomUUID()), '42501', 'admin.not_requester');
-    await rejects(activate(model, await approve(model, 'f'.repeat(64))), '23514', 'admin.approval_mismatch');
-    await rejects(activate(model, await approve(model, model.digest)), '23514', 'admin.approval_mismatch');
-    await rejects(activate(model, await approve(model, model.activationDigest, 'billing.activate_fee_version')), '23514', 'admin.approval_mismatch');
+    await rejects(activate(model, await approve(model, forgedDigest)), '23514', 'admin.approval_mismatch');
+    // The terms' digest is not the activation's, and the right digest under another action activates nothing, proved or not.
+    await rejects(approve(model, model.digest), '42501', 'admin.change_unbound');
+    await rejects(approve(model, model.activationDigest, 'billing.activate_fee_version'), '42501', 'admin.change_unbound');
+    const open = await a.cmd(p.officer, (trx, ctx) => approvals.request(trx, ctx, { action: 'commerce.activate_price_version', scope: { kind: 'hub', hubId: model.hubId }, actionDigest: model.activationDigest }));
+    await rejects(activate(model, await approve(model, model.activationDigest, 'billing.activate_fee_version', await digestInputOf(db.admin, open.id))), '23514', 'admin.approval_mismatch');
     const correct = await approve(model);
     await rejects(activate(model, correct, p.officer, 'a'.repeat(64)), '42501', 'admin.approval_mismatch');
     await rejects(a.cmd(p.otherOwner, (trx, ctx) => billingSalePrices.activate(trx, ctx, hubB, model.id, model.digest, correct)), 'P0002', 'admin.not_found');

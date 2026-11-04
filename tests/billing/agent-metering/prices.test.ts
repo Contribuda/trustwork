@@ -9,6 +9,8 @@ import { PublicPricingSchema } from '../../../packages/contracts/src/billing-fee
 import { MeteredPriceVersionSchema, type MeteredPriceVersion } from '../../../packages/contracts/src/agent-metering.js';
 import { meteredPrices } from '../../../packages/data/src/repositories/agent-metering.js';
 import { meteringHttpWorld, syntheticCost, syntheticTerms } from './helpers.js';
+import { approvals, staffAssignments, staffRoleDefinitions } from '../../../packages/data/src/repositories/admin.js';
+import { forgedDigest } from '../../admin/approval-change-helpers.js';
 
 const url = '/v1/admin/billing/metered';
 const reason = 'Synthetic agent price governance test';
@@ -98,7 +100,7 @@ test('AGT-004 agent usage prices: real authentication, second person, cost never
     assert.ok(unknown.status >= 400 && unknown.status < 500, JSON.stringify(unknown.body));
     const wrongDigest = await w.clients.officer.post(`${url}/prices/${v1.id}/activate`, { ...action, digest: 'a'.repeat(64) });
     assert.equal((wrongDigest.body as { code: string }).code, 'access.approval_digest_mismatch');
-    const otherAction = await w.approve('b'.repeat(64));
+    const otherAction = await w.approve(forgedDigest);
     const mismatch = await w.clients.officer.post(`${url}/prices/${v1.id}/activate`, { ...action, approvalId: otherAction });
     assert.equal((mismatch.body as { code: string }).code, 'access.approval_digest_mismatch', 'an approval of other terms does not transfer');
     assert.equal((await stored(v1.id)).status, 'draft');
@@ -226,5 +228,33 @@ test('AGT-004 agent usage prices: real authentication, second person, cost never
     const rows = await h.db.admin.query<{ action: string; second_approver_person_id: string | null }>('SELECT action, second_approver_person_id FROM trustwork.admin_audit_event WHERE object_id = $1 ORDER BY id', [v1.id]);
     assert.deepEqual(rows.rows.map((r) => r.action).sort(), ['billing.metered_price_activated', 'billing.metered_price_drafted']);
     assert.equal(rows.rows.find((r) => r.action === 'billing.metered_price_activated')?.second_approver_person_id, w.p.owner);
+  });
+
+  await t.test('cost beside sale has the readers of the price list: a staff reader gets the action, scope and digest, and no cost', async () => {
+    await w.recordCost(syntheticCost());
+    const v = await w.draft(syntheticTerms());
+    const request = await w.a.cmd(w.p.officer, (trx, ctx) => approvals.request(trx, ctx, { action: 'commerce.activate_price_version', scope: { kind: 'hub', hubId: w.hubA }, actionDigest: v.digest }));
+    type Card = { bound: boolean; visible: boolean; fields: Array<{ field: string }> };
+    const card = async (who: string, elevation?: string | null) => {
+      const elevationId = elevation === undefined ? (await w.a.elevate(who)).elevationId : elevation;
+      return (await w.a.as(who, (trx) => approvals.changes(trx, [request.id], elevationId))).get(request.id) as Card;
+    };
+    const owner = await card(w.p.owner);
+    assert.ok(owner.bound && owner.fields.some((f) => f.field === 'terms.costPerUnitMinor') && owner.fields.some((f) => f.field === 'terms.salePerUnitMinor'), 'the second person reads cost beside sale');
+    assert.deepEqual((({ visible, fields }) => [visible, fields])(await card(w.p.owner, null)), [false, []], 'and only under a live elevation, as the list');
+    assert.equal((await card(w.p.owner, (await w.a.elevate(w.p.officer)).elevationId)).visible, false, 'of their own');
+    const reader = await card(w.p.founder2);
+    assert.deepEqual([reader.visible, reader.fields], [false, []]);
+    // The exact reader the list refuses: the plan permission and the audit read, and none of the list's own.
+    await withMaintenance(h.db.admin, (trx) => staffRoleDefinitions.release(trx, {
+      version: 3, role: 'moderator', scopes: ['hub'], permissions: ['admin.commerce.plan.activate', 'admin.audit.read', 'admin.staff.read'], caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null,
+    }));
+    await w.a.cmd(w.p.founder, (trx, ctx) => staffAssignments.assign(trx, ctx, { personId: w.p.outsider, role: 'moderator', scope: { kind: 'hub', hubId: w.hubA }, definitionVersion: 3 }));
+    const planOnly = await card(w.p.outsider);
+    assert.deepEqual([planOnly.visible, planOnly.fields], [false, []], 'plan activate with staff and audit read sees no metered cost');
+    const readers = (await h.db.admin.query<{ m: string[] }>('SELECT trustwork.admin_change_readers(a) AS m FROM trustwork.second_person_approval a WHERE a.id = $1', [request.id])).rows[0]!.m;
+    assert.deepEqual([...readers].sort(), ['admin.commerce.price.activate', 'admin.commerce.price.draft', 'admin.commerce.usage.read'], 'exactly the permissions of the list');
+    await w.a.cmd(w.p.owner, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'decline', v.digest));
+    await w.a.cmd(w.p.owner, (trx, ctx) => meteredPrices.cancel(trx, ctx, w.hubA, v.id));
   });
 });

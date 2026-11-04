@@ -1,17 +1,19 @@
 import { t, tDynamic } from '@/app/_lib/i18n';
 import { submitConsoleCommand } from '../../../_data/actions';
 import { approvalBlocker, APPROVER_PERMISSIONS, holdsAny } from '../../../_data/commands';
-import type { ApprovalRequest, ChangeValue, ConsolePerson } from '../../../_data/schemas';
+import { changePersonLabel, staffPersonLabel, type ApprovalRequest, type ChangeValue, type ConsolePerson } from '../../../_data/schemas';
 import { ConsoleForm } from '../../../_components/ConsoleForm';
 import type { HubContext } from '../../../_components/context';
 import type { Screen } from '../../../_components/screen';
 import { formLabels, readOnlyReason, SelectField } from '../../../_components/forms';
-import { dateTime } from '../../../_components/format';
+import { dateTime, duration } from '../../../_components/format';
 import { ConsoleHeader, KeyValues, Panel, StatusLabel } from '../../../_components/shell';
 
 function Value({ value }: { value: ChangeValue }) {
   if (value.kind === 'none') return <span className="admin-meta">{t('admin.common.none')}</span>;
   if (value.kind === 'text') return <span lang={value.lang}>{value.value}</span>;
+  if (value.kind === 'person') return <span data-testid="change-person">{changePersonLabel(value, t('admin.common.unknownPerson'))}</span>;
+  if (value.kind === 'duration') return <span>{duration(value.seconds)}</span>;
   return <span>{tDynamic(`admin.${value.key}`, value.key)}</span>;
 }
 
@@ -19,13 +21,18 @@ function Value({ value }: { value: ChangeValue }) {
 function Person({ people, id, me }: { people: ConsolePerson[]; id: string; me: string }) {
   if (id === me) return <span>{t('admin.common.you')}</span>;
   const person = people.find((p) => p.id === id);
-  return person ? <span lang={person.nameLang}>{person.displayName}</span> : <span>{t('admin.common.staffMember')}</span>;
+  return <span lang={person?.nameLang}>{staffPersonLabel(id, person, t('admin.common.staffMember'))}</span>;
+}
+
+/** A field is a path in what the digest binds; each step has its own label, and an unlabelled key stays as stored. */
+export function fieldLabel(field: string): string {
+  return field.split('.').map((part) => tDynamic(`admin.approvals.fields.${part}`, part)).join(' · ');
 }
 
 function RequestCard({ ctx, request, people, mine }: { ctx: HubContext; request: ApprovalRequest; people: ConsolePerson[]; mine: boolean }) {
   const zone = ctx.record.hub.timeZone;
   const blocker = approvalBlocker(request, ctx.viewer.person.id, ctx.access, ctx.now);
-  const state = request.state === 'withdrawn' || request.currentDigest.value !== request.actionDigest.value ? 'void' : Date.parse(request.expiresAt) <= ctx.now.getTime() ? 'expired' : 'pending';
+  const state = request.state === 'withdrawn' || (request.bound && request.visible && request.currentDigest?.value !== request.actionDigest.value) ? 'void' : Date.parse(request.expiresAt) <= ctx.now.getTime() ? 'expired' : 'pending';
   return (
     <li className="admin-approval" data-testid={`approval-${request.id}`} data-state={state}>
       <div className="admin-panel__head">
@@ -35,17 +42,20 @@ function RequestCard({ ctx, request, people, mine }: { ctx: HubContext; request:
       <KeyValues
         rows={[
           { label: t('admin.approvals.requestedBy'), value: <Person people={people} id={request.requestedBy} me={ctx.viewer.person.id} /> },
-          { label: t('admin.approvals.reason'), value: request.reason.value, lang: request.reason.lang },
+          ...(request.reason ? [{ label: t('admin.approvals.reason'), value: request.reason.value, lang: request.reason.lang }] : []),
           { label: t('admin.approvals.requestedAt'), value: dateTime(request.requestedAt, zone) },
           { label: t('admin.approvals.expiresAt'), value: dateTime(request.expiresAt, zone) },
           { label: t('admin.approvals.digest'), value: <code className="admin-code">{request.actionDigest.value.slice(0, 12)}</code> },
         ]}
       />
       <h4 className="admin-h4">{t('admin.approvals.changes')}</h4>
-      <ul className="admin-diff">
-        {request.changes.map((change) => (
-          <li key={change.field}>
-            <span className="admin-diff__field">{tDynamic(`admin.approvals.fields.${change.field}`, change.field)}</span>
+      {!request.visible ? <p className="admin-callout admin-callout--warning" role="note" data-testid="approval-hidden">{t('admin.approvals.hidden')}</p>
+        : !request.bound ? <p className="admin-callout admin-callout--warning" role="note" data-testid="approval-unbound">{t('admin.approvals.unbound')}</p>
+          : !request.complete ? <p className="admin-callout admin-callout--warning" role="note" data-testid="approval-incomplete">{t('admin.approvals.incomplete')}</p> : null}
+      <ul className="admin-diff" data-testid="approval-change">
+        {request.changes.map((change, index) => (
+          <li key={`${index}-${change.field}`}>
+            <span className="admin-diff__field">{fieldLabel(change.field)}</span>
             <span className="admin-diff__before">
               <span className="admin-visually-hidden">{t('admin.approvals.before')} </span>
               <Value value={change.before} />
@@ -117,7 +127,7 @@ async function Approvals(ctx: HubContext) {
             {ready.map((r) => (
               <li key={r.requestId} className="admin-approval">
                 <p>
-                  <strong>{tDynamic(`admin.approvals.actions.${r.action}`, r.action)}</strong> · <code className="admin-code">{r.target.label}</code>
+                  <strong>{tDynamic(`admin.approvals.actions.${r.action}`, r.action)}</strong> · {r.target.kind === 'lifecycle' ? tDynamic(`admin.lifecycle.${r.target.label}`, r.target.label) : <code className="admin-code">{r.target.label}</code>}
                 </p>
                 <ConsoleForm
                   action={submitConsoleCommand}
