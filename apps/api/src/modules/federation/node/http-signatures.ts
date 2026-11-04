@@ -78,12 +78,13 @@ const refuse = (code: FederationErrorCode, reason: string): Verification => ({ o
  * digest, coverage and window, key selection, replay, signature. A missing key label is `federation.key_unknown`, which
  * callers answer by refreshing the sender's manifest once before refusing.
  */
-export async function verifySignedMessage(message: ReceivedMessage, keys: readonly NodeKey[], now: Date, nonces: NonceStore | null): Promise<Verification> {
-  const signatureInput = message.header('signature-input');
-  const signature = message.header('signature');
-  if (!signatureInput || !signature) return refuse('federation.signature_invalid', 'unsigned');
-  const parsed = parseHttpSignatureFields(signatureInput, signature);
-  if (!parsed) return refuse('federation.signature_invalid', 'signature_fields_malformed');
+export type ParsedSignature = NonNullable<ReturnType<typeof parseHttpSignatureFields>>;
+/**
+ * Everything a receiver checks before it needs the sender's keys: the body digest and content type, the covered
+ * components, the window and clock skew, and the nonce where required. Running these first means no unknown key label
+ * can cost the receiver a fetch of the sender's manifest for a message that is malformed, stale or tampered.
+ */
+export function checkMessageShape(message: ReceivedMessage, parsed: ParsedSignature, now: Date): Verification | null {
   const isResponse = message.status !== undefined;
   const expected = isResponse ? HTTP_COVERED_COMPONENTS.response : message.body ? HTTP_COVERED_COMPONENTS.requestWithBody : HTTP_COVERED_COMPONENTS.requestWithoutBody;
   const digestField = message.header('content-digest');
@@ -103,6 +104,18 @@ export async function verifySignedMessage(message: ReceivedMessage, keys: readon
   if (problems.includes('window')) return refuse('federation.signature_invalid', 'window');
   if (problems.includes('clock_skew')) return refuse('federation.clock_skew', 'outside_window');
   if (!isResponse && problems.includes('nonce_missing')) return refuse('federation.signature_invalid', 'nonce_missing');
+  return null;
+}
+
+export async function verifySignedMessage(message: ReceivedMessage, keys: readonly NodeKey[], now: Date, nonces: NonceStore | null): Promise<Verification> {
+  const signatureInput = message.header('signature-input');
+  const signature = message.header('signature');
+  if (!signatureInput || !signature) return refuse('federation.signature_invalid', 'unsigned');
+  const parsed = parseHttpSignatureFields(signatureInput, signature);
+  if (!parsed) return refuse('federation.signature_invalid', 'signature_fields_malformed');
+  const isResponse = message.status !== undefined;
+  const shape = checkMessageShape(message, parsed, now);
+  if (shape) return shape;
   const createdAt = new Date(parsed.params.created * 1000).toISOString();
   const selected = keyForSignature(keys, parsed.params.keyid, createdAt);
   if (!selected.ok) return refuse(selected.code, selected.code === 'federation.key_unknown' ? 'key_unknown' : 'key_revoked');

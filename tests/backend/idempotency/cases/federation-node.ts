@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { withMaintenance, withPrincipal, type Transaction } from '@trustwork/data';
 import { computeDigest, HUB_CONSOLE_CONTRACT_VERSION } from '@trustwork/contracts';
-import type { Client, Harness } from '../../helpers/app.js';
+import { Client, type Harness } from '../../helpers/app.js';
+import { createApp } from '../../../../apps/api/src/app.js';
 import { codeNow } from '../../second-factor/helpers.js';
 import { addLogins, enrolNow, signIn } from '../../../admin/helpers.js';
 import { principalFor } from '../../../data/helpers/seed.js';
@@ -52,7 +53,15 @@ export default {
     await as(h, founder.person_id, (trx, ctx) => staffAssignments.assign(trx, ctx, { personId: steward, role: 'data-steward', scope: { kind: 'node', nodeId: founder.node }, definitionVersion: VERSION }));
     h.staff.set(steward, ['data-steward']);
     await addLogins(h, [[steward, 'crash-fed-steward@example.invalid']]);
-    const client: Client = h.client();
+    // The federation routes run through an app of this case over the harness's pool and clock: the shared harness app has
+    // no jurisdiction gate, and a node without a gate that judges an address never connects (fail closed), so a peering
+    // request would be refused before its commit. The fake gate judges the documentation ranges; the transport stays offline.
+    const app = await createApp({
+      env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test', AUTH_PROVIDER_MODE: 'fake', AUTH_RATE_LIMIT_PER_MINUTE: '1000', AUTH_LOCKOUT_THRESHOLD: '5', MAIL_SECRET_KEY: randomBytes(32).toString('hex'), TRUSTWORK_JURISDICTION_GATE: 'fake' },
+      pool: h.pool, clock: h.clock, staffRoles: async (personId) => h.staff.get(personId) ?? [],
+      logSink: (line) => { if (line.includes('"level":"error"')) console.error('[api]', line); },
+    });
+    const client = new Client(app);
     await signIn(client, 'crash-fed-steward@example.invalid');
     const secret = await enrolNow(h, client);
     h.clock.advance(30_000);
@@ -73,6 +82,7 @@ export default {
     const previousKek = process.env.TRUSTWORK_KEK;
     process.env.TRUSTWORK_KEK = randomBytes(32).toString('hex');
     try {
+      // (the sealer of this app reads the key-encryption key from the process environment when it first signs)
       // Node identity and keys.
       await run('federation.node_initialize', `${base}/node`, { host: HOST, operatorName: 'Synthetic Crash Builders', registration: null, abuseContact: `mailto:abuse@${HOST}`, takedownContact: `https://${HOST}/legal/takedown`, jurisdiction: 'US-CA' },
         () => count(h, 'SELECT 1 FROM trustwork.node_identity'));
@@ -93,7 +103,7 @@ export default {
       await run('federation.peering_accept', `${base}/peerings/${second.id}/accept`, { expectedRevision: second.revision, level: 'trust_verifications', approvalId: null }, audited('federation.peering_accepted'));
       const active = await peeringRecords.peerAnswered(h.pool, second.id, { outcome: 'admitted', level: 'trust_verifications', state: 'active' });
       assert.equal(active.state, 'active');
-      // A request to the peer's hub of the manifest (its earlier record ended; the peer is held and admitted today, so the offline transport does not stop it) and a refresh of the peer.
+      // A request to the peer's hub of the manifest (its earlier record ended; the fake gate clears the connection, the offline transport is unreachable, and the peer held and admitted today serves) and a refresh of the peer.
       await run('federation.peering_request', `${base}/peerings`, { localHubId: hub.hub_id, peerNode: CITY, peerHubId: 'us-tx-austin', level: 'syndicate', approvalId: null },
         () => count(h, "SELECT 1 FROM trustwork.peering_record WHERE peer_hub_id = 'us-tx-austin' AND direction = 'outgoing'"));
       await run('federation.peer_refresh', `${base}/peers/refresh`, { peerNode: CITY }, audited('federation.peer_refreshed'));
@@ -105,6 +115,7 @@ export default {
     } finally {
       if (previousKek === undefined) delete process.env.TRUSTWORK_KEK;
       else process.env.TRUSTWORK_KEK = previousKek;
+      await app.close();
     }
   },
 } satisfies CrashCase;

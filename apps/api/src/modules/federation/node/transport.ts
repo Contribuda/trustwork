@@ -42,10 +42,44 @@ export class PeerUnreachableError extends Error {
 
 /** The most a peer's manifest or answer may weigh (the canonical payload limit of the protocol). */
 export const MAX_PEER_BODY = 256 * 1024;
+/** The most one exchange with a peer may take, end to end (an idle timeout alone lets a peer drip bytes forever). */
+export const PEER_DEADLINE_MS = 20_000;
+
+/**
+ * A publicly routable unicast address: private, loopback, link-local, unspecified, multicast, carrier-grade NAT and
+ * their IPv4-mapped forms are never connected to (a peer's name resolving there is a misconfiguration or an attack).
+ */
+export function isPublicAddress(address: string): boolean {
+  const family = isIP(address);
+  if (family === 4) return publicV4(address);
+  if (family !== 6) return false;
+  const lower = address.toLowerCase();
+  const mapped = /^(?:0*:)*:?ffff:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(lower);
+  if (mapped) return publicV4(mapped[1]!);
+  if (lower === '::' || lower === '::1') return false;
+  const first = parseInt(lower.split(':')[0] || '0', 16);
+  if ((first & 0xfe00) === 0xfc00) return false; // fc00::/7 unique local
+  if ((first & 0xffc0) === 0xfe80) return false; // fe80::/10 link local
+  if ((first & 0xff00) === 0xff00) return false; // ff00::/8 multicast
+  if (first === 0x2001 && lower.startsWith('2001:db8')) return false; // documentation
+  return true;
+}
+function publicV4(address: string): boolean {
+  const octets = address.split('.').map(Number);
+  if (octets.length !== 4 || octets.some((o) => !Number.isInteger(o) || o < 0 || o > 255)) return false;
+  const [a, b] = octets as [number, number, number, number];
+  if (a === 0 || a === 10 || a === 127) return false;
+  if (a === 100 && b >= 64 && b <= 127) return false;
+  if (a === 169 && b === 254) return false;
+  if (a === 172 && b >= 16 && b <= 31) return false;
+  if (a === 192 && b === 168) return false;
+  if (a >= 224) return false;
+  return true;
+}
 
 /** The production transport over `node:https`, pinned to the resolved address; refuses anything that is not a DNS name. */
 export class HttpsPeerTransport implements PeerTransport {
-  constructor(private readonly timeoutMs = 10_000) {}
+  constructor(private readonly timeoutMs = 10_000, private readonly deadlineMs = PEER_DEADLINE_MS) {}
 
   async resolve(host: string): Promise<string | null> {
     if (!NodeHostSchema.safeParse(host).success) throw new PeerUnreachableError(host);
@@ -59,6 +93,9 @@ export class HttpsPeerTransport implements PeerTransport {
   private request(host: string, address: string, path: string, method: 'GET' | 'POST', headers: Record<string, string>, body: Uint8Array | null): Promise<PeerResponse> {
     if (!NodeHostSchema.safeParse(host).success || !isIP(address)) return Promise.reject(new PeerUnreachableError(host));
     return new Promise<PeerResponse>((resolve, reject) => {
+      // An absolute deadline for the whole exchange, on top of the idle timeout: a peer dripping bytes cannot stall a refresh run or a shutdown.
+      const deadline = setTimeout(() => req.destroy(new Error('deadline')), this.deadlineMs);
+      deadline.unref();
       const req = httpsRequest({
         host: address, servername: host, port: 443, path, method, timeout: this.timeoutMs,
         headers: { ...headers, host, accept: 'application/json', ...(body ? { 'content-length': String(body.length) } : {}) },
@@ -83,13 +120,14 @@ export class HttpsPeerTransport implements PeerTransport {
           chunks.push(chunk);
         });
         response.on('end', () => {
+          clearTimeout(deadline);
           const lower = new Map(Object.entries(response.headers).map(([k, v]) => [k.toLowerCase(), Array.isArray(v) ? v[0] ?? null : v ?? null]));
           resolve({ status: response.statusCode ?? 0, header: (name) => lower.get(name.toLowerCase()) ?? null, body: new Uint8Array(Buffer.concat(chunks)), remoteAddress: address });
         });
         response.on('error', (error) => reject(new PeerUnreachableError(host, error)));
       });
       req.on('timeout', () => req.destroy(new Error('timeout')));
-      req.on('error', (error) => reject(new PeerUnreachableError(host, error)));
+      req.on('error', (error) => { clearTimeout(deadline); reject(new PeerUnreachableError(host, error)); });
       if (body) req.write(Buffer.from(body));
       req.end();
     });

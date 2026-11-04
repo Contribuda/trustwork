@@ -14,7 +14,7 @@ export {
   admissionLogEvent, admitPeerAtHandshake, AdmissionRefusalRecordSchema, FEDERATION_PEER_RESTRICTED, type AdmissionDecision, type AdmissionRefusalRecord,
 } from '../../../../../../packages/compliance/src/admission/index.js';
 export { deploymentAttestations } from '../../../../../../packages/data/src/repositories/attestation.js';
-export { adminAudit, approvals, type CommandContext } from '../../../../../../packages/data/src/repositories/admin.js';
+export { adminAudit, approvals, staffAssignments, type CommandContext } from '../../../../../../packages/data/src/repositories/admin.js';
 export type { StaffRole } from '../../../../../../packages/data/src/schema/admin.js';
 export {
   federationPeers, nodeIdentity, nodeKeys, nodeManifests, peeringRecords, type NodeIdentityInput, type PeeringTerms, type PeerRecordInput, type Runner, type SealedSeed, type SigningMaterialRow,

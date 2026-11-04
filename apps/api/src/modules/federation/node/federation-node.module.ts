@@ -31,6 +31,10 @@ export interface FederationNodeModuleOptions {
   /** Engine version and public source for the manifest when the operator does not state them. */
   engine?: { version: string; source: string };
   reverification?: ReverificationPort;
+  /** The most one exchange with a peer may take end to end (default 20 s). */
+  peerDeadlineMs?: number;
+  /** Fetches an inbound request may trigger: at most one per host per this interval (default 10 minutes). */
+  inboundFetchCooldownMs?: number;
 }
 
 export const ENGINE_SOURCE = 'https://github.com/Contribuda/trustwork';
@@ -128,6 +132,7 @@ export class FederationNodeModule {
     const service = new FederationNodeService(ctx, identity.principals, {
       sealer, transport, restricted: () => loadRestrictedPlaces(ctx.pool),
       engine: options.engine ?? { version: '0.1.0', source: ENGINE_SOURCE }, ...(options.reverification ? { reverification: options.reverification } : {}),
+      ...(options.peerDeadlineMs !== undefined ? { peerDeadlineMs: options.peerDeadlineMs } : {}), ...(options.inboundFetchCooldownMs !== undefined ? { inboundFetchCooldownMs: options.inboundFetchCooldownMs } : {}),
     });
     const timer = new FederationRefreshTimer(service, { enabled: options.refresh?.enabled ?? (options.transport === undefined && reachesPeers), intervalMs: options.refresh?.intervalMs ?? REFRESH_INTERVAL_MS, log: ctx.log });
     return {

@@ -6,17 +6,17 @@ import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
 import { generateNodeKey, verifyEd25519, type NodeKeySealer, type NodeSeed } from './crypto.js';
 import {
-  admissionLogEvent, admitPeerAtHandshake, adminAudit, agreedLicences, approvals, canonicalize, computeDigest, DATA_LICENCE_RULES, defaultDataLicences, deploymentAttestations,
+  admissionLogEvent, admitPeerAtHandshake, adminAudit, agreedLicences, staffAssignments, approvals, canonicalize, computeDigest, DATA_LICENCE_RULES, defaultDataLicences, deploymentAttestations,
   federationPeers, HandshakeResponseSchema, handshakeRequestSchema, HUB_CONSOLE_CONTRACT_VERSION, keyForSignature, manifestRestrictions, MESH_DATA_CLASSES, MESH_ENDPOINTS, MESH_PROTOCOL,
   nodeIdentity, NodeHostSchema, nodeKeys, nodeManifestSchema, nodeManifests, parseAddress, parseHttpSignatureFields, PEERING_LEVELS, peeringLevelAtLeast, peeringRecords, restrictedPlaces, rotationStatementFor, SECOND_APPROVER_LEVELS,
   signDocument, unconfiguredGate, utf8Encode, verifyManifestSignatures, type AdmissionDecision, type AdmissionTrigger, type CommandContext, type ConsoleCommandResult, type FederationErrorCode,
   type FederationPeerRow, type GateRequest, type HandshakeRequest, type HandshakeResponse, type MeshDataClass, type NodeIdentityInput, type NodeIdentityRow, type NodeKey, type NodeManifest,
   type NodeManifestRow, type PeeringLevel, type PeeringLevelCode, type PeeringRecordRow, type PeeringTerms, type RestrictedPlaces, type StaffRole, type SuspensionReason, type SyndicationTerm,
 } from './deps.js';
-import { federationRefusal, FederationProtocolError, isAuthorityRefusal } from './errors.js';
-import { freshNonce, signRequest, signResponse, verifySignedMessage, type ReceivedMessage, type SignedFields, type Signer, type Verification } from './http-signatures.js';
+import { FederationConfigurationError, federationRefusal, FederationProtocolError, isAuthorityRefusal } from './errors.js';
+import { checkMessageShape, freshNonce, signRequest, signResponse, verifySignedMessage, type ReceivedMessage, type SignedFields, type Signer, type Verification } from './http-signatures.js';
 import { keyRotationDigestInput, peeringLevelDigestInput, type AcceptPeeringCommand, type InitializeNodeCommand, type LowerPeeringCommand, type RecordCommand, type RequestPeeringCommand, type RotateKeyCommand, type UpdateNodeCommand } from './schemas.js';
-import { MAX_PEER_BODY, PeerUnreachableError, type PeerResponse, type PeerTransport } from './transport.js';
+import { isPublicAddress, MAX_PEER_BODY, PEER_DEADLINE_MS, PeerUnreachableError, type PeerResponse, type PeerTransport } from './transport.js';
 import { toEvent, toIdentity, toManifestVersion, toNodeKey, toPeer, toPeeringRecord, toProtocolRecord, toRefusal } from './views.js';
 
 /**
@@ -37,7 +37,12 @@ export interface FederationNodeOptions {
   restricted: () => Promise<RestrictedPlaces>;
   engine: { version: string; source: string };
   reverification?: ReverificationPort;
+  /** The most one exchange with a peer may take end to end (default 20 s): a dripping peer never stalls a refresh run or a shutdown. */
+  peerDeadlineMs?: number;
+  /** Fetches of a peer's manifest that an inbound request may trigger: at most one per host per this interval (default 10 minutes). */
+  inboundFetchCooldownMs?: number;
 }
+export const INBOUND_FETCH_COOLDOWN_MS = 10 * 60_000;
 
 type Cmd = { contractVersion: string; idempotencyKey: string; reason: string };
 export interface Elevated { state: RequestState; elevationId: string; idempotencyKey: string | undefined }
@@ -83,6 +88,8 @@ const highestOfferedAtMost = (offered: readonly string[], requested: PeeringLeve
 export class FederationNodeService {
   private restrictedCache: { at: number; value: RestrictedPlaces } | null = null;
   private readonly reverification: ReverificationPort;
+  /** When an inbound request last made this node fetch a host's manifest (application clock). */
+  private readonly inboundFetches = new Map<string, number>();
   constructor(private readonly ctx: AppContext, private readonly principals: PrincipalService, private readonly options: FederationNodeOptions) {
     this.reverification = options.reverification ?? noReverification;
   }
@@ -248,6 +255,9 @@ export class FederationNodeService {
 
   /** Strict validation of a peer's manifest: the schema (restricted places refused), the address backstop, the host and every signature. */
   private async validatePeerManifest(raw: unknown, expectedHost: string): Promise<{ manifest: NodeManifest; digest: string }> {
+    // The manifest fetched from a host must name that host before anything else is judged, so a document at one origin
+    // that names another node is refused without a word about the node it names.
+    if (!raw || typeof raw !== 'object' || (raw as { node?: unknown }).node !== expectedHost) throw new FederationProtocolError('federation.manifest_invalid', 'the manifest names another node');
     const restricted = await this.restricted();
     const parsed = nodeManifestSchema(restricted).safeParse(raw);
     if (!parsed.success) {
@@ -260,11 +270,12 @@ export class FederationNodeService {
     return { manifest: parsed.data, digest: computeDigest(parsed.data).value };
   }
   /** The restricted places a manifest declares, judged before signatures when the schema already refused it. */
-  private async refuseDeclared(raw: unknown, host: string, observed: GateRequest | null): Promise<void> {
+  private async refuseDeclared(raw: unknown, host: string, observed: GateRequest | null, durable: boolean): Promise<void> {
     const manifest = raw as { jurisdiction?: unknown; operator?: unknown; hubs?: unknown; deploymentAttestation?: unknown } | null;
     if (!manifest || typeof manifest !== 'object') return;
-    const decision = admitPeerAtHandshake({ manifest: { node: host, ...(manifest as object) } as never, attestation: (manifest.deploymentAttestation as never) ?? null, observed }, await this.admissionContext());
-    if (decision.outcome === 'refused') await this.storeRefusal(decision);
+    // The refusal names the host the manifest was fetched from, never a node the document claims to be.
+    const decision = admitPeerAtHandshake({ manifest: { ...(manifest as object), node: host } as never, attestation: (manifest.deploymentAttestation as never) ?? null, observed }, await this.admissionContext());
+    if (decision.outcome === 'refused' && durable) await this.storeRefusal(decision);
   }
   private async admissionContext() {
     return { restricted: await this.restricted(), geolocation: this.ctx.jurisdictionGate ?? unconfiguredGate(), now: this.ctx.clock.now() };
@@ -277,19 +288,28 @@ export class FederationNodeService {
     if (event) this.ctx.log('admission.refused', event);
   }
   /** SANC-008 on a validated manifest: declared and attested evidence from it, observed from our own door. */
-  private async admit(manifest: NodeManifest, observed: GateRequest | null): Promise<AdmissionDecision> {
+  private async admit(manifest: NodeManifest, observed: GateRequest | null, durable = true): Promise<AdmissionDecision> {
     const decision = admitPeerAtHandshake({ manifest, attestation: manifest.deploymentAttestation, observed }, await this.admissionContext());
-    if (decision.outcome === 'refused') await this.storeRefusal(decision);
+    if (decision.outcome === 'refused' && durable) await this.storeRefusal(decision);
     return decision;
   }
   /** Records a peer's manifest with the admission outcome; a refusal (or an attestation that expired) suspends every flow. */
-  private async recordPeer(manifest: NodeManifest, digest: string, decision: AdmissionDecision, trigger: AdmissionTrigger): Promise<FederationPeerRow> {
+  private async recordPeer(manifest: NodeManifest, digest: string, decision: AdmissionDecision, trigger: AdmissionTrigger, fetched = true): Promise<FederationPeerRow> {
     const expired = decision.outcome === 'refused' && decision.record.findings.some((f) => f.reason === 'attestation_expired');
     const suspensionReason: SuspensionReason | null = decision.outcome === 'refused' ? (expired ? 'attestation_expired' : 'admission_refused') : null;
     return federationPeers.record(this.ctx.pool, {
       peerNode: manifest.node, manifest, manifestDigest: digest, manifestIssuedAt: new Date(manifest.issuedAt), currentKeyId: manifest.keys.current,
       attestationExpiresAt: new Date(manifest.deploymentAttestation.expiresAt), admitted: decision.outcome === 'admitted', judged: decision.outcome === 'admitted' ? [...decision.judged] : [],
-      trigger, suspensionReason,
+      trigger, suspensionReason, fetched,
+    });
+  }
+  /** One exchange with a peer may take at most the deadline, whatever the transport does. */
+  private withDeadline<T>(host: string, promise: Promise<T>): Promise<T> {
+    const ms = this.options.peerDeadlineMs ?? PEER_DEADLINE_MS;
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new PeerUnreachableError(host, new Error('deadline'))), ms);
+      timer.unref();
+      promise.then((value) => { clearTimeout(timer); resolve(value); }, (error: unknown) => { clearTimeout(timer); reject(error); });
     });
   }
   /**
@@ -343,18 +363,23 @@ export class FederationNodeService {
    * never contacted (the refusal record names the place and dataset, never the address). The connection then goes to
    * exactly this address.
    */
-  private async connectAddress(host: string): Promise<string> {
-    const address = await this.options.transport.resolve(host);
-    if (!address) throw new PeerUnreachableError(host, new Error('the name does not resolve'));
+  private async connectAddress(host: string, context: { durable: boolean; held: FederationPeerRow | null; trigger: AdmissionTrigger }): Promise<string> {
     const gate = this.ctx.jurisdictionGate ?? unconfiguredGate();
-    const sighting = gate.mode === 'unconfigured' ? null : gate.decide(this.observedFrom(address));
-    if (gate.mode === 'unconfigured' || sighting) {
+    // Only a gate that judges an address can clear an outbound connection; edge headers and an upstream gate answer for
+    // inbound requests only. Without such a gate the node does not connect at all (fail closed, no provider, no external call).
+    if (gate.mode !== 'ranges_file' && gate.mode !== 'fake') throw new FederationConfigurationError(gate.mode);
+    const address = await this.withDeadline(host, this.options.transport.resolve(host));
+    if (!address) throw new PeerUnreachableError(host, new Error('the name does not resolve'));
+    if (!isPublicAddress(address)) throw new PeerUnreachableError(host, new Error('the name resolves to a private, loopback or link-local address'));
+    const sighting = gate.decide(this.observedFrom(address));
+    if (sighting) {
       const described = gate.describe();
-      const finding = sighting
-        ? { reason: 'restricted_place' as const, kind: 'observed' as const, source: 'observed_location' as const, place: sighting.place, dataset: described.dataset }
-        : { reason: 'geolocation_unconfigured' as const, kind: 'observed' as const, source: 'observed_location' as const, place: null, dataset: null };
-      await federationPeers.refusal(this.ctx.pool, { service: 'federation_handshake', subject: host, decidedAt: this.ctx.clock.now(), findings: [finding], geolocation: { mode: described.mode, dataset: described.dataset } });
-      this.ctx.log('admission.refused', { event: 'admission.refused', service: 'federation_handshake', reasons: [finding.reason], places: finding.place ? [finding.place] : [], sources: ['observed_location'], datasets: finding.dataset ? [finding.dataset] : [], at: this.ctx.clock.now().toISOString() });
+      const finding = { reason: 'restricted_place' as const, kind: 'observed' as const, source: 'observed_location' as const, place: sighting.place, dataset: described.dataset };
+      if (context.durable) {
+        await federationPeers.refusal(this.ctx.pool, { service: 'federation_handshake', subject: host, decidedAt: this.ctx.clock.now(), findings: [finding], geolocation: { mode: described.mode, dataset: described.dataset } });
+        if (context.held) await this.suspendHeld(context.held, 'admission_refused', context.trigger);
+      }
+      this.ctx.log('admission.refused', { event: 'admission.refused', service: 'federation_handshake', reasons: [finding.reason], places: [finding.place], sources: ['observed_location'], datasets: finding.dataset ? [finding.dataset] : [], at: this.ctx.clock.now().toISOString() });
       throw new FederationProtocolError('federation.peer_restricted', 'the peer is not available for connection');
     }
     return address;
@@ -369,9 +394,17 @@ export class FederationNodeService {
    * admission lifts the suspensions it caused.
    */
   async refreshPeer(host: string, trigger: AdmissionTrigger): Promise<FederationPeerRow> {
+    const fetched = await this.fetchPeerManifest(host, trigger, true);
+    return this.recordPeer(fetched.manifest, fetched.digest, fetched.decision, trigger, true);
+  }
+  /**
+   * The fetch itself. `durable` false (an inbound request from a host we do not hold) writes nothing: no refusal record,
+   * no peer row, no suspension, until the request's signature verifies against what was fetched.
+   */
+  private async fetchPeerManifest(host: string, trigger: AdmissionTrigger, durable: boolean): Promise<{ manifest: NodeManifest; digest: string; decision: AdmissionDecision; held: FederationPeerRow | null }> {
     const held = await federationPeers.get(this.ctx.pool, host);
-    const address = await this.connectAddress(host);
-    const response = await this.options.transport.fetchManifest(host, address);
+    const address = await this.connectAddress(host, { durable, held, trigger });
+    const response = await this.withDeadline(host, this.options.transport.fetchManifest(host, address));
     if (response.status !== 200) throw new PeerUnreachableError(host, new Error(`manifest answered ${response.status}`));
     if (response.body.length > MAX_PEER_BODY) throw new PeerUnreachableError(host, new Error('manifest too large'));
     let raw: unknown;
@@ -386,14 +419,15 @@ export class FederationNodeService {
       validated = await this.validatePeerManifest(raw, host);
     } catch (error) {
       if (error instanceof FederationProtocolError && error.code === 'federation.peer_restricted') {
-        await this.refuseDeclared(raw, host, observed);
-        if (held) await this.suspendHeld(held, 'admission_refused', trigger);
+        await this.refuseDeclared(raw, host, observed, durable);
+        if (held && durable) await this.suspendHeld(held, 'admission_refused', trigger);
       }
       throw error;
     }
-    await this.reconcileChain(held, validated.manifest);
-    const decision = await this.admit(validated.manifest, observed);
-    return this.recordPeer(validated.manifest, validated.digest, decision, trigger);
+    if (durable) await this.reconcileChain(held, validated.manifest);
+    else if (held && FederationNodeService.chainContinuity(held.manifest as NodeManifest, validated.manifest) !== 'ok') throw new FederationProtocolError('federation.manifest_invalid', 'the manifest does not continue the chain held');
+    const decision = await this.admit(validated.manifest, observed, durable);
+    return { ...validated, decision, held };
   }
   /** A held peer whose new manifest cannot even be validated: its flows pause until a valid manifest is admitted again. */
   private async suspendHeld(held: FederationPeerRow, reason: SuspensionReason, trigger: AdmissionTrigger): Promise<void> {
@@ -409,7 +443,7 @@ export class FederationNodeService {
     if (!held) throw new FederationProtocolError('federation.not_peered', 'unknown peer');
     const manifest = held.manifest as NodeManifest;
     const decision = await this.admit(manifest, observed);
-    await this.recordPeer(manifest, held.manifest_digest, decision, trigger);
+    await this.recordPeer(manifest, held.manifest_digest, decision, trigger, false);
     return decision;
   }
   /**
@@ -446,7 +480,7 @@ export class FederationNodeService {
           for (const row of await peeringRecords.ofPeerForProtocol(this.ctx.pool, host)) if (row.state === 'pending_approval' && row.phase === 'awaiting_peer') await this.sendHandshake(row);
         }
       } catch (error) {
-        this.ctx.log('federation.refresh_failed', { peer: host, code: error instanceof FederationProtocolError ? error.code : 'unreachable' });
+        this.ctx.log('federation.refresh_failed', { peer: host, code: error instanceof FederationProtocolError ? error.code : error instanceof FederationConfigurationError ? 'address_judgement_unconfigured' : 'unreachable' });
         out.push({ host, outcome: error instanceof FederationProtocolError && error.code === 'federation.peer_restricted' ? 'refused' : 'failed' });
       }
     }
@@ -523,43 +557,64 @@ export class FederationNodeService {
     if (body.to !== identity.host) return this.refusal(new FederationProtocolError('federation.not_addressed', 'this node is not the addressee'), input.requestId);
     if (!NodeHostSchema.safeParse(body.from).success || body.from === identity.host) return this.refusal(new FederationProtocolError('federation.manifest_invalid', 'the initiator is another node'), input.requestId);
     const from = body.from;
-    // Nothing unauthenticated changes state or names a peer in a record: an unsigned or malformed request is answered and
-    // counted, nothing more; the exact bytes are required so the digest covers what was sent.
+    // Nothing unauthenticated changes state or names a peer in a record: an unsigned, malformed, stale or tampered
+    // request is answered and counted, nothing more, and it costs this node no fetch; the exact bytes are required so
+    // the digest covers what was sent.
     const signatureInput = input.header('signature-input');
     const signature = input.header('signature');
     const fields = signatureInput && signature ? parseHttpSignatureFields(signatureInput, signature) : null;
     if (!fields) return this.refusal(new FederationProtocolError('federation.signature_invalid', 'unsigned'), input.requestId);
     if (!input.rawBody) return this.refusal(new FederationProtocolError('federation.signature_invalid', 'exact body bytes unavailable'), input.requestId);
-    // The trust anchor is the peer's own well-known manifest, fetched over TLS from its name: the one we hold, refreshed
-    // when the key label is unknown, or fetched now for a peer we meet for the first time (trust on first use).
+    const message: ReceivedMessage = { method: input.method, targetUri: `https://${identity.host}${input.url}`, header: input.header, body: input.rawBody };
+    const malformed = checkMessageShape(message, fields, this.ctx.clock.now());
+    if (malformed && !malformed.ok) return this.refusal(new FederationProtocolError(malformed.code, `request signature: ${malformed.reason}`), input.requestId);
+    // The trust anchor is the peer's own well-known manifest: the one we hold while it is not due for refresh, else fetched
+    // from the origin now. An inbound request may make this node fetch at most once per host per cooldown; for a host we
+    // do not hold, the fetch writes nothing until the signature verifies against it.
     let peer = await federationPeers.get(this.ctx.pool, from);
-    if (!peer || !(peer.manifest as NodeManifest).keys.chain.some((k) => k.keyId === fields.params.keyid)) {
+    let fetched: { manifest: NodeManifest; digest: string; decision: AdmissionDecision } | null = null;
+    const heldChain = peer ? (peer.manifest as NodeManifest).keys.chain : null;
+    const needsFetch = !peer || !heldChain!.some((k) => k.keyId === fields.params.keyid) || peer.refresh_due_at.getTime() <= this.ctx.clock.now().getTime();
+    if (needsFetch) {
+      const last = this.inboundFetches.get(from);
+      const nowMs = this.ctx.clock.now().getTime();
+      if (last !== undefined && nowMs - last < (this.options.inboundFetchCooldownMs ?? INBOUND_FETCH_COOLDOWN_MS)) {
+        return this.refusal(new FederationProtocolError('federation.key_unknown', 'the initiator\'s manifest was fetched recently; no key with that label'), input.requestId);
+      }
+      this.inboundFetches.set(from, nowMs);
       try {
-        peer = await this.refreshPeer(from, peer ? 'key_unknown' : 'handshake');
+        if (peer) peer = await this.refreshPeer(from, peer.refresh_due_at.getTime() <= nowMs ? 'refresh' : 'key_unknown');
+        else fetched = await this.fetchPeerManifest(from, 'handshake', false);
       } catch (error) {
         if (error instanceof FederationProtocolError) return this.refusal(error, input.requestId);
-        if (error instanceof PeerUnreachableError) return this.refusal(new FederationProtocolError('federation.key_unknown', 'the initiator\'s manifest could not be fetched'), input.requestId);
+        if (error instanceof PeerUnreachableError || error instanceof FederationConfigurationError) return this.refusal(new FederationProtocolError('federation.key_unknown', 'the initiator\'s manifest could not be fetched'), input.requestId);
         throw error;
       }
     }
-    const trusted = peer.manifest as NodeManifest;
-    const message: ReceivedMessage = { method: input.method, targetUri: `https://${identity.host}${input.url}`, header: input.header, body: input.rawBody };
+    const trusted = fetched ? fetched.manifest : (peer!.manifest as NodeManifest);
+    const servedDigest = fetched ? fetched.digest : peer!.manifest_digest;
     const nonces = (keyId: string, nonce: string, expiresAt: Date) => federationPeers.noteNonce(this.ctx.pool, { peerNode: from, keyId, nonce, expiresAt });
     const verification = await verifySignedMessage(message, trusted.keys.chain, this.ctx.clock.now(), nonces);
     if (!verification.ok) return this.refusal(new FederationProtocolError(verification.code, `request signature: ${verification.reason}`), input.requestId);
-    // From here the request is the peer's. The manifest it carries must be the one its own origin serves.
-    if (computeDigest(body.manifest).value !== peer.manifest_digest) return this.refusal(new FederationProtocolError('federation.manifest_invalid', 'the manifest carried differs from the one the node serves'), input.requestId);
+    // From here the request is the peer's. A first contact becomes durable now: the fetched manifest and its admission.
+    if (fetched) {
+      if (fetched.decision.outcome === 'refused') await this.storeRefusal(fetched.decision);
+      peer = await this.recordPeer(fetched.manifest, fetched.digest, fetched.decision, 'handshake', true);
+    }
+    // The manifest the request carries must be the one the peer's origin serves.
+    if (computeDigest(body.manifest).value !== servedDigest) return this.refusal(new FederationProtocolError('federation.manifest_invalid', 'the manifest carried differs from the one the node serves'), input.requestId);
     const inbound: GateRequest = { address: input.address, header: input.header };
     const decision = await this.admit(trusted, inbound);
     if (decision.outcome === 'refused') {
-      await this.recordPeer(trusted, peer.manifest_digest, decision, 'handshake');
+      await this.recordPeer(trusted, servedDigest, decision, 'handshake', false);
       const refused: HandshakeResponse = { protocol: MESH_PROTOCOL, outcome: 'refused', from: identity.host, to: from, code: 'federation.peer_restricted', nonce: body.nonce, issuedAt: this.ctx.clock.now().toISOString() };
       return this.reply(451, refused);
     }
     const parsed = handshakeRequestSchema(await this.restricted()).safeParse(input.body);
     if (!parsed.success) return this.refusal(new FederationProtocolError('federation.manifest_invalid', 'the handshake does not validate'), input.requestId);
-    // The admission re-ran on this verified handshake with the connection as observed evidence: record it (the peer's own manifest, unchanged).
-    await this.recordPeer(trusted, peer.manifest_digest, decision, 'handshake');
+    // The admission re-ran on this verified handshake with the connection as observed evidence: recorded without moving
+    // the refresh (only a fetch from the origin does), so a stolen key cannot keep an archived manifest alive.
+    await this.recordPeer(trusted, servedDigest, decision, 'handshake', false);
     const request: HandshakeRequest = parsed.data;
     const localHubId = await this.hubBySlug(request.hubs.responder);
     if (!localHubId) return this.refusal(new FederationProtocolError('federation.not_addressed', 'no such hub on this node'), input.requestId);
@@ -568,7 +623,7 @@ export class FederationNodeService {
     const terms = await this.terms(identity, trusted);
     let record: PeeringRecordRow;
     try {
-      record = await peeringRecords.handshakeReceived(this.ctx.pool, { peerNode: from, peerHubId: request.hubs.initiator, localHubId, level: level as PeeringLevelCode, manifestDigest: peer.manifest_digest, keyId: trusted.keys.current, ...terms });
+      record = await peeringRecords.handshakeReceived(this.ctx.pool, { peerNode: from, peerHubId: request.hubs.initiator, localHubId, level: level as PeeringLevelCode, manifestDigest: servedDigest, keyId: trusted.keys.current, ...terms });
     } catch (error) {
       const hint = (error as { hint?: string }).hint;
       if (hint === 'federation.peer_restricted') {
@@ -606,8 +661,8 @@ export class FederationNodeService {
     const fields = await this.withSigner((signer) => signRequest({ method: 'POST', targetUri: `https://${record.peer_node}${MESH_ENDPOINTS.handshake}`, body: bytes, signer, now: this.ctx.clock.now() }));
     let response: PeerResponse;
     try {
-      const address = await this.connectAddress(record.peer_node);
-      response = await this.options.transport.postHandshake(record.peer_node, address, bytes, fields);
+      const address = await this.connectAddress(record.peer_node, { durable: true, held: peer, trigger: 'manual' });
+      response = await this.withDeadline(record.peer_node, this.options.transport.postHandshake(record.peer_node, address, bytes, fields));
       if (response.body.length > MAX_PEER_BODY) throw new PeerUnreachableError(record.peer_node, new Error('answer too large'));
     } catch (error) {
       this.ctx.log('federation.handshake_unreachable', { peer: record.peer_node, recordId: record.id, message: error instanceof Error ? error.message : String(error) });
@@ -765,6 +820,7 @@ export class FederationNodeService {
       return await this.refreshPeer(host, 'request');
     } catch (error) {
       if (error instanceof FederationProtocolError) throw new ApiError(error.code === 'federation.peer_restricted' ? 'access.forbidden' : 'validation.schema', error.message, { reason: error.code });
+      if (error instanceof FederationConfigurationError) throw new ApiError('validation.schema', error.message, { reason: 'address_judgement_unconfigured' });
       if (error instanceof PeerUnreachableError) {
         const held = await federationPeers.get(this.ctx.pool, host);
         if (held && held.admission_state === 'admitted' && held.refresh_due_at.getTime() > this.ctx.clock.now().getTime()) return held;
@@ -831,8 +887,18 @@ export class FederationNodeService {
     const cmd = this.commandContext(e, body);
     // A plain read (not the request transaction): the idempotency record completes once, in the audited transaction below.
     const principal = e.state.principal as Principal;
-    const visible = await withPrincipal(this.ctx.pool, { personId: principal.personId, authzEpoch: principal.authzEpoch }, (trx) => peeringRecords.list(trx, { peerNode: body.peerNode }));
-    if (visible.length === 0) throw new ApiError('access.not_found', 'access.not_found');
+    const visible = await withPrincipal(this.ctx.pool, { personId: principal.personId, authzEpoch: principal.authzEpoch }, async (trx) => {
+      const records = await peeringRecords.list(trx, { peerNode: body.peerNode });
+      if (records.length === 0) throw new ApiError('access.not_found', 'access.not_found');
+      // The edit permission is checked here, before any fetch or resend (and again by the database when the outcome is recorded).
+      const hubs = [...new Set(records.map((r) => r.local_hub_id))];
+      const node = (await trx.selectFrom('admin_node').select('id').executeTakeFirst())?.id ?? null;
+      const targets = [...hubs.map((hubId) => ({ kind: 'hub' as const, hubId })), ...(node ? [{ kind: 'node' as const, nodeId: node }] : [])];
+      let allowed = false;
+      for (const target of targets) if (await staffAssignments.hasPermission(trx, 'admin.federation.peer.edit', target)) allowed = true;
+      if (!allowed) throw new ApiError('access.forbidden', 'access.forbidden', { reason: 'forbidden', required: 'permission' });
+      return records;
+    });
     let peer: FederationPeerRow | null = null;
     let code: string | null = null;
     try {
@@ -840,6 +906,7 @@ export class FederationNodeService {
     } catch (error) {
       if (error instanceof FederationProtocolError) code = error.code;
       else if (error instanceof PeerUnreachableError) code = 'peer_unreachable';
+      else if (error instanceof FederationConfigurationError) code = 'address_judgement_unconfigured';
       else throw error;
     }
     const records: PeeringRecordRow[] = [];
