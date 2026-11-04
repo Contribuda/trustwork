@@ -199,10 +199,29 @@ export function formatDateShape(date: Date, shape: DateShape, timeZone?: string)
 }
 
 /** Writes a number with the separators the server sent. Exported for the same test. */
-export function writeNumber(formats: LocaleFormats, value: number): string {
+export function writeNumber(formats: LocaleFormats, value: number, maximumFractionDigits = 3): string {
   const grouping = formats.groupsFourDigits || Math.abs(value) >= 10000;
-  return new Intl.NumberFormat('en-US', { useGrouping: grouping }).formatToParts(value)
+  return new Intl.NumberFormat('en-US', { useGrouping: grouping, maximumFractionDigits }).formatToParts(value)
     .map((part) => (part.type === 'group' ? formats.group : part.type === 'decimal' ? formats.decimal : part.value)).join('');
+}
+
+/** The units a client component may write, with the precision each is written at. */
+export const UNIT_SHAPES = {
+  megabyte: { style: 'unit', unit: 'megabyte', maximumFractionDigits: 1 },
+  kilobyte: { style: 'unit', unit: 'kilobyte', maximumFractionDigits: 0 },
+} as const satisfies Record<string, Intl.NumberFormatOptions>;
+export type UnitShape = keyof typeof UNIT_SHAPES;
+
+/** Writes a unit from what the server sent. Exported for the same test. */
+export function writeUnit(formats: LocaleFormats, value: number, unit: UnitShape): string {
+  const [before, after] = formats.units[unit] ?? ['', ''];
+  return `${before}${writeNumber(formats, value, UNIT_SHAPES[unit].maximumFractionDigits)}${after}`;
+}
+
+/** A size in the page's language in every runtime: a browser without the language would write its own (`5,2 МБ`). */
+export function formatUnit(value: number, unit: UnitShape): string {
+  const missing = missingFormats();
+  return missing ? writeUnit(missing, value, unit) : new Intl.NumberFormat(intlTag(), UNIT_SHAPES[unit]).format(value);
 }
 
 export function formatNumber(value: number): string {

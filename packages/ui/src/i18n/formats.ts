@@ -1,5 +1,5 @@
 import type { DateField, DateShapeFormat, LocaleFormats } from '@trustwork/i18n-runtime/types';
-import { DATE_SHAPES, FORMAT_SAMPLE, formatSample } from './index.js';
+import { DATE_SHAPES, FORMAT_SAMPLE, formatSample, UNIT_SHAPES } from './index.js';
 
 /**
  * Server side of the page's formats: `Intl` as the server has it, written down for a browser that lacks the language
@@ -25,6 +25,14 @@ function shapeFormat(tag: string, options: Intl.DateTimeFormatOptions): DateShap
   };
 }
 
+/** What stands around the number of a unit in this language. */
+function unitFormat(tag: string, options: Intl.NumberFormatOptions): [string, string] {
+  const parts = new Intl.NumberFormat(tag, options).formatToParts(5);
+  const at = parts.findIndex((part) => part.type === 'integer');
+  const text = (from: number, to?: number) => parts.slice(from, to).map((part) => part.value).join('');
+  return [text(0, at), text(at + 1)];
+}
+
 const cached = new Map<string, LocaleFormats>();
 
 /** The formats of an `Intl` tag; computed once per tag, as they do not depend on the request. */
@@ -39,6 +47,7 @@ export function localeFormats(tag: string): LocaleFormats {
     group: number.find((part) => part.type === 'group')?.value ?? '',
     decimal: number.find((part) => part.type === 'decimal')?.value ?? '.',
     groupsFourDigits: new Intl.NumberFormat(tag).formatToParts(1234).some((part) => part.type === 'group'),
+    units: Object.fromEntries(Object.entries<Intl.NumberFormatOptions>(UNIT_SHAPES).map(([unit, options]) => [unit, unitFormat(tag, options)])),
   };
   cached.set(tag, formats);
   return formats;

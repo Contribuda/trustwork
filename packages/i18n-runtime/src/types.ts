@@ -39,6 +39,8 @@ export type LocaleFormats = {
   decimal: string;
   /** Whether four-digit numbers are grouped (`1 234`); Spanish waits for five. */
   groupsFourDigits: boolean;
+  /** What stands before and after the number of each unit (`['', ' მეგაბაიტი']`). */
+  units: Record<string, [string, string]>;
 };
 
 /** Outside any request: English and no country (the engine has no default country, ADR 012 decision 11). */

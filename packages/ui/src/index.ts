@@ -1,5 +1,5 @@
 // @trustwork/ui public surface. Styles: import '@trustwork/ui/tokens.css', '@trustwork/ui/fonts.css' and './styles/base.css' once per app.
-export { t, formatMessage, formatNumber, formatDate, formatDateShape, message, messageOrUndefined, locale, localeTag, intlTag, registerUiLocale, uiLocales, uiDictionary, FALLBACK_LOCALE, type LocaleKey, type LocaleParams } from './i18n';
+export { t, formatMessage, formatNumber, formatDate, formatDateShape, formatUnit, message, messageOrUndefined, locale, localeTag, intlTag, registerUiLocale, uiLocales, uiDictionary, FALLBACK_LOCALE, type LocaleKey, type LocaleParams } from './i18n';
 export { tokens, blue, color, scrim, space, section, font, weight, type, radius, shadow, zIndex, breakpoint, mediaQuery, focus, motion, size, type TypeStyle } from '../tokens/index';
 export { cx } from './utils/cx';
 export { useMediaQuery, useIsMobile, usePrefersReducedMotion } from './hooks/useMediaQuery';
