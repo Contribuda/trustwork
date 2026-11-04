@@ -167,6 +167,41 @@ test('PROV actual CNT commands and channel-scoped public delivery', {skip:h?fals
     const view=await workspace(legacy.id);
     expectRefusal(await c.writer.post('/v1/provenance/declarations',{declaration:{binding:view.binding,expectedRevision:0,kind:'none',roles:[],evidence:'human_declaration',original:null,reason:'Synthetic removal attempt'}}),422,'validation.schema','disclosure_required');
   });
+  await t.test('a published label is never lowered, in place or through a correction',async()=>{
+    const piece=await create();
+    const first=await declare(piece.id);ok(await credit(first.record!.id),201);
+    ok(await c.writer.post(`/v1/publications/${piece.id}/publish`,{expectedRevision:piece.revision,scheduledFor:null}));
+    const redeclare=(kind:string,view:Awaited<ReturnType<typeof workspace>>,expectedRevision:number)=>c.writer.post('/v1/provenance/declarations',{declaration:{binding:view.binding,expectedRevision,kind,roles:['editorial_illustrator'],evidence:'human_declaration',original:null,reason:'Synthetic redeclaration'}});
+    // A label may rise on a published version; a generated image needs no new record to be shown here.
+    let view=await workspace(piece.id);
+    ok(await redeclare('generated',view,1),201);
+    view=await workspace(piece.id);
+    expectRefusal(await redeclare('ai_assisted',view,2),422,'validation.schema','disclosure_required');
+    // The same route with the weaker record already in place, as data written before this rule: the correction still sees the label readers had.
+    await withMaintenance(h.db.admin,trx=>sql`INSERT INTO trustwork.provenance_record(publication_id,version_id,version_digest,version_revision,revision,responsible_person_id,kind,roles,evidence,reason)
+      SELECT r.publication_id,r.version_id,r.version_digest,r.version_revision,3,r.responsible_person_id,'ai_assisted',ARRAY['editorial_writer'],'human_declaration','Synthetic earlier weakening'
+      FROM trustwork.provenance_record r WHERE r.publication_id=${piece.id}::uuid AND r.revision=2`.execute(trx));
+    const corrected=draft({body:'Synthetic body after the label was lowered.',assistantAssisted:true});
+    ok(await c.writer.post(`/v1/provenance/publications/${piece.id}/correction-draft`,{expectedRevision:(await workspace(piece.id)).publicationRevision,draft:corrected,note:'Synthetic correction'}));
+    view=await workspace(piece.id);
+    expectRefusal(await redeclare('ai_assisted',view,0),422,'validation.schema','disclosure_required');
+    await withMaintenance(h.db.admin,trx=>sql`INSERT INTO trustwork.provenance_record(publication_id,version_id,version_digest,version_revision,revision,responsible_person_id,kind,roles,evidence,reason)
+      SELECT v.publication_id,v.id,trustwork.content_version_digest(v),v.revision,1,${w.people.writer}::uuid,'ai_assisted',ARRAY['editorial_writer'],'human_declaration','Synthetic record the command refuses'
+      FROM trustwork.publication_version v WHERE v.publication_id=${piece.id}::uuid AND v.status='draft'`.execute(trx));
+    view=await workspace(piece.id);
+    expectRefusal(await c.writer.post(`/v1/publications/${piece.id}/corrections`,{expectedRevision:view.publicationRevision,draft:corrected,note:'Synthetic correction',reason:'Synthetic correction'}),422,'validation.schema','provenance_disclosure_required');
+  });
+  await t.test('a kind changed before release binds nothing: the floor is what readers were shown',async()=>{
+    const piece=await create();
+    const view=await workspace(piece.id);
+    ok(await c.writer.post('/v1/provenance/declarations',{declaration:{binding:view.binding,expectedRevision:0,kind:'generated',roles:['editorial_illustrator'],evidence:'human_declaration',original:null,reason:'Synthetic first thought'}}),201);
+    const second=await declare(piece.id);ok(await credit(second.record!.id),201);
+    ok(await c.writer.post(`/v1/publications/${piece.id}/publish`,{expectedRevision:piece.revision,scheduledFor:null}));
+    const corrected=draft({body:'Synthetic body corrected under the released kind.',assistantAssisted:true});
+    ok(await c.writer.post(`/v1/provenance/publications/${piece.id}/correction-draft`,{expectedRevision:(await workspace(piece.id)).publicationRevision,draft:corrected,note:'Synthetic correction'}));
+    const prepared=await declare(piece.id);
+    assert.equal(prepared.record?.kind,'ai_assisted');
+  });
   await t.test('what counts as keeping a disclosure, over every pair of kinds',async()=>{
     const kinds=['none','ai_assisted','machine_translation','generated'];
     const kept:Record<string,string[]>={none:kinds,ai_assisted:['ai_assisted','machine_translation','generated'],machine_translation:['machine_translation'],generated:['generated']};

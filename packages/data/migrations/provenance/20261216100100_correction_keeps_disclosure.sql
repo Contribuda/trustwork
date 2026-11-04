@@ -14,17 +14,22 @@ LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
 $$;
 REVOKE ALL ON FUNCTION trustwork.provenance_disclosure_kept(text,text) FROM PUBLIC,trustwork_app,trustwork_worker;
 
--- What the corrected version told readers: its record, or for a version published without one, its assistance flag.
-CREATE FUNCTION trustwork.provenance_corrected_disclosure(v trustwork.publication_version) RETURNS text
+-- May this kind stand on a correction of this version's original? The floor is what readers of the corrected version
+-- were shown: the record in force when it was published and every record since, so lowering the label afterwards buys
+-- nothing here, while a kind changed before release binds nothing. A version published without a record counts as
+-- `ai_assisted` if its assistance flag was set.
+CREATE FUNCTION trustwork.provenance_correction_keeps(v trustwork.publication_version, p_kind text) RETURNS boolean
 LANGUAGE plpgsql STABLE SET search_path = trustwork, pg_temp AS $$
-DECLARE prior trustwork.publication_version; kind text;
+DECLARE prior trustwork.publication_version;
 BEGIN
-  IF v.correction_of IS NULL THEN RETURN 'none'; END IF;
+  IF v.correction_of IS NULL THEN RETURN true; END IF;
   SELECT * INTO prior FROM trustwork.publication_version WHERE publication_id=v.publication_id AND version=v.correction_of;
-  kind := coalesce((trustwork.provenance_version_record(prior)).kind,'none');
-  RETURN CASE WHEN kind='none' AND prior.assistant_assisted THEN 'ai_assisted' ELSE kind END;
+  IF prior.assistant_assisted AND NOT trustwork.provenance_disclosure_kept('ai_assisted',p_kind) THEN RETURN false; END IF;
+  RETURN NOT EXISTS(SELECT 1 FROM trustwork.provenance_record r WHERE r.version_id=prior.id
+    AND r.revision>=coalesce((SELECT max(x.revision) FROM trustwork.provenance_record x WHERE x.version_id=prior.id AND x.recorded_at<=prior.published_at),0)
+    AND NOT trustwork.provenance_disclosure_kept(r.kind,p_kind));
 END $$;
-REVOKE ALL ON FUNCTION trustwork.provenance_corrected_disclosure(trustwork.publication_version) FROM PUBLIC,trustwork_app,trustwork_worker;
+REVOKE ALL ON FUNCTION trustwork.provenance_correction_keeps(trustwork.publication_version,text) FROM PUBLIC,trustwork_app,trustwork_worker;
 
 -- Same checks as 20261205100001, plus: a correction being released keeps the disclosure of what it corrects.
 CREATE OR REPLACE FUNCTION trustwork.provenance_version_blocker(p trustwork.publication,v trustwork.publication_version) RETURNS text
@@ -38,7 +43,7 @@ BEGIN
    OR (v.status='draft' AND r.version_revision<>v.revision) THEN RETURN 'provenance_binding_mismatch'; END IF;
  IF (v.assistant_assisted OR EXISTS(SELECT 1 FROM trustwork.publication_authorship a WHERE a.publication_id=p.id AND a.assistant_assisted)) AND r.kind='none'
  THEN RETURN 'provenance_disclosure_required'; END IF;
- IF v.status='draft' AND NOT trustwork.provenance_disclosure_kept(trustwork.provenance_corrected_disclosure(v),r.kind)
+ IF v.status='draft' AND NOT trustwork.provenance_correction_keeps(v,r.kind)
  THEN RETURN 'provenance_disclosure_required'; END IF;
  IF ((v.treatment='translation' AND v.assistant_assisted) OR EXISTS(SELECT 1 FROM trustwork.edition_link l WHERE l.translation_publication_id=p.id AND l.machine_assisted))
    AND r.kind<>'machine_translation' THEN RETURN 'provenance_translation_required'; END IF;
@@ -61,7 +66,8 @@ BEGIN
 END $$;
 
 -- Same command as 20261120100002, refusing the declaration itself, so nobody credits and reviews a record that could
--- never be released. The blocker above stays the rule; this is the early answer.
+-- never be released, and refusing to lower the label of a published version in place, which was the other way to
+-- reach a weaker correction. The blocker above stays the rule; this is the early answer.
 CREATE OR REPLACE FUNCTION trustwork.provenance_declare(p_ctx jsonb, p_input jsonb) RETURNS trustwork.provenance_record
 LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 BEGIN
@@ -95,8 +101,12 @@ BEGIN
   IF p_input->>'kind' = 'none' AND (v_version.assistant_assisted OR EXISTS(SELECT 1 FROM trustwork.publication_authorship WHERE publication_id=v_pub.id AND assistant_assisted) OR EXISTS(SELECT 1 FROM trustwork.provenance_record WHERE version_id=v_version.id AND kind <> 'none')) THEN
     RAISE EXCEPTION 'machine disclosure cannot be removed' USING ERRCODE='23514',HINT='provenance.disclosure_required';
   END IF;
-  IF NOT trustwork.provenance_disclosure_kept(trustwork.provenance_corrected_disclosure(v_version),p_input->>'kind') THEN
+  IF NOT trustwork.provenance_correction_keeps(v_version,p_input->>'kind') THEN
     RAISE EXCEPTION 'a correction keeps the disclosure of the version it corrects' USING ERRCODE='23514',HINT='provenance.disclosure_required';
+  END IF;
+  -- Readers have seen this label: it may rise, never fall. Before release a kind is still a draft and may change.
+  IF v_version.status='published' AND v_revision>0 AND NOT trustwork.provenance_disclosure_kept((trustwork.provenance_version_record(v_version)).kind,p_input->>'kind') THEN
+    RAISE EXCEPTION 'a published disclosure cannot be lowered' USING ERRCODE='23514',HINT='provenance.disclosure_required';
   END IF;
   IF p_input->>'kind' = 'machine_translation' THEN
     SELECT v.* INTO v_original FROM trustwork.publication_version v JOIN trustwork.publication p ON p.id=v.publication_id
