@@ -166,6 +166,14 @@ test('hubs API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.equal((fine as unknown as { gate: { state: string } }).gate.state, 'passed');
   });
 
+  await t.test('the drafter of a legal document does not ask for its activation; another staff member does', async () => {
+    const drafted = ok(await command('owner', `${base}/legal`, { kind: 'terms', locale: 'en', body: 'Synthetic terms' }), 201) as unknown as { document: { id: string; revision: number } };
+    const { id, revision } = drafted.document;
+    ok(await command('owner', `${base}/legal/counsel-approvals`, { documentVersionIds: [id], counselName: 'Synthetic Counsel', firm: 'Synthetic Firm LLP', approvedOn: new Date(Date.now() - 86_400_000).toISOString().slice(0, 10), scopeNote: 'Synthetic scope' }), 201);
+    expectRefusal(await command('owner', `${base}/legal/${id}/activate`, { expectedRevision: revision, approvalId: null }), 403, 'access.second_approver_required', 'self_approval');
+    assert.equal(ok(await command('officer', `${base}/legal/${id}/activate`, { expectedRevision: revision, approvalId: null })).result.outcome, 'pending_second_person');
+  });
+
   await t.test('participants: no legal text of a hub before launch', async () => {
     expectRefusal(await clients.outsider.post(`/v1/hubs/${hubId}/legal/${randomUUID()}/accept`, { context: 'signup' }, { idempotencyKey: `acc-${randomUUID()}` }), 404, 'access.not_found');
     assert.deepEqual((await clients.outsider.get(`/v1/hubs/${hubId}/legal`)).body, { documents: [] });
