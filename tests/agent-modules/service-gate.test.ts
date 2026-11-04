@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { withPrincipal } from '@trustwork/data';
 import { sql } from 'kysely';
 import { PlansService } from '../../apps/api/src/modules/plans/plans.service.js';
-import { CapabilityAuthority, mcpGate } from '../../apps/api/src/modules/agent-modules/authority.js';
+import { CapabilityAuthority, mcpGate, type McpDecision } from '../../apps/api/src/modules/agent-modules/authority.js';
+import { NON_PURCHASABLE_CAPABILITIES } from '../../apps/api/src/modules/agent-modules/authority-boundaries.js';
 import { ENGINE_MANIFESTS } from '../../apps/api/src/modules/agent-modules/ports.js';
 import { PLAN_SERVICE_BINDINGS } from '../../apps/api/src/modules/agent-modules/plan-bindings.js';
 import { startHarness, SKIP_REASON } from '../backend/helpers/app.js';
@@ -12,6 +13,7 @@ import { as, stateOf } from '../assistant/helpers.js';
 import { principalFor } from '../data/helpers/seed.js';
 import { activatePolicy, buildAgentWorld, engage, release, ok } from './helpers.js';
 import { usHubPolicy } from './fixtures.js';
+import { installSyntheticMcpConnection } from './mcp-token-fixture.js';
 
 const h = await startHarness('agent_service_gate');
 test('actual plan service transactions share the capability gate and retain owning resource authorization', { skip: h ? false : SKIP_REASON }, async t => {
@@ -83,6 +85,26 @@ test('actual plan service transactions share the capability gate and retain owni
       await read;
       await stop;
     }
+  });
+
+  await t.test('a kill switch reaches the capabilities no plan can sell, on the shared check and over MCP', async () => {
+    const authority = new CapabilityAuthority({ hubId: world.hubId });
+    const actor = { personId: seed.people.petr, onBehalfCompanyId: null, representativeOf: null, connectionId: null };
+    const capability = ENGINE_MANIFESTS.flatMap(m => m.capabilities).find(c => c.id === 'profile_keeper.get_public_profile')!;
+    assert.ok(NON_PURCHASABLE_CAPABILITIES.has(capability.id));
+    const mcp = await installSyntheticMcpConnection(h, seed.people.petr, world.hubId);
+    const check = () => as(h, seed.people.petr, trx => authority.check(trx, actor, capability.id));
+    assert.equal((await check()).allowed, true);
+    for (const [scope, target] of [['agent_capability', { capabilityId: capability.id }], ['agent_module', { moduleKey: 'profile_keeper' }], ['hub_agent_dispatch', {}]] as const) {
+      const stop = await engage(world, scope, target);
+      try {
+        const decision = await check();
+        assert.equal(decision.allowed === false ? decision.reason : null, 'kill_switch', scope);
+        const adapter: McpDecision = await as(h, seed.people.petr, trx => mcpGate(authority, trx, mcp.connection, capability, null, mcp.token));
+        assert.equal(adapter.decision === 'deny' ? adapter.reason : null, 'kill_switch', scope);
+      } finally { await release(world, stop); }
+    }
+    assert.equal((await check()).allowed, true, 'released, it is available again');
   });
 
   await t.test('unknown capability and an MCP call without validated audience are unavailable', async () => {
