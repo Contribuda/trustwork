@@ -12,7 +12,8 @@ import { apiOrigin } from './config';
 export const SESSION_COOKIE_NAMES = [SESSION_COOKIE, SESSION_COOKIE.replace('__Host-', '')] as const;
 
 export class ApiFailure extends Error {
-  constructor(readonly status: number, readonly code: string, readonly requestId: string | null) {
+  /** `reason` is the API's `details.reason`, when it gives one. */
+  constructor(readonly status: number, readonly code: string, readonly requestId: string | null, readonly reason: string | null = null) {
     super(`API ${status} ${code}`);
     this.name = 'ApiFailure';
   }
@@ -64,10 +65,11 @@ export function createTransport(options: TransportOptions = {}): Transport {
       const response = await doFetch(`${origin()}${path}`, { method: 'GET', headers, cache: 'no-store', signal: AbortSignal.timeout(timeoutMs), redirect: 'manual' });
       const body = await response.json().catch(() => null);
       if (response.status >= 200 && response.status < 300) return body;
-      const envelope = body && typeof body === 'object' ? (body as { code?: unknown; requestId?: unknown }) : {};
+      const envelope = body && typeof body === 'object' ? (body as { code?: unknown; requestId?: unknown; details?: { reason?: unknown } }) : {};
       const code = typeof envelope.code === 'string' ? envelope.code : 'internal.error';
       if (response.status === 404 && code === 'access.not_found') return null;
-      throw new ApiFailure(response.status, code, typeof envelope.requestId === 'string' ? envelope.requestId : null);
+      const reason = envelope.details?.reason;
+      throw new ApiFailure(response.status, code, typeof envelope.requestId === 'string' ? envelope.requestId : null, typeof reason === 'string' ? reason : null);
     },
     async hasSession() {
       return (await sessionCookies()) !== null;

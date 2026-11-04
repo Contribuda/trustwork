@@ -69,6 +69,25 @@ test('the API origin is required in production and must be a bare http(s) origin
   for (const bad of ['ftp://x.invalid', 'https://x.invalid/v1', 'https://user:pw@x.invalid', 'not a url']) assert.throws(() => apiOrigin({ TRUSTWORK_API_ORIGIN: bad }), ApiConfigurationError, bad);
 });
 
+test('a public read on an installation with no registered origin is an empty state; any other refusal stays a failure', async () => {
+  const unregistered: Reply = { status: 403, body: { code: 'access.forbidden', message: 'serving hub authority is unavailable', details: { reason: 'hub_provenance_unavailable' }, requestId: 'req-3' } };
+  const warnings: unknown[] = [];
+  const warn = console.warn;
+  console.warn = (line: unknown) => { warnings.push(line); };
+  try {
+    const { data } = port({ '/v1/people/by-handle/kamola/profile': unregistered, [`/v1/people/${PERSON}/profile`]: unregistered, '/v1/people?limit=100': unregistered });
+    assert.equal(await data.getPerson('kamola'), null);
+    assert.equal(await data.getPerson(PERSON), null);
+    assert.deepEqual(await data.listPeople(), []);
+    assert.equal(warnings.length, 1, 'the operator is told once, not on every request');
+    assert.match(String(warnings[0]), /hub\.origin_unregistered/);
+  } finally { console.warn = warn; }
+  const refused = port({ '/v1/people/by-handle/kamola/profile': { status: 403, body: { code: 'access.forbidden', message: 'x', details: { reason: 'something_else' }, requestId: 'req-4' } } });
+  await assert.rejects(refused.data.getPerson('kamola'), (e: unknown) => e instanceof ApiFailure && e.status === 403 && e.reason === 'something_else');
+  const plain = port({ '/v1/people/by-handle/kamola/profile': { status: 403, body: { code: 'access.forbidden', message: 'x', requestId: 'req-5' } } });
+  await assert.rejects(plain.data.getPerson('kamola'), (e: unknown) => e instanceof ApiFailure && e.reason === null);
+});
+
 test('the transport forwards only the session cookie, sends none on anonymous reads, and maps failures', async () => {
   const { transport, calls } = port({
     '/v1/me': { status: 200, body: { ok: true } },

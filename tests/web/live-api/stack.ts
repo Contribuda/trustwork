@@ -117,6 +117,14 @@ const control = createServer((req, res) => {
       });
       return send(res, 200, { version });
     }
+    if (req.method === 'POST' && url.pathname === '/serving-origin') {
+      // A fresh installation has no registered origin: this rehearses that state and restores the stack's own.
+      const body = await readJson(req);
+      if (!db || typeof body.active !== 'boolean') return send(res, 400, { error: 'bad request' });
+      const active = body.active;
+      await withMaintenance(db.admin, (trx) => sql`UPDATE trustwork.agent_serving_hub SET active = ${active}`.execute(trx));
+      return send(res, 200, { active });
+    }
     if (req.method === 'POST' && url.pathname === '/screen') {
       // SANC-004: the money and commitment gates refuse unscreened parties; the worker is not part of this stack, so the
       // control server activates synthetic baseline lists and screens every person and company through the worker's code.
