@@ -21,8 +21,8 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
     assert.equal(r.status, 200);
     const p = PublicPricingSchema.parse(r.body);
     assert.deepEqual(p.fees, []); assert.deepEqual(p.prices, []);
-    assert.deepEqual(p.coverage?.sections, {fees:'available',plans:'available',services:'available',models:'available',capabilities:'available',credit_packs:'unavailable'});
-    assert.deepEqual(new Set(p.unavailable), new Set(['credit_packs']));
+    assert.deepEqual(p.coverage?.sections, {fees:'available',plans:'available',services:'available',models:'available',capabilities:'available',credit_packs:'available'});
+    assert.deepEqual(p.unavailable, []);
   });
   await t.test('anonymous and un-elevated staff cannot draft', async () => {
     assert.equal((await w.anonymous.post(url, body)).status, 401);
@@ -91,7 +91,7 @@ test('BILL-003 public pricing and commands use actual authentication, scope and 
     assert.equal(view.prices[0]?.id,versions.plan.price.id);
     assert.equal(view.prices[1]?.id,versions.service.price.id);
     assert.equal(view.prices[0]?.effectiveTo,versions.plan.price.effective_to?.toISOString());
-    assert.ok(view.unavailable.includes('credit_packs'));assert.ok(!view.unavailable.includes('models'));assert.ok(!view.unavailable.includes('capabilities'));
+    assert.ok(!view.unavailable.includes('credit_packs'));assert.ok(!view.unavailable.includes('models'));assert.ok(!view.unavailable.includes('capabilities'));
     assert.ok(!view.unavailable.includes('plans'));
     assert.ok(!JSON.stringify(view).includes(w.p.owner));
     assert.equal(view.prices[0]?.disclosure?.name,'Synthetic synthetic_plan');

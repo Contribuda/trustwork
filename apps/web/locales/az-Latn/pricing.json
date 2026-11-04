@@ -187,6 +187,10 @@
       "modules": "Daxil edilmiş modul identifikatorları: {modules}",
       "quota": "{module} / {meter}: {units} vahid; mənbə dövrü: {window}",
       "noQuota": "Bu plan versiyasında daxil edilmiş kvota qeydə alınmayıb.",
+      "creditNoExpiry": "Kreditlərin müddəti bitmir.",
+      "creditValidity": "{days} gün etibarlıdır; müddət bitməzdən {reminder} gün əvvəl xəbərdar edilirsiniz.",
+      "creditValue": "Kredit dəyəri: {value}",
+      "creditRefund": "Geri qaytarma siyasətinin versiyası: {version}",
       "meteredUnit": "{count} × {unit} üçün qiymət",
       "units": {
         "thousand_tokens": "min token",

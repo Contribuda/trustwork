@@ -27,6 +27,12 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'billing.metered_price_activate': IN_TRANSACTION,
   'billing.metered_price_cancel': IN_TRANSACTION,
   'billing.metered_price_draft': IN_TRANSACTION,
+  'billing.metered_step_reconcile': IN_TRANSACTION,
+  'billing.credit_pack_activate': IN_TRANSACTION,
+  'billing.credit_pack_draft': IN_TRANSACTION,
+  'billing.plan_activate': IN_TRANSACTION,
+  'billing.plan_draft': IN_TRANSACTION,
+  'billing.price_accept': IN_TRANSACTION,
   // Directory (BE-003)
   'company.create': IN_TRANSACTION,
   'person.set_handle': IN_TRANSACTION,

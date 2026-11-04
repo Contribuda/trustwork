@@ -187,6 +187,10 @@
       "modules": "ჩართული მოდულების იდენტიფიკატორები: {modules}",
       "quota": "{module} / {meter}: {units} ერთეული; წყაროს პერიოდი: {window}",
       "noQuota": "გეგმის ამ ვერსიაში ჩართული კვოტა მითითებული არ არის.",
+      "creditNoExpiry": "კრედიტებს ვადა არ გასდის.",
+      "creditValidity": "მოქმედებს {days} დღე; ვადის გასვლამდე {reminder} დღით ადრე გაცნობებთ.",
+      "creditValue": "კრედიტის ღირებულება: {value}",
+      "creditRefund": "თანხის დაბრუნების წესების ვერსია: {version}",
       "meteredUnit": "ფასი: {count} × {unit}",
       "units": {
         "thousand_tokens": "ათასი ტოკენი",

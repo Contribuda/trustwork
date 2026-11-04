@@ -44,6 +44,8 @@ export const PublicPriceSchema = z.strictObject({
       unit: z.enum(['thousand_tokens', 'action', 'deliverable', 'api_call']), perUnits: z.int().positive(),
       salePerUnitMinor: z.string().regex(/^(0|[1-9][0-9]*)(\.[0-9]{1,6})?$/),
     }).optional(),
+    /** Credit pack (AGT-004, ADR 012 decision 33): shown before purchase; credits never expire silently. */
+    creditPack: z.strictObject({ creditsMinor: Minor, validityDays: z.int().positive().nullable(), reminderDays: z.int().positive().nullable(), refundPolicyVersion: z.int().positive() }).optional(),
   }).optional(),
 });
 export type PublicPrice = z.infer<typeof PublicPriceSchema>;

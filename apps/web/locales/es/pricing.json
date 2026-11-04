@@ -187,6 +187,10 @@
       "modules": "Identificadores de módulos incluidos: {modules}",
       "quota": "{module} / {meter}: {units} unidades; período de origen: {window}",
       "noQuota": "Esta versión del plan no registra cuota incluida.",
+      "creditNoExpiry": "Los créditos no caducan.",
+      "creditValidity": "Válidos durante {days} días; te avisamos {reminder} días antes de cualquier caducidad.",
+      "creditValue": "Valor en créditos: {value}",
+      "creditRefund": "Versión de la política de reembolso: {version}",
       "meteredUnit": "Precio por {count} × {unit}",
       "units": {
         "thousand_tokens": "mil tokens",

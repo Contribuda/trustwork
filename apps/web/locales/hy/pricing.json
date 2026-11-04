@@ -187,6 +187,10 @@
       "modules": "Ներառված մոդուլների նույնացուցիչներ՝ {modules}",
       "quota": "{module} / {meter}՝ {units} միավոր, աղբյուրի ժամանակահատված՝ {window}",
       "noQuota": "Պլանի այս տարբերակում ներառված քվոտա գրանցված չէ։",
+      "creditNoExpiry": "Կրեդիտների ժամկետը չի լրանում։",
+      "creditValidity": "Գործում է {days} օր. ժամկետի ավարտից {reminder} օր առաջ կտեղեկացնենք։",
+      "creditValue": "Կրեդիտի արժեքը՝ {value}",
+      "creditRefund": "Վերադարձի քաղաքականության տարբերակը՝ {version}",
       "meteredUnit": "Գինը՝ {count} × {unit}",
       "units": {
         "thousand_tokens": "հազար թոքեն",

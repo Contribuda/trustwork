@@ -187,6 +187,10 @@
       "modules": "Kiritilgan modul identifikatorlari: {modules}",
       "quota": "{module} / {meter}: {units} birlik; manba davri: {window}",
       "noQuota": "Ushbu reja versiyasida kiritilgan kvota qayd etilmagan.",
+      "creditNoExpiry": "Kreditlar muddati tugamaydi.",
+      "creditValidity": "{days} kun amal qiladi; muddat tugashidan {reminder} kun oldin xabar beriladi.",
+      "creditValue": "Kredit qiymati: {value}",
+      "creditRefund": "Pulni qaytarish siyosati versiyasi: {version}",
       "meteredUnit": "{count} × {unit} narxi",
       "units": {
         "thousand_tokens": "ming token",

@@ -9,7 +9,9 @@ import { Client, type Harness } from '../../helpers/app.js';
 import { addLogins, enrolNow, signIn } from '../../../admin/helpers.js';
 import { codeNow } from '../../second-factor/helpers.js';
 import { syntheticCost, syntheticTerms } from '../../../billing/agent-metering/helpers.js';
-import type { MeteredPriceVersion } from '../../../../packages/contracts/src/agent-metering.js';
+import { runs } from '../../../../packages/data/src/repositories/assistant.js';
+import { meteredSteps } from '../../../../packages/data/src/repositories/agent-usage.js';
+import type { AgentPlanVersionView, CreditPackVersionView, MeteredPriceVersion } from '../../../../packages/contracts/src/agent-metering.js';
 import type { CrashCase } from '../cases.js';
 
 async function as<T>(h: Harness, personId: string, fn: (trx: Transaction, ctx: CommandContext) => Promise<T>) {
@@ -31,7 +33,7 @@ export default {
       await trx.insertInto('hub_profile').values({ hub_id: hub.id, node_id: founder.node, name: { en: 'Synthetic metering crash hub' }, default_locale: 'en', locales: ['en'], time_zone: 'UTC', currency: 'USD', created_by: founder.person_id }).execute();
       const people: string[] = [];
       for (const role of ['data-steward', 'editor-in-chief'] as const) {
-        await staffRoleDefinitions.release(trx, { role, version: 904, scopes: ['hub'], permissions: ['admin.commerce.price.draft', 'admin.commerce.price.activate'],
+        await staffRoleDefinitions.release(trx, { role, version: 904, scopes: ['hub'], permissions: ['admin.commerce.price.draft', 'admin.commerce.price.activate', 'admin.commerce.plan.activate', 'admin.assistant.reconcile'],
           caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
         people.push((await trx.insertInto('person').values({ display_name: 'Synthetic metering crash ' + role }).returning('id').executeTakeFirstOrThrow()).id);
       }
@@ -60,6 +62,29 @@ export default {
       await exactlyOnce({ action: 'billing.metered_price_activate', client: activator, url: `/v1/admin/billing/metered/prices/${version.id}/activate`, body: { reason, digest: version.digest, approvalId: approval.id }, effects: () => count('billing.metered_price_activated') });
       const spare = (await drafter.post('/v1/admin/billing/metered/prices', { reason, terms: syntheticTerms({ effectiveFrom: later(2) }) })).body as MeteredPriceVersion;
       await exactlyOnce({ action: 'billing.metered_price_cancel', client: drafter, url: `/v1/admin/billing/metered/prices/${spare.id}/cancel`, body: { reason }, effects: () => count('billing.metered_price_cancelled') });
+      const approve = async (digest: string) => {
+        const request = await as(h, setup.activator, (trx, ctx) => approvals.request(trx, ctx, { action: 'commerce.activate_price_version', scope: { kind: 'hub', hubId: setup.hubId }, actionDigest: digest }));
+        await as(h, setup.drafter, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
+        return request.id;
+      };
+      const plan = (await exactlyOnce({ action: 'billing.plan_draft', client: drafter, url: '/v1/admin/billing/metered/plans', effects: () => count('billing.plan_drafted'), body: { reason, terms: {
+        planKey: 'synthetic_crash', name: 'Synthetic crash plan', plan: { payerKind: 'person', moduleKeys: ['profile_keeper'], includedQuota: [], connections: 1, channels: 0, representativeIncluded: false },
+        price: { amountMinor: '100', currency: 'USD', effectiveFrom: later(3), effectiveTo: null, acceptanceTextVersion: 'synthetic-plan-1' } } } })).body as AgentPlanVersionView;
+      await exactlyOnce({ action: 'billing.plan_activate', client: activator, url: `/v1/admin/billing/metered/plans/${plan.id}/activate`, body: { reason, digest: plan.digest, approvalId: await approve(plan.digest) }, effects: () => count('billing.plan_activated') });
+      const pack = (await exactlyOnce({ action: 'billing.credit_pack_draft', client: drafter, url: '/v1/admin/billing/metered/credit-packs', effects: () => count('billing.credit_pack_drafted'), body: { reason, terms: {
+        packKey: 'synthetic_crash_pack', name: 'Synthetic crash pack', amountMinor: '100', currency: 'USD', creditsMinor: '100', validityDays: null, reminderDays: null, refundPolicyVersion: 1, effectiveFrom: later(4), effectiveTo: null, acceptanceTextVersion: 'synthetic-pack-1' } } })).body as CreditPackVersionView;
+      await exactlyOnce({ action: 'billing.credit_pack_activate', client: activator, url: `/v1/admin/billing/metered/credit-packs/${pack.id}/activate`, body: { reason, digest: pack.digest, approvalId: await approve(pack.digest) }, effects: () => count('billing.credit_pack_activated') });
+      const acceptances = async () => (await h.db.admin.query<{ n: number }>('SELECT count(*)::int n FROM trustwork.price_acceptance WHERE price_version_id=$1', [version.id])).rows[0]!.n;
+      await exactlyOnce({ action: 'billing.price_accept', client: drafter, url: `/v1/billing/prices/${version.id}/accept`, body: { acceptanceTextVersion: 'synthetic-metered-1', amountMinor: '10', currency: 'USD', forCompany: false }, effects: acceptances });
+      const stepId = await as(h, setup.drafter, async (trx) => {
+        const run = await runs.start(trx, { principal_person_id: setup.drafter, kind: 'conversation' });
+        const step = await meteredSteps.admit(trx, { hubId: setup.hubId, principal: { kind: 'person', id: setup.drafter }, moduleKey: 'research', capabilityId: null, runId: run.id, runStepId: randomUUID(), attemptId: randomUUID(), connectionId: null,
+          meter: 'checks', providerClass: null, estimatedUnits: 1, budgetId: null, projectId: null });
+        assert.ok(step.decision === 'admitted');
+        await meteredSteps.finish(trx, step.stepId, 'unknown', null, 'synthetic:lost');
+        return step.stepId;
+      });
+      await exactlyOnce({ action: 'billing.metered_step_reconcile', client: activator, url: `/v1/admin/billing/metered/steps/${stepId}/reconcile`, body: { reason, result: 'failed', units: null, evidence: 'synthetic:no-effect' }, effects: () => count('billing.metered_step_reconciled') });
     } finally { await app.close(); }
   },
 } satisfies CrashCase;

@@ -6,7 +6,7 @@ import type { RequestState } from '../../../common/request.js';
 import { hubsRefusal } from '../../hubs/errors.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
 import {
-  meteredPrices, type ActivateMeteredPriceSchema, type CancelMeteredPriceSchema, type CommandContext, type DraftMeteredPriceSchema, type PublicMeteredPriceRow, type PublicPrice, type RecordMeteredCostSchema,
+  creditPacks, meteredPrices, type ActivateMeteredPriceSchema, type CancelMeteredPriceSchema, type CommandContext, type DraftMeteredPriceSchema, type PublicMeteredPriceRow, type PublicPrice, type RecordMeteredCostSchema,
 } from './deps.js';
 
 const REFUSALS: Readonly<Record<string, ErrorCode>> = {
@@ -70,6 +70,18 @@ export async function publicMeteredPrices(pool: DataPool, hubId: string, at: Dat
     disclosure: {
       offerId: row.offerId, name: row.name, acceptanceTextVersion: row.acceptanceTextVersion, plan: null,
       metered: { key: row.key, direction: row.direction, meter: row.meter, unit: row.unit, perUnits: row.perUnits, salePerUnitMinor: row.salePerUnitMinor },
+    },
+  }));
+}
+
+/** Credit packs with the validity and refund policy a buyer must see before purchase (ADR 012 decision 33). */
+export async function publicCreditPacks(pool: DataPool, hubId: string, at: Date): Promise<PublicPrice[]> {
+  return (await creditPacks.publicList(pool, hubId, at)).map((row) => ({
+    id: row.id, version: row.version, kind: 'credit_pack', code: row.code, currency: row.currency, amountMinor: row.amountMinor, effectiveFrom: row.effectiveFrom, effectiveTo: row.effectiveTo,
+    validity: row.validityDays === null ? 'no_expiry' : `P${row.validityDays}D`, planVersion: null,
+    disclosure: {
+      offerId: row.offerId, name: row.name, acceptanceTextVersion: row.acceptanceTextVersion, plan: null,
+      creditPack: { creditsMinor: row.creditsMinor, validityDays: row.validityDays, reminderDays: row.reminderDays, refundPolicyVersion: row.refundPolicyVersion },
     },
   }));
 }

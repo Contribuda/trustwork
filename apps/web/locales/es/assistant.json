@@ -64,5 +64,10 @@
     "empty": "Aún no hay ejecuciones",
     "log": "Registro de acciones",
     "outcomeUnknownExplain": "El sistema externo no respondió. Estamos conciliando el resultado; la acción no se reintenta automáticamente."
+  },
+  "assistant": {
+    "overlay": {
+      "quotaReached": "Tu agente se detuvo al llegar a su cuota incluida. Indica un presupuesto de plataforma o espera a la siguiente ventana para continuar."
+    }
   }
 }

@@ -52,7 +52,12 @@ function PriceEntry({ row }: { row: PriceRow }) {
       <p>{t('pricing.version', { version: formatNumber(row.value.version) })}</p>
       <Validity from={terms.effectiveFrom} to={terms.effectiveTo} />
       {price?.planVersion ? <><p>{t('pricing.planVersion', { version: formatNumber(price.planVersion.version) })}</p>{price.disclosure?.plan ? <PlanDetails plan={price.disclosure.plan} /> : <p>{t('pricing.catalogue.capacityUnknown')}</p>}</> : null}
-      {price?.validity ? <p>{t('pricing.packValidity', { validity: price.validity })}</p> : null}
+      {price?.disclosure?.creditPack ? <>
+        <p>{price.disclosure.creditPack.validityDays === null ? t('pricing.catalogue.creditNoExpiry')
+          : t('pricing.catalogue.creditValidity', { days: formatNumber(price.disclosure.creditPack.validityDays), reminder: formatNumber(price.disclosure.creditPack.reminderDays ?? 0) })}</p>
+        <p>{t('pricing.catalogue.creditValue', { value: exactPrice(price.disclosure.creditPack.creditsMinor, price.currency, currentLocale()) })}</p>
+        <p>{t('pricing.catalogue.creditRefund', { version: formatNumber(price.disclosure.creditPack.refundPolicyVersion) })}</p>
+      </> : price?.validity ? <p>{t('pricing.packValidity', { validity: price.validity })}</p> : null}
       <details className="fee-pricing-reference">
         <summary>{t('pricing.details')}</summary>
         <p>{t('pricing.reference', { reference: row.value.id })}</p>

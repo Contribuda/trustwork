@@ -93,7 +93,7 @@ export class CapabilityAuthority {
     const company = actor.representativeOf ?? actor.onBehalfCompanyId;
     return {
       kind: kindOf(actor),
-      planKey: await this.entitlements.planKey(trx, { personId: actor.personId, companyId: company }),
+      planKey: await this.entitlements.planKey(trx, { personId: actor.personId, companyId: company }, this.hubId),
       companyVerified: company !== null && await agentAuthority.companyVerified(trx, company),
     };
   }
@@ -110,6 +110,9 @@ export class CapabilityAuthority {
     const { document } = await this.policy(trx, registry);
     const policyReason = capabilityRefusal(document, registry, capabilityId, await this.principalOf(trx, actor));
     if (policyReason !== null) return { allowed: false, capabilityId, moduleKey, reason: policyReason, messageKey: REFUSAL_MESSAGE_KEYS[policyReason], blockedBy: null };
+    if (this.entitlements.moduleAllowed && !await this.entitlements.moduleAllowed(trx, { personId: actor.personId, companyId: actor.representativeOf ?? actor.onBehalfCompanyId }, moduleKey, this.hubId)) {
+      return { allowed: false, capabilityId, moduleKey, reason: 'capability.off_for_plan', messageKey: REFUSAL_MESSAGE_KEYS['capability.off_for_plan'], blockedBy: null };
+    }
     const enabled = document.policy.enabledModules.find((m) => m.moduleKey === moduleKey);
     const capability = enabled ? moduleCapabilities(registry, moduleKey, enabled.moduleVersion, document.policy.activeExtensionVersionIds).find((c) => c.id === capabilityId) : undefined;
     if (!capability || (action !== null && action !== capability.mandateAction)) {

@@ -15,6 +15,7 @@ import { DatasetsModule } from './modules/datasets/datasets.module.js';
 import { PlansModule } from './modules/plans/plans.module.js';
 import { FeesModule } from './modules/billing/fees/fees.module.js';
 import { AgentMeteringModule } from './modules/billing/agent-metering/metering.module.js';
+import { AgentPlanEntitlements } from './modules/billing/agent-metering/entitlements.js';
 import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
 import { ProcurementModule } from './modules/procurement/procurement.module.js';
 import { ApprovalRoutesModule } from './modules/approval-routes/approval-routes.module.js';
@@ -76,7 +77,7 @@ export class AppModule {
     if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
     const store = assistantMandateStore(ctx);
     // AGT-003: one shared authority check for the interface, the agent runtime and (when it lands) MCP.
-    const capabilities = agentModulesAuthority();
+    const capabilities = agentModulesAuthority({ entitlements: new AgentPlanEntitlements() });
     return {
       module: AppModule,
       controllers: [HealthController],

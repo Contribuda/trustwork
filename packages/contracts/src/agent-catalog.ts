@@ -452,7 +452,7 @@ export type MandateDenyReason =
   | 'condition_failed' | 'condition_unevaluable' | 'connection_not_bound' | 'invalid_mandate';
 export type MandateAskReason =
   | 'human_only' | 'note_condition' | 'condition_unevaluable' | 'ask_each' | 'ask_first' | 'above_threshold' | 'threshold_currency'
-  | 'hub_forbids_pre_authorization' | 'approver_rule' | 'connection_propose_only';
+  | 'hub_forbids_pre_authorization' | 'approver_rule' | 'connection_propose_only' | 'quota_reached';
 export type MandateV2Decision =
   | { effect: 'allow'; mandate: { id: string; revision: number }; context: ContextRef; resolvedFromSelector: boolean }
   | {
@@ -1033,10 +1033,12 @@ export const UsageRecordSchema = z.strictObject({
   units: NonNegativeMinorUnitsSchema,
   withinIncludedQuota: z.boolean(),
   meterRateVersionId: IdSchema.nullable(),
+  /** AGT-004 usage price; overage is priced by this or by a meter rate version. */
+  priceVersionId: IdSchema.nullable().optional(),
   /** Platform-budget reservation; there is no overage without one. */
   reservationId: IdSchema.nullable(),
   recordedAt: TimestampSchema,
-}).refine((u) => u.withinIncludedQuota || (u.meterRateVersionId !== null && u.reservationId !== null), { message: 'usage beyond the included quota is priced and reserved', path: ['reservationId'] });
+}).refine((u) => u.withinIncludedQuota || ((u.meterRateVersionId !== null || (u.priceVersionId ?? null) !== null) && u.reservationId !== null), { message: 'usage beyond the included quota is priced and reserved', path: ['reservationId'] });
 export type UsageRecord = z.infer<typeof UsageRecordSchema>;
 export function usageIdempotencyKey(u: Pick<UsageRecord, 'runStepId' | 'attemptId' | 'meter'>): string {
   return `${u.runStepId}:${u.attemptId}:${u.meter}`;

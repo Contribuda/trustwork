@@ -187,6 +187,10 @@
       "modules": "Included module identifiers: {modules}",
       "quota": "{module} / {meter}: {units} units; source window: {window}",
       "noQuota": "No included quota is recorded in this plan version.",
+      "creditNoExpiry": "Credits do not expire.",
+      "creditValidity": "Valid for {days} days; you are told {reminder} days before any expiry.",
+      "creditValue": "Credit value: {value}",
+      "creditRefund": "Refund policy version {version}",
       "meteredUnit": "Price for {count} × {unit}",
       "units": {
         "thousand_tokens": "thousand tokens",

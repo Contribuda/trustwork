@@ -94,7 +94,11 @@ export class PostgresModelCallStore extends PostgresModelReceiptStore implements
     void _prompt;
     const { fresh, row } = await this.as((trx) =>
       modelCalls.begin(trx, request, this.binding, digest, ResolvedModelRouteSchema.parse(route), PinnedCandidateSchema.parse(candidate), this.ttlSeconds),
-    );
+    ).catch((error: unknown) => {
+      // AGT-004: the call stopped at its quota. The transaction rolled back, so nothing was reserved or dispatched.
+      if ((error as { hint?: string }).hint === 'billing.quota_reached') throw new ModelRefusal('quota_reached');
+      throw error;
+    });
     return fresh
       ? { kind: 'dispatch' as const, call: reserved(row) }
       : {
