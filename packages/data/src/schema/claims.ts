@@ -128,6 +128,7 @@ export interface CompanyIdentifierTable {
   created_at: Generated<Date>;
   retired_at: Date | null;
   revision: Generated<number>;
+  private: Generated<boolean>;
 }
 export type CompanyIdentifierRow = Selectable<CompanyIdentifierTable>;
 
@@ -196,7 +197,7 @@ export const TABLE_COLUMNS: TableColumns<ClaimsDatabase> = {
   company_claim_evidence: columns('company_claim_evidence', ['claim_id', 'check_id', 'bound_by', 'bound_at']),
   company_profile: columns('company_profile', ['company_id', 'legal_form', 'website_url', 'region_code', 'categories', 'public_fields', 'revision', 'updated_by', 'updated_at']),
   company_identifier: columns('company_identifier', [
-    'id', 'company_id', 'kind', 'jurisdiction', 'value', 'value_normalized', 'status', 'source_ref', 'verification_check_id', 'created_by', 'created_at', 'retired_at', 'revision',
+    'id', 'company_id', 'kind', 'jurisdiction', 'value', 'value_normalized', 'status', 'source_ref', 'verification_check_id', 'created_by', 'created_at', 'retired_at', 'revision', 'private',
   ]),
   company_registration: columns('company_registration', ['id', 'company_id', 'jurisdiction', 'kind', 'registered_name', 'number', 'status', 'observed_at', 'source_ref', 'created_by', 'created_at', 'retired_at']),
   tax_registration: columns('tax_registration', ['id', 'company_id', 'jurisdiction', 'kind', 'number', 'status', 'valid_until', 'created_by', 'created_at', 'retired_at']),

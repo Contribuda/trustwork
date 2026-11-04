@@ -8,10 +8,17 @@
 -- Rules the schema holds:
 --   * a value proves nothing. No function here writes a verification, a hand-over or the claim status, and a `verified`
 --     identifier points at a passing verification check of the same company at the hub;
+--   * a self-stated value is not evidence. Only a sourced or verified public identifier reaches `legal_identifiers`, the
+--     column `registers_company_holds` and `datasets_statutory_match` read, so typing a licence number shows nobody's
+--     licence on the page;
+--   * an identifier is private unless the API, from the country pack, says it may be public. A private value never
+--     reaches `legal_identifiers` or a public read, verified or not;
 --   * a value is verified for one company only; several companies may state it;
 --   * a verified-level administrator states records; a claimed-level holder edits descriptive fields only;
 --   * during the cooling period identifiers and the website cannot change, for any caller;
---   * tax registrations are private: the company's administrators read them; the public and hub staff do not.
+--   * tax registrations are private: the company's administrators read them; the public and hub staff do not;
+--   * private records reach staff only for an open claim or support case of the company at that hub, and the read is
+--     audited; a person who lost their administrator role keeps no access through an old hand-over.
 --
 -- Contractor licences are not here: they are `professional_credential` rows of REP-001 checked through HUB-003 (check
 -- type `licence`). Payout details have no company-level record yet (payment bindings are per person), so the cooling
@@ -48,6 +55,7 @@ CREATE TABLE trustwork.company_identifier (
   created_at timestamptz NOT NULL DEFAULT now(),
   retired_at timestamptz NULL,
   revision integer NOT NULL DEFAULT 1 CHECK (revision >= 1),
+  private boolean NOT NULL DEFAULT true,
   -- `legacy` marks a status copied from the old column, which recorded no check.
   CONSTRAINT company_identifier_verified CHECK (status <> 'verified' OR verification_check_id IS NOT NULL OR source_ref = 'legacy')
 );
@@ -98,26 +106,31 @@ CREATE TABLE trustwork.company_branch (
 );
 CREATE INDEX company_branch_company_idx ON trustwork.company_branch (company_id) WHERE retired_at IS NULL;
 
--- Expand: what the old column holds today.
-INSERT INTO trustwork.company_identifier (company_id, kind, value, value_normalized, status, source_ref)
-SELECT DISTINCT ON (c.id, i ->> 'kind', trustwork.registers_norm(i ->> 'value')) c.id, i ->> 'kind', i ->> 'value', trustwork.registers_norm(i ->> 'value'), coalesce(i ->> 'status', 'sourced'), 'legacy'
+-- Expand: what the old column holds today, which is public already.
+INSERT INTO trustwork.company_identifier (company_id, kind, value, value_normalized, status, source_ref, private)
+SELECT DISTINCT ON (c.id, i ->> 'kind', trustwork.registers_norm(i ->> 'value')) c.id, i ->> 'kind', i ->> 'value', trustwork.registers_norm(i ->> 'value'), coalesce(i ->> 'status', 'sourced'), 'legacy', false
   FROM trustwork.company c, jsonb_array_elements(c.legal_identifiers) i
  WHERE trustwork.claims_identifier_kind_ok(i ->> 'kind') AND length(btrim(i ->> 'value')) BETWEEN 1 AND 64 AND length(trustwork.registers_norm(i ->> 'value')) BETWEEN 1 AND 64;
+
+-- What the old column may show: public, and sourced or verified. A self-stated value stays out, because its readers take
+-- what they find there as the company holding that identifier.
+CREATE FUNCTION trustwork.claims_identifier_mirrored(r trustwork.company_identifier) RETURNS boolean
+LANGUAGE sql STABLE AS $$ SELECT NOT r.private AND (r.status = 'verified' OR r.source_ref IS NOT NULL) $$;
 
 -- A write to the old column reaches the table; values gone from it retire. Rows the commands already mirrored match, so
 -- nothing happens for them.
 CREATE FUNCTION trustwork.claims_legacy_identifiers() RETURNS trigger
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 BEGIN
-  INSERT INTO trustwork.company_identifier (company_id, kind, value, value_normalized, status, source_ref)
-  SELECT DISTINCT ON (i ->> 'kind', trustwork.registers_norm(i ->> 'value')) NEW.id, i ->> 'kind', i ->> 'value', trustwork.registers_norm(i ->> 'value'), coalesce(i ->> 'status', 'sourced'), 'legacy'
+  INSERT INTO trustwork.company_identifier (company_id, kind, value, value_normalized, status, source_ref, private)
+  SELECT DISTINCT ON (i ->> 'kind', trustwork.registers_norm(i ->> 'value')) NEW.id, i ->> 'kind', i ->> 'value', trustwork.registers_norm(i ->> 'value'), coalesce(i ->> 'status', 'sourced'), 'legacy', false
     FROM jsonb_array_elements(NEW.legal_identifiers) i
    WHERE trustwork.claims_identifier_kind_ok(i ->> 'kind') AND length(btrim(i ->> 'value')) BETWEEN 1 AND 64 AND length(trustwork.registers_norm(i ->> 'value')) BETWEEN 1 AND 64
      -- Rows already live are skipped here, not by the conflict clause: an upsert would fire the cooling guard for them.
      AND NOT EXISTS (SELECT 1 FROM trustwork.company_identifier r WHERE r.company_id = NEW.id AND r.kind = i ->> 'kind' AND r.value_normalized = trustwork.registers_norm(i ->> 'value') AND r.retired_at IS NULL)
   ON CONFLICT (company_id, kind, value_normalized) WHERE retired_at IS NULL DO NOTHING;
   UPDATE trustwork.company_identifier r SET retired_at = now(), revision = r.revision + 1
-   WHERE r.company_id = NEW.id AND r.retired_at IS NULL
+   WHERE r.company_id = NEW.id AND r.retired_at IS NULL AND trustwork.claims_identifier_mirrored(r)
      AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(NEW.legal_identifiers) i WHERE i ->> 'kind' = r.kind AND trustwork.registers_norm(i ->> 'value') = r.value_normalized);
   RETURN NULL;
 END $$;
@@ -129,7 +142,7 @@ LANGUAGE plpgsql VOLATILE SET search_path = trustwork, pg_temp AS $$
 BEGIN
   UPDATE trustwork.company c SET legal_identifiers = coalesce((
     SELECT jsonb_agg(jsonb_build_object('kind', r.kind, 'value', r.value, 'status', r.status) ORDER BY r.created_at, r.id)
-      FROM trustwork.company_identifier r WHERE r.company_id = p_company AND r.retired_at IS NULL), '[]'::jsonb)
+      FROM trustwork.company_identifier r WHERE r.company_id = p_company AND r.retired_at IS NULL AND trustwork.claims_identifier_mirrored(r)), '[]'::jsonb)
    WHERE c.id = p_company;
 END $$;
 
@@ -174,6 +187,20 @@ CREATE FUNCTION trustwork.claims_is_administrator(p_company uuid, p_person uuid)
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
   SELECT EXISTS (SELECT 1 FROM trustwork.membership WHERE company_id = p_company AND person_id = p_person AND status = 'active' AND role = 'administrator')
 $$;
+-- A claimed-level hand-over gives page control without a membership. Someone who was an administrator and lost it keeps
+-- nothing through a hand-over of theirs, whichever level it was at.
+CREATE FUNCTION trustwork.claims_holds_page(p_company uuid, p_person uuid) RETURNS boolean
+LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
+  SELECT EXISTS (SELECT 1 FROM trustwork.company_handover h WHERE h.company_id = p_company AND h.person_id = p_person AND h.revoked_at IS NULL AND h.level = 'claimed')
+     AND NOT EXISTS (SELECT 1 FROM trustwork.company_handover h WHERE h.company_id = p_company AND h.person_id = p_person AND h.revoked_at IS NULL AND h.level = 'verified'
+                      AND NOT trustwork.claims_is_administrator(p_company, p_person))
+$$;
+-- Whether the hub has a reason to read the company's private records: a claim in play or an open support case, at this hub.
+CREATE FUNCTION trustwork.claims_staff_reachable(p_hub uuid, p_company uuid) RETURNS boolean
+LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
+  SELECT EXISTS (SELECT 1 FROM trustwork.company_claim c WHERE c.hub_id = p_hub AND c.company_id = p_company AND c.state IN ('open', 'waiting', 'disputed'))
+      OR EXISTS (SELECT 1 FROM trustwork.support_case s WHERE s.hub_id = p_hub AND s.subject_company_id = p_company AND s.status NOT IN ('resolved', 'closed'))
+$$;
 CREATE FUNCTION trustwork.claims_require_company(p_company uuid) RETURNS void
 LANGUAGE plpgsql VOLATILE SET search_path = trustwork, pg_temp AS $$
 BEGIN
@@ -190,8 +217,9 @@ DECLARE
   v_id uuid;
 BEGIN
   IF p_kind = 'identifier' THEN
-    INSERT INTO trustwork.company_identifier (company_id, kind, jurisdiction, value, value_normalized, status, source_ref, created_by)
-    VALUES (p_company, p ->> 'identifierKind', p ->> 'jurisdiction', btrim(p ->> 'value'), trustwork.registers_norm(p ->> 'value'), p_status, p_source, p_actor) RETURNING id INTO v_id;
+    INSERT INTO trustwork.company_identifier (company_id, kind, jurisdiction, value, value_normalized, status, source_ref, created_by, private)
+    VALUES (p_company, p ->> 'identifierKind', p ->> 'jurisdiction', btrim(p ->> 'value'), trustwork.registers_norm(p ->> 'value'), p_status, p_source, p_actor, coalesce((p ->> 'private')::boolean, true))
+    RETURNING id INTO v_id;
     PERFORM trustwork.claims_mirror_identifiers(p_company);
   ELSIF p_kind = 'registration' THEN
     INSERT INTO trustwork.company_registration (company_id, jurisdiction, kind, registered_name, number, status, observed_at, source_ref, created_by)
@@ -265,7 +293,7 @@ DECLARE
 BEGIN
   PERFORM trustwork.claims_require_company(p_company);
   v_admin := v_person IS NOT NULL AND trustwork.claims_is_administrator(p_company, v_person);
-  IF NOT v_admin AND NOT EXISTS (SELECT 1 FROM trustwork.company_handover WHERE company_id = p_company AND person_id = v_person AND revoked_at IS NULL) THEN
+  IF NOT v_admin AND NOT coalesce(trustwork.claims_holds_page(p_company, v_person), false) THEN
     RAISE EXCEPTION 'only the people who run a page edit it' USING ERRCODE = 'insufficient_privilege', HINT = 'claims.administrator_required';
   END IF;
   SELECT * INTO v_before FROM trustwork.company_profile WHERE company_id = p_company;
@@ -292,6 +320,9 @@ DECLARE
   v_id uuid;
 BEGIN
   PERFORM trustwork.claims_require_company(p_company);
+  IF NOT trustwork.claims_staff_reachable(p_hub, p_company) THEN
+    RAISE EXCEPTION 'no open claim or case of this company at this hub' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
   IF p_kind NOT IN ('identifier', 'registration') OR p_source IS NULL THEN
     RAISE EXCEPTION 'staff record identifiers and registrations with their source' USING ERRCODE = 'check_violation', HINT = 'claims.invalid_record';
   END IF;
@@ -330,8 +361,8 @@ END $$;
 CREATE FUNCTION trustwork.claims_records_json(p_company uuid, p_public boolean) RETURNS jsonb
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
   SELECT jsonb_build_object(
-    'identifiers', coalesce((SELECT jsonb_agg(jsonb_build_object('id', r.id, 'kind', r.kind, 'jurisdiction', r.jurisdiction, 'value', r.value, 'status', r.status, 'revision', r.revision) ORDER BY r.created_at, r.id)
-      FROM trustwork.company_identifier r WHERE r.company_id = p_company AND r.retired_at IS NULL), '[]'::jsonb),
+    'identifiers', coalesce((SELECT jsonb_agg(jsonb_build_object('id', r.id, 'kind', r.kind, 'jurisdiction', r.jurisdiction, 'value', r.value, 'status', r.status, 'private', r.private, 'revision', r.revision) ORDER BY r.created_at, r.id)
+      FROM trustwork.company_identifier r WHERE r.company_id = p_company AND r.retired_at IS NULL AND (NOT p_public OR NOT r.private)), '[]'::jsonb),
     'registrations', coalesce((SELECT jsonb_agg(jsonb_build_object('id', r.id, 'jurisdiction', r.jurisdiction, 'kind', r.kind, 'registeredName', r.registered_name, 'number', r.number, 'status', r.status, 'observedAt', r.observed_at) ORDER BY r.created_at, r.id)
       FROM trustwork.company_registration r WHERE r.company_id = p_company AND r.retired_at IS NULL), '[]'::jsonb),
     'branches', coalesce((SELECT jsonb_agg(jsonb_build_object('id', r.id, 'hubId', r.hub_id, 'name', r.name, 'address', r.address, 'regionCode', r.region_code, 'public', r.public) ORDER BY r.created_at, r.id)
@@ -355,7 +386,7 @@ DECLARE
   v_out jsonb;
 BEGIN
   IF v_person IS NULL OR NOT (EXISTS (SELECT 1 FROM trustwork.membership WHERE company_id = p_company AND person_id = v_person AND status = 'active')
-       OR EXISTS (SELECT 1 FROM trustwork.company_handover WHERE company_id = p_company AND person_id = v_person AND revoked_at IS NULL)) THEN
+       OR trustwork.claims_holds_page(p_company, v_person)) THEN
     RAISE EXCEPTION 'no such page' USING ERRCODE = 'no_data_found', HINT = 'access.not_found';
   END IF;
   v_out := trustwork.claims_records_json(p_company, false);
@@ -366,13 +397,17 @@ BEGIN
   RETURN v_out;
 END $$;
 
--- Staff of the hub; tax registrations are not theirs to read without a case grant.
-CREATE FUNCTION trustwork.claims_staff_records(p_hub uuid, p_company uuid) RETURNS jsonb
-LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+-- Staff of the hub with a reason to look: an open claim or case of the company at this hub. Every read is audited. Tax
+-- registrations are not part of it.
+CREATE FUNCTION trustwork.claims_staff_records(p_ctx jsonb, p_hub uuid, p_company uuid) RETURNS jsonb
+LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+DECLARE
+  v_actor trustwork.admin_actor := trustwork.claims_staff(p_ctx, trustwork.claims_reader_permissions(), p_hub);
 BEGIN
-  IF NOT trustwork.claims_staff_reader(p_hub) THEN
-    RAISE EXCEPTION 'no such hub' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  IF NOT trustwork.claims_staff_reachable(p_hub, p_company) THEN
+    RAISE EXCEPTION 'no open claim or case of this company at this hub' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
   END IF;
+  PERFORM trustwork.admin_record(v_actor, p_ctx, NULL, p_hub, 'claims.records_read', 'company', p_company, NULL, NULL);
   RETURN trustwork.claims_records_json(p_company, false);
 END $$;
 
@@ -396,5 +431,5 @@ REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA trustwork FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION
   trustwork.claims_record_add(uuid, text, jsonb), trustwork.claims_record_retire(uuid, text, uuid), trustwork.claims_set_profile(uuid, jsonb),
   trustwork.claims_staff_record_add(jsonb, uuid, uuid, text, jsonb, text), trustwork.claims_verify_identifier(jsonb, uuid, uuid, integer, uuid),
-  trustwork.claims_public_records(uuid), trustwork.claims_company_records(uuid), trustwork.claims_staff_records(uuid, uuid)
+  trustwork.claims_public_records(uuid), trustwork.claims_company_records(uuid), trustwork.claims_staff_records(jsonb, uuid, uuid)
 TO trustwork_app;

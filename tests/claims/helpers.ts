@@ -5,7 +5,7 @@ import { addLogins, buildHttpWorld, command, signIn, type AdminWorldHttp } from 
 import { Client, type Harness, type Response } from '../backend/helpers/app.js';
 import { activateBaseline, screen } from '../screening-gates/helpers.js';
 
-const PERMISSIONS = ['admin.claims.read', 'admin.claims.decide', 'admin.claims.policy.edit', 'admin.claims.revoke'] as const;
+const PERMISSIONS = ['admin.claims.read', 'admin.claims.decide', 'admin.claims.policy.edit', 'admin.claims.revoke', 'admin.sources.read', 'admin.sources.manage'] as const;
 
 /** Parses a successful response. */
 export function ok<T>(r: Response): T {

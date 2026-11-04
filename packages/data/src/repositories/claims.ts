@@ -88,9 +88,9 @@ export const claims = {
   async companyRecords(trx: Transaction, companyId: string): Promise<unknown> {
     return (await one(sql<{ records: unknown }>`SELECT trustwork.claims_company_records(${companyId}::uuid) AS records`, trx, 'claims_company_records')).records;
   },
-  /** Staff of the hub; never tax registrations. */
-  async staffRecords(trx: Transaction, hubId: string, companyId: string): Promise<unknown> {
-    return (await one(sql<{ records: unknown }>`SELECT trustwork.claims_staff_records(${hubId}::uuid, ${companyId}::uuid) AS records`, trx, 'claims_staff_records')).records;
+  /** Staff of the hub with an open claim or case of the company there; audited; never tax registrations. */
+  async staffRecords(trx: Transaction, ctx: CommandContext, hubId: string, companyId: string): Promise<unknown> {
+    return (await one(sql<{ records: unknown }>`SELECT trustwork.claims_staff_records(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${companyId}::uuid) AS records`, trx, 'claims_staff_records')).records;
   },
 
   /** A re-check under an active recipe of the level: a new row with a new date, or a refusal that changes nothing. */

@@ -67,8 +67,8 @@ export class AdminClaimsController {
   }
 
   @Get('companies/:companyId/records')
-  records(@Params(HubCompanyParams) p: P<typeof HubCompanyParams>, @ReqState() state: RequestState) {
-    return this.service.staffRecords(state, p.hubId, p.companyId);
+  records(@Params(HubCompanyParams) p: P<typeof HubCompanyParams>, @ReqState() state: RequestState, @Elevation() e: SessionElevationRow) {
+    return this.service.staffRecords({ state, elevationId: e.id, idempotencyKey: undefined }, p.hubId, p.companyId);
   }
 
   @Post('companies/:companyId/records') @HttpCode(201) @Idempotent('claims.record_source', 'companyId')

@@ -142,6 +142,7 @@ export default {
       effects: () => count(admin, 'SELECT 1 FROM trustwork.company_identifier WHERE id = $1 AND retired_at IS NOT NULL', [stated.record.id]) });
     await exactlyOnce({ action: 'claims.profile_set', client: c1, url: `/v1/companies/${records}/page-profile`,
       body: { legalForm: 'US-LLC', websiteUrl: null, regionCode: 'US-CA', categories: [], publicFields: ['legal_form'] }, effects: () => count(admin, 'SELECT 1 FROM trustwork.company_profile WHERE company_id = $1', [records]) });
+    body(await c2.post('/v1/claims', submission(records), { idempotencyKey: 'crash-claims.submit_records' }));
     const sourced = body<{ record: { id: string } }>(await run('claims.record_source', a, `${base}/claims/companies/${records}/records`,
       { record: { kind: 'identifier', identifierKind: 'US-CA-SOS', jurisdiction: 'US-CA', value: 'C1234567' }, sourceRef: 'register:SYN-CRASH-SOS' }, identifierRows));
     const check = body<{ check: { id: string } }>(await a.post(`${base}/verification/checks`, cmd('claims.check_records', { subject: { kind: 'company', id: records }, recipeId: claimedRecipe, providerId: provider.provider.id, result: 'pass',
