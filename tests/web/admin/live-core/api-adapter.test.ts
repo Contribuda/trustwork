@@ -557,7 +557,8 @@ const LATE = '99999999-9999-4999-8999-999999999997';
 const APPROVAL = '55555555-5555-4555-8555-555555555556';
 const invitation = (overrides: Record<string, unknown> = {}) => ({
   id: INVITATION, email: 'new-editor@example.invalid', role: 'editor', scope: { kind: 'hub', hubId: HUB_ID }, definitionVersion: 3, validForSeconds: null, sensitive: false, status: 'accepted', expired: false,
-  personId: OTHER, invitedBy: STAFF, reason: 'A second editor', expiresAt: '2026-11-05T09:00:00.000Z', respondedAt: '2026-11-01T09:00:00.000Z', approvalId: null, assignmentId: null, revision: 2, ...overrides,
+  personId: OTHER, invitedBy: STAFF, reason: 'A second editor', expiresAt: '2026-11-05T09:00:00.000Z', respondedAt: '2026-11-01T09:00:00.000Z', approvalId: null, assignmentId: null,
+  functionKey: null, functionTitle: null, revision: 2, ...overrides,
 });
 const invitationList = [
   invitation(),
