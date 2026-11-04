@@ -15,6 +15,7 @@ const HINTS: Readonly<Record<string, { code: ErrorCode; required?: string }>> = 
   'admin.self_grant': { code: 'access.forbidden' },
   'admin.self_approval': { code: 'access.second_approver_required' },
   'admin.same_decider': { code: 'access.second_approver_required' },
+  'admin.same_role': { code: 'access.second_approver_required' },
   'admin.approval_required': { code: 'access.approval_required' },
   'admin.approval_expired': { code: 'access.approval_required' },
   'admin.approval_consumed': { code: 'access.approval_required' },
