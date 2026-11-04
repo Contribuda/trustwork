@@ -42,6 +42,8 @@ export const PublicPriceSchema = z.strictObject({
     digest: Digest.optional(),
     sale: z.strictObject({ modelId: z.string().min(1).nullable(), capabilityId: z.string().min(1).nullable(), meter: MeterSchema, perUnits: Minor }).nullable().optional(),
     creditPack: z.strictObject({ creditMinor: Minor, validityDays: z.int().positive().nullable(), expiryNoticeDays: z.int().positive().nullable(), refundPolicyVersion: z.string().min(1) }).nullable().optional(),
+    /** `effectiveTo` above is the effective end; `digest` covers the signed end, kept here so it stays verifiable. */
+    supersededBy: z.strictObject({ versionId: Id, at: Timestamp, signedEffectiveTo: Timestamp.nullable() }).nullable().optional(),
   }).optional(),
 });
 export type PublicPrice = z.infer<typeof PublicPriceSchema>;
@@ -65,13 +67,22 @@ export const SalePriceTermsSchema = z.discriminatedUnion('kind', [
   .refine((v) => v.kind !== 'credit_pack' || ((v.validityDays === null) === (v.expiryNoticeDays === null) && (v.validityDays === null || v.expiryNoticeDays! < v.validityDays)), 'an expiry needs advance notice shorter than the validity');
 export type SalePriceTerms = z.infer<typeof SalePriceTermsSchema>;
 export const DraftSalePriceSchema = z.strictObject({ reason: z.string().min(1).max(500), terms: SalePriceTermsSchema });
-/** `supersedePrevious` end-dates an earlier active version of the offer at this version's start, under the same approval. */
-export const ActivateSalePriceSchema = z.strictObject({ reason: z.string().min(1).max(500), digest: Digest, approvalId: Id, supersedePrevious: z.boolean().default(false) });
-export const SalePriceVersionSchema = z.strictObject({ id: Id, hubId: Id, version: z.int().positive(), digest: Digest, terms: SalePriceTermsSchema });
+/**
+ * `digest` is the version digest. The second person approves the activation digest, which also binds `supersedes`: the
+ * exact version this one replaces, or null. The replaced version keeps its signed end date; its effective end is derived.
+ */
+export const ActivateSalePriceSchema = z.strictObject({ reason: z.string().min(1).max(500), digest: Digest, approvalId: Id, supersedes: Id.nullable().default(null) });
+/** `activationDigest` is what a second person approves to activate this version without superseding another. */
+export const SalePriceVersionSchema = z.strictObject({ id: Id, hubId: Id, version: z.int().positive(), digest: Digest, activationDigest: Digest, terms: SalePriceTermsSchema });
 export type SalePriceVersion = z.infer<typeof SalePriceVersionSchema>;
 const StaffLifecycle = { status: z.enum(['draft', 'active', 'superseded', 'cancelled']), draftedBy: Id, activatedBy: Id.nullable(), activatedAt: Timestamp.nullable() };
 /** Staff projections for the console. They name staff, so they are served only under the matching `admin.*` permissions. */
-export const StaffSalePriceSchema = z.strictObject({ id: Id, hubId: Id, version: z.int().positive(), digest: Digest, terms: SalePriceTermsSchema, ...StaffLifecycle });
+export const StaffSalePriceSchema = z.strictObject({
+  id: Id, hubId: Id, version: z.int().positive(), digest: Digest, activationDigest: Digest, terms: SalePriceTermsSchema, ...StaffLifecycle,
+  supersededBy: Id.nullable(), supersededAt: Timestamp.nullable(), effectiveEnd: Timestamp.nullable(),
+  /** For a draft: the versions it may supersede, each with the exact digest a second person would approve. */
+  supersedable: z.array(z.strictObject({ versionId: Id, activationDigest: Digest })),
+});
 export type StaffSalePrice = z.infer<typeof StaffSalePriceSchema>;
 export const StaffFeeSchema = z.strictObject({ id: Id, hubId: Id, version: z.int().positive(), digest: Digest, terms: FeeTermsSchema, ...StaffLifecycle });
 export type StaffFee = z.infer<typeof StaffFeeSchema>;

@@ -66,9 +66,9 @@ export default {
       await exactlyOnce({action:'billing.referral_withdraw',client:activator,url:`/v1/admin/billing/referrals/${r.id}/withdraw`,body:{reason:'Synthetic crash test',digest:r.digest},effects:()=>count('billing.referral_withdrawn')});
       const packTerms = {kind:'credit_pack',code:'synthetic_crash_pack',name:'Synthetic crash pack',currency:'USD',amountMinor:'100',effectiveFrom:new Date(Date.now()+3600000).toISOString(),effectiveTo:null,
         acceptanceTextVersion:'synthetic-sale-1',creditMinor:'100',validityDays:null,expiryNoticeDays:null,refundPolicyVersion:'synthetic-refund-1'};
-      const pack = (await exactlyOnce({action:'billing.sale_price_draft',client:drafter,url:'/v1/admin/billing/sale-prices',body:{reason:'Synthetic crash test',terms:packTerms},effects:()=>count('billing.sale_price_drafted')})).body as {id:string;digest:string};
-      const packApproval = await as(h,setup.activator,(trx,ctx)=>approvals.request(trx,ctx,{action:'commerce.activate_price_version',scope:{kind:'hub',hubId:setup.hubId},actionDigest:pack.digest}));
-      await as(h,setup.drafter,(trx,ctx)=>approvals.decide(trx,ctx,packApproval.id,'approve',pack.digest));
+      const pack = (await exactlyOnce({action:'billing.sale_price_draft',client:drafter,url:'/v1/admin/billing/sale-prices',body:{reason:'Synthetic crash test',terms:packTerms},effects:()=>count('billing.sale_price_drafted')})).body as {id:string;digest:string;activationDigest:string};
+      const packApproval = await as(h,setup.activator,(trx,ctx)=>approvals.request(trx,ctx,{action:'commerce.activate_price_version',scope:{kind:'hub',hubId:setup.hubId},actionDigest:pack.activationDigest}));
+      await as(h,setup.drafter,(trx,ctx)=>approvals.decide(trx,ctx,packApproval.id,'approve',pack.activationDigest));
       await exactlyOnce({action:'billing.sale_price_activate',client:activator,url:`/v1/admin/billing/sale-prices/${pack.id}/activate`,body:{reason:'Synthetic crash test',digest:pack.digest,approvalId:packApproval.id},effects:()=>count('billing.sale_price_activated')});
       const starts = new Date(Date.now()+2500);
       for (const payer of ['buyer','seller'] as const) {

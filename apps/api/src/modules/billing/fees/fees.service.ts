@@ -43,7 +43,7 @@ export class FeesService {
   }
   activateSalePrice(state: RequestState, elevationId: string, id: string, body: z.infer<typeof ActivateSalePriceSchema>) {
     const hub = this.hub();
-    return this.principals.runAs(state, (trx) => billingSalePrices.activate(trx, this.command(state, elevationId, body.reason), hub, id, body.digest, body.approvalId, body.supersedePrevious)).catch((e: unknown) => this.refusal(e));
+    return this.principals.runAs(state, (trx) => billingSalePrices.activate(trx, this.command(state, elevationId, body.reason), hub, id, body.digest, body.approvalId, body.supersedes)).catch((e: unknown) => this.refusal(e));
   }
   staffSalePrices(state: RequestState, elevationId: string) {
     const hub = this.hub();

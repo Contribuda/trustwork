@@ -33,6 +33,7 @@ test('BILL-003 sale price commands and console reads over HTTP', { skip: h ? fal
   });
   await t.test('the body cannot name a hub, an authority, a cost or a discovery control', async () => {
     for (const extra of [{ hubId: w.hubB }, { activatedBy: w.p.officer }]) assert.equal((await w.clients.owner.post(url, { ...body, ...extra })).status, 422);
+    assert.equal((await w.clients.officer.post(`${url}/${randomUUID()}/activate`, { reason: 'Synthetic', digest: 'a'.repeat(64), approvalId: randomUUID(), supersedePrevious: true })).status, 422, 'a bare flag is no longer accepted');
     for (const change of [{ ranking: 1 }, { reputation: 1 }, { providerCost: '1' }, { personId: w.p.outsider }, { expiryNoticeDays: null }, { kind: 'plan' }]) {
       assert.equal((await w.clients.owner.post(url, { ...body, terms: { ...terms, ...change } })).status, 422, JSON.stringify(change));
     }
@@ -49,8 +50,8 @@ test('BILL-003 sale price commands and console reads over HTTP', { skip: h ? fal
     assert.equal((await w.clients.officer.post(`${url}/${v.id}/activate`, action)).status, 403);
     assert.equal((await w.clients.owner.post(`${url}/${v.id}/activate`, action)).status, 403);
   });
-  const request = await w.a.cmd(w.p.officer, (trx, ctx) => approvals.request(trx, ctx, { action: 'commerce.activate_price_version', scope: { kind: 'hub', hubId: w.hubA }, actionDigest: v.digest }));
-  await w.a.cmd(w.p.owner, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', v.digest));
+  const request = await w.a.cmd(w.p.officer, (trx, ctx) => approvals.request(trx, ctx, { action: 'commerce.activate_price_version', scope: { kind: 'hub', hubId: w.hubA }, actionDigest: v.activationDigest }));
+  await w.a.cmd(w.p.owner, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', v.activationDigest));
   await t.test('the exact approval publishes the pack with its validity; every reader sees the same version', async () => {
     const action = { reason: body.reason, digest: v.digest, approvalId: request.id };
     const activated = await w.clients.officer.post(`${url}/${v.id}/activate`, action, { idempotencyKey: 'synthetic-sale-activate' });

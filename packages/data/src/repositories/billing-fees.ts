@@ -29,8 +29,8 @@ export const billingSalePrices = {
     const r = await sql<{ value: unknown }>`SELECT trustwork.billing_sale_price_draft(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid, ${JSON.stringify(terms)}::jsonb) AS value`.execute(trx);
     return SalePriceVersionSchema.parse(r.rows[0]?.value);
   },
-  async activate(trx: Transaction, ctx: CommandContext, hubId: string, id: string, digest: string, approvalId: string, supersedePrevious = false): Promise<SalePriceVersion> {
-    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_sale_price_activate(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid, ${id}::uuid, ${digest}, ${approvalId}::uuid, ${supersedePrevious}) AS value`.execute(trx);
+  async activate(trx: Transaction, ctx: CommandContext, hubId: string, id: string, digest: string, approvalId: string, supersedes: string | null = null): Promise<SalePriceVersion> {
+    const r = await sql<{ value: unknown }>`SELECT trustwork.billing_sale_price_activate(${JSON.stringify(ctx)}::jsonb, ${hubId}::uuid, ${id}::uuid, ${digest}, ${approvalId}::uuid, ${supersedes}::uuid) AS value`.execute(trx);
     return SalePriceVersionSchema.parse(r.rows[0]?.value);
   },
   async publicList(pool: DataPool, hubId: string, kind: 'model' | 'capability' | 'credit_pack'): Promise<PublicPrice[]> {
