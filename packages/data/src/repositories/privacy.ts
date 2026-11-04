@@ -115,12 +115,15 @@ export interface PrivacyDelegation { mandateId: string; mandateRevision: number;
 
 export const privacy = {
   /** Preparation only: a Draft package for a privacy request. The caller may be an assistant acting for a staff member. */
-  async prepareResponseDraft(trx: Transaction, requestId: string, coverage: unknown, delegation: PrivacyDelegation | null): Promise<PrivacyResponseDraftRow> {
-    return (await sql<PrivacyResponseDraftRow>`SELECT * FROM trustwork.privacy_response_draft_prepare(${requestId}::uuid, ${JSON.stringify(coverage)}::jsonb,
-      ${delegation ? JSON.stringify({ mandateId: delegation.mandateId, mandateRevision: delegation.mandateRevision }) : null}::jsonb)`.execute(trx)).rows[0]!;
+  /** Needs a usable case grant naming the request and no conflict with its subject; audited in this transaction. */
+  async prepareResponseDraft(trx: Transaction, input: { requestId: string; grantId: string; coverage: unknown; delegation: PrivacyDelegation | null; auditRequestId: string }): Promise<PrivacyResponseDraftRow> {
+    const { requestId, grantId, coverage, delegation, auditRequestId } = input;
+    return (await sql<PrivacyResponseDraftRow>`SELECT * FROM trustwork.privacy_response_draft_prepare(${requestId}::uuid, ${grantId}::uuid, ${JSON.stringify(coverage)}::jsonb,
+      ${delegation ? JSON.stringify({ mandateId: delegation.mandateId, mandateRevision: delegation.mandateRevision }) : null}::jsonb, ${auditRequestId}::text)`.execute(trx)).rows[0]!;
   },
-  async responseDrafts(trx: Transaction, requestId: string): Promise<PrivacyResponseDraftRow[]> {
-    return (await sql<PrivacyResponseDraftRow>`SELECT * FROM trustwork.privacy_response_drafts(${requestId}::uuid)`.execute(trx)).rows;
+  /** The same authority as preparing; every read is audited, so it runs in a writing transaction. */
+  async responseDrafts(trx: Transaction, input: { requestId: string; grantId: string; auditRequestId: string }): Promise<PrivacyResponseDraftRow[]> {
+    return (await sql<PrivacyResponseDraftRow>`SELECT * FROM trustwork.privacy_response_drafts(${input.requestId}::uuid, ${input.grantId}::uuid, ${input.auditRequestId}::text)`.execute(trx)).rows;
   },
   async proposeSourcePlan(trx: Transaction, ctx: CommandContext, requestId: string, grantId: string): Promise<{ id: string; digest: string; approvalId: string; snapshot: Record<string, unknown> }> {
     return (await sql<{ result: { id: string; digest: string; approvalId: string; snapshot: Record<string, unknown> } }>`SELECT trustwork.privacy_source_plan_propose(${JSON.stringify(ctx)}::jsonb,${requestId}::uuid,${grantId}::uuid) AS result`.execute(trx)).rows[0]!.result;

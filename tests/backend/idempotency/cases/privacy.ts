@@ -13,7 +13,8 @@ export async function privacyCrashRoutes(h: Harness, exactlyOnce: CrashContext['
   const requested = await exactlyOnce({ action: 'privacy.request_create', client: world.subject, url: '/v1/privacy/requests', body: { subject, country: 'US', kind: 'erasure' }, effects: () => count('privacy_request') });
   const id = (requested.body as { id: string }).id;
   assert.ok(id);
-  await exactlyOnce({ action: 'privacy.response_draft_prepare', client: world.officer, url: `/v1/admin/privacy/requests/${id}/response-draft`, body: {}, effects: () => count('privacy_response_draft') });
+  const draftFixture = await privacyPlanFixture(h, world);
+  await exactlyOnce({ action: 'privacy.response_draft_prepare', client: world.officer, url: `/v1/admin/privacy/requests/${draftFixture.request.id}/response-draft`, body: { grantId: draftFixture.first.id }, effects: () => count('privacy_response_draft') });
   await exactlyOnce({ action: 'privacy.preference_set', client: world.subject, url: '/v1/privacy/preferences', body: {
     optOutSale: true, optOutSharing: true, limitSensitive: true, directMarketingObjection: true, gpc: true,
   }, effects: () => count('privacy_preference') });
