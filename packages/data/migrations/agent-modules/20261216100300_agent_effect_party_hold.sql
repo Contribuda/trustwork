@@ -1,17 +1,43 @@
--- AGT-003 / SANC-004: a person under a jurisdiction hold or a confirmed match has no agent acting for them.
+-- AGT-003 / SANC-004: nobody under a jurisdiction hold or a confirmed match has an agent act for them or against them.
 --
 -- A hold refuses the person at every API door and at sign-in, but it neither bumps the authorization epoch nor revokes
 -- the session, and the dispatch recheck looked at neither. An intent queued before the hold therefore went on to an
 -- attempt and to the provider. This recheck runs before the attempt exists and again around the callback
--- (agent_modules_enter_effect), so it holds on every dispatch path. `screening_gate_check` serializes with a new hold.
--- The test is the one the occurrence runtime uses (place_hold or suspended). `money_held` also covers people merely not
--- screened yet; the binding money check stays in the commitment's own transaction (ScreeningGate). Only this check is
--- added to 20261130110000; the function is otherwise identical.
+-- (agent_modules_enter_effect), on every dispatch route, so a hold committed after the attempt stops the callback.
+-- Its subjects are the principal, the company they act for, and for a deal action the parties of its context.
+-- `screening_gate_check` serializes with a new hold. The test is the one the occurrence runtime uses (place_hold or
+-- suspended). `money_held` also covers people merely not screened yet; the binding money check stays in the
+-- commitment's own transaction (ScreeningGate). Only this check is added to 20261130110000.
+
+-- The parties of a deal action, read from its context. Keep the actions in step with GATED_AGENT_ACTIONS plus
+-- `negotiate`. Stepping back is never gated (SANC-004): withdrawing, declining and cancelling stay possible whatever
+-- the other side's state. Contexts with no deal row, such as a profile, name nobody.
+CREATE FUNCTION trustwork.agent_modules_deal_parties(p_intent trustwork.action_intent) RETURNS TABLE (kind text, id uuid)
+LANGUAGE sql STABLE SET search_path=trustwork,pg_temp AS $$
+  WITH c AS (
+    SELECT p_intent.context_id::uuid AS ref WHERE p_intent.context_id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      AND p_intent.action IN ('send_quote','place_order','accept_order','negotiate','release_payment')
+      AND p_intent.capability_id NOT IN ('quoting.withdraw_quote','task_marketplace.withdraw_offer','sourcing_desk.withdraw_amendment_request',
+        'deal_desk.decline_order','deal_desk.withdraw_agreement','deal_desk.cancel_order')
+  ), party(person,company) AS (
+    SELECT x.owner_person_id,x.owner_company_id FROM trustwork.project x JOIN c ON x.id=c.ref WHERE p_intent.context_kind='project'
+    UNION ALL SELECT x.owner_person_id,x.owner_company_id FROM trustwork.rfq x JOIN c ON x.id=c.ref WHERE p_intent.context_kind='rfq'
+    UNION ALL SELECT x.seller_person_id,x.seller_company_id FROM trustwork.quote x JOIN c ON x.id=c.ref WHERE p_intent.context_kind='quote'
+    UNION ALL SELECT r.owner_person_id,r.owner_company_id FROM trustwork.quote x JOIN c ON x.id=c.ref JOIN trustwork.rfq r ON r.id=x.rfq_id WHERE p_intent.context_kind='quote'
+    UNION ALL SELECT x.buyer_person_id,x.buyer_company_id FROM trustwork.agreement x JOIN c ON x.id=c.ref WHERE p_intent.context_kind='agreement'
+    UNION ALL SELECT x.seller_person_id,x.seller_company_id FROM trustwork.agreement x JOIN c ON x.id=c.ref WHERE p_intent.context_kind='agreement'
+    UNION ALL SELECT a.buyer_person_id,a.buyer_company_id FROM trustwork.commercial_order x JOIN c ON x.id=c.ref JOIN trustwork.agreement a ON a.id=x.agreement_id WHERE p_intent.context_kind='order'
+    UNION ALL SELECT a.seller_person_id,a.seller_company_id FROM trustwork.commercial_order x JOIN c ON x.id=c.ref JOIN trustwork.agreement a ON a.id=x.agreement_id WHERE p_intent.context_kind='order'
+  )
+  SELECT DISTINCT CASE WHEN person IS NULL THEN 'company' ELSE 'person' END,coalesce(person,company) FROM party WHERE coalesce(person,company) IS NOT NULL
+$$;
+REVOKE ALL ON FUNCTION trustwork.agent_modules_deal_parties(trustwork.action_intent) FROM PUBLIC,trustwork_app,trustwork_worker;
 
 CREATE OR REPLACE FUNCTION trustwork.agent_modules_effect_authority_refusal(p_intent uuid) RETURNS text
 LANGUAGE plpgsql VOLATILE SET search_path=trustwork,pg_temp AS $$
 DECLARE p trustwork.agent_intent_provenance%ROWTYPE; r trustwork.agent_run_provenance%ROWTYPE;
   i trustwork.action_intent%ROWTYPE; m trustwork.mandate%ROWTYPE; v_epoch integer; v_connection uuid; v_representative uuid; s trustwork.session%ROWTYPE; v_run_state text;
+  v_kinds text[]; v_ids uuid[];
 BEGIN
   SELECT * INTO p FROM trustwork.agent_intent_provenance WHERE action_intent_id=p_intent;
   IF p.person_authz_epoch IS NULL THEN RETURN 'legacy_authority_unknown'; END IF;
@@ -42,10 +68,12 @@ BEGIN
   IF m.status<>'active' OR m.revision<>p.mandate_revision OR m.digest<>p.mandate_digest THEN RETURN 'mandate_authority_changed'; END IF;
   IF v_run_state IS NULL OR v_run_state IN ('cancelled','failed') THEN RETURN 'run_cancelled'; END IF;
   -- Takes the gate's shared locks until the transaction ends, so a hold placed during the callback waits for it.
-  IF EXISTS(SELECT 1 FROM trustwork.screening_gate_check(
-      CASE WHEN m.on_behalf_company_id IS NULL THEN ARRAY['person'] ELSE ARRAY['person','company'] END,
-      CASE WHEN m.on_behalf_company_id IS NULL THEN ARRAY[i.principal_person_id] ELSE ARRAY[i.principal_person_id,m.on_behalf_company_id] END) g
-    WHERE g.place_hold OR g.suspended) THEN RETURN 'party_held'; END IF;
+  SELECT array_agg(subject.kind),array_agg(subject.id) INTO v_kinds,v_ids FROM (
+    SELECT 'person'::text AS kind,i.principal_person_id AS id
+    UNION SELECT 'company',m.on_behalf_company_id WHERE m.on_behalf_company_id IS NOT NULL
+    UNION SELECT d.kind,d.id FROM trustwork.agent_modules_deal_parties(i) d) subject;
+  -- One answer for anyone and any cause: the principal learns only that the deal cannot go ahead now.
+  IF EXISTS(SELECT 1 FROM trustwork.screening_gate_check(v_kinds,v_ids) g WHERE g.place_hold OR g.suspended) THEN RETURN 'party_held'; END IF;
   IF trustwork.agent_modules_dispatch_refusal_internal(p.hub_id,i.module_key,i.capability_id,i.action,i.principal_person_id,v_connection,v_representative) IS NOT NULL THEN RETURN 'kill_switch'; END IF;
   IF trustwork.agent_modules_policy_refusal(p.hub_id,i.capability_id,trustwork.agent_modules_mandate_kind(m.grantee_kind,m.on_behalf_company_id),
     EXISTS(SELECT 1 FROM trustwork.company WHERE id=m.on_behalf_company_id AND claim_status='verified'),'free') IS NOT NULL THEN RETURN 'capability_off'; END IF;

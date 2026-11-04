@@ -15,6 +15,8 @@ import { hubConfig } from '../../../packages/data/src/repositories/hubs.js';
 import { prepareJurisdictionIntent, recordJurisdictionIntent, requireCurrentJurisdiction } from '../../../apps/api/src/modules/hubs/jurisdiction/intent-adapter.js';
 import { inTransaction } from '../../../apps/worker/src/db.js';
 import { silentLogger } from '@trustwork/worker';
+import { decide } from '../../../apps/api/src/modules/assistant/policy.js';
+import { activateBaseline, decideMatches, LISTED_COMPANY_NAME, screen } from '../../screening-gates/helpers.js';
 import { defineEffectImplementation, dispatchHandler, FakeEffectProvider } from '../../../apps/worker/src/assistant/index.js';
 import type { EffectImplementationDeclaration } from '../../../packages/contracts/src/agent-modules.js';
 import { provisionTestDatabase } from '../../data/helpers/postgres.js';
@@ -33,10 +35,10 @@ test('jurisdiction adapter composes actual mandate, intent, approval and worker 
  const s=f.payload.agentSettings.jurisdictions[0]!;s.sourceId=src.id;f.payload.agentSettings.jurisdictions[0]!.sourceRevision=src.revision;s.sourceDigest=src.digest;s.policy=doc.policy;
  await f.activate(await f.draft());
  const manifest=AgentModuleManifestSchema.parse({...SYNTHETIC_ORDER_MANIFEST,actions:['send_quote'],capabilities:[{
-   ...SYNTHETIC_ORDER_MANIFEST.capabilities[0],id:'deal_desk.send_quote',mandateAction:'send_quote',contextKinds:['quote'],budgetKind:null,
+   ...SYNTHETIC_ORDER_MANIFEST.capabilities[0],id:'deal_desk.send_quote',mandateAction:'send_quote',contextKinds:['quote','rfq','project'],budgetKind:null,
  }]});
  const implementation={id:'synthetic-jurisdiction-quote@1',moduleKey:'deal_desk',moduleVersion:'1.0.0',capabilityId:'deal_desk.send_quote',
-   provider:'synthetic',operation:'quote',mandateAction:'send_quote',contextKinds:['quote'],privateDataClasses:manifest.capabilities[0]!.privateDataClasses,egress:'none',payloadContract:'synthetic-quote@1'};
+   provider:'synthetic',operation:'quote',mandateAction:'send_quote',contextKinds:['quote','rfq','project'],privateDataClasses:manifest.capabilities[0]!.privateDataClasses,egress:'none',payloadContract:'synthetic-quote@1'};
  const control=engineDefaultPolicy(f.hubId,{manifests:[manifest],extensions:[]}).modules[0]!;
  control.limits={...control.limits,concurrentRuns:100};
  const bindings=await withMaintenance(db.admin,async trx=>{
@@ -47,7 +49,13 @@ test('jurisdiction adapter composes actual mandate, intent, approval and worker 
    const foreign=await sql<{id:string}>`INSERT INTO trustwork.agent_serving_hub(origin,hub_id) VALUES('https://synthetic-jurisdiction-other.invalid',${f.otherHubId}::uuid) RETURNING id`.execute(trx);
    return {session:session.id,serving:serving.rows[0]!.id,foreign:foreign.rows[0]!.id};
  });
- const snapshot=MandateV2Schema.parse({id:randomUUID(),schemaVersion:2,principal:{personId:p.moderator,onBehalfOf:null},grantee:{kind:'own_agent'},moduleKeys:['deal_desk'],actions:['send_quote'],contexts:[{kind:'quote',id:deal.quoteId}],limits:{ceiling:null,perActionCeiling:null,transactionBudgetId:null,platformBudgetId:null,perWindow:null},conditions:[],approvalPolicy:{mode:'pre_authorized'},approvers:[],escalation:{kind:'ask_principal'},confirmation:{via:'first_party_form',personId:p.moderator,at:new Date().toISOString(),stepUp:true},validUntil:'2099-01-01T00:00:00.000Z',status:'active',revision:1,revokedAt:null});
+ // A company-owned project under a name the synthetic list carries, for the confirmed-match case.
+ const companyProject=await withMaintenance(db.admin,async trx=>{
+   const company=await trx.insertInto('company').values({display_name:LISTED_COMPANY_NAME,claim_status:'claimed'}).returning('id').executeTakeFirstOrThrow();
+   const project=await trx.insertInto('project').values({owner_person_id:null,owner_company_id:company.id,creator_person_id:p.moderator,leader_person_id:null,name:'Synthetic company project',summary:null}).returning('id').executeTakeFirstOrThrow();
+   return {companyId:company.id,projectId:project.id};
+ });
+ const snapshot=MandateV2Schema.parse({id:randomUUID(),schemaVersion:2,principal:{personId:p.moderator,onBehalfOf:null},grantee:{kind:'own_agent'},moduleKeys:['deal_desk'],actions:['send_quote'],contexts:[{kind:'quote',id:deal.quoteId},{kind:'rfq',id:deal.rfqId},{kind:'project',id:companyProject.projectId}],limits:{ceiling:null,perActionCeiling:null,transactionBudgetId:null,platformBudgetId:null,perWindow:null},conditions:[],approvalPolicy:{mode:'pre_authorized'},approvers:[],escalation:{kind:'ask_principal'},confirmation:{via:'first_party_form',personId:p.moderator,at:new Date().toISOString(),stepUp:true},validUntil:'2099-01-01T00:00:00.000Z',status:'active',revision:1,revokedAt:null});
  await a.as(p.moderator,trx=>mandates.confirm(trx,{snapshot,contexts:snapshot.contexts,digest:computeDigest(snapshot).value,expectedRevision:null,stepUp:true,proposalId:null}));
  const request={personId:p.moderator,mandateId:snapshot.id,moduleKeys:['deal_desk'],action:'send_quote' as const,context:{kind:'quote' as const,id:deal.quoteId},amount:{minorUnits:'10001',currency:'USD'},projectId:deal.projectId,at:new Date()};
  const settings={hubId:f.otherHubId,forbiddenPreAuthorization:[],isRestricted:()=>false};
@@ -122,6 +130,64 @@ test('jurisdiction adapter composes actual mandate, intent, approval and worker 
    }finally{await clear(party);}
    const after=await queue();
    assert.equal((await dispatch(after.intentId!)).submissions.length,1,'a cleared hold stops nothing');
+ });
+ /** A deal action outside the quote context: no binding can exist, so only the owning recheck stands in its way. */
+ const queueIn=async(context:{kind:'rfq'|'project';id:string})=>a.as(p.moderator,async trx=>{
+   const run=await runs.start(trx,{principal_person_id:p.moderator,kind:'conversation',mandate_id:snapshot.id});
+   await sql`SELECT trustwork.agent_modules_bind_run(${run.id}::uuid,${bindings.serving}::uuid,${bindings.session}::uuid)`.execute(trx);
+   const amount={minorUnits:'1',currency:'USD'};
+   const mandate=(await decide(trx,{...request,context,amount,at:new Date()},{...settings,hubId:f.hubId})).outcome;
+   if(mandate.effect==='deny')throw new Error(`synthetic mandate refused: ${JSON.stringify(mandate)}`);
+   const intent=await actionIntents.record(trx,{runId:run.id,mandateId:mandate.mandate.id,mandateRevision:mandate.mandate.revision,capabilityId:'deal_desk.send_quote',moduleKey:mandate.moduleKey,action:'send_quote',context:mandate.context,
+     resolvedFromSelector:mandate.resolvedFromSelector,amount,digest:computeDigest({synthetic:'deal action outside a quote',at:run.id}).value,effect:{provider:'synthetic',operation:'quote',payload:{synthetic:true}},decision:mandate.effect,askReasons:mandate.effect==='ask'?mandate.reasons:[]});
+   await actionIntents.queue(trx,intent.intentId!,300,null);
+   return intent.intentId!;
+ });
+ await t.test('a deal action in an rfq context stops on a held RFQ owner, on the same recheck',async()=>{
+   const clearId=await queueIn({kind:'rfq',id:deal.rfqId});
+   assert.equal((await dispatch(clearId)).submissions.length,1,'an rfq context needs no binding to go ahead');
+   const intentId=await queueIn({kind:'rfq',id:deal.rfqId});
+   await hold(p.outsider);
+   try{
+     assert.equal((await dispatch(intentId)).submissions.length,0);
+     assert.equal(await stateOf(intentId),'revoked');assert.equal(await attempts(intentId),0);
+   }finally{await clear(p.outsider);}
+ });
+ await t.test('a counterparty hold committed after the attempt stops the callback',async()=>{
+   const intent=await queue();
+   const job=(await lease()).find(j=>(j.payload as {intentId:string}).intentId===intent.intentId)!;
+   const provider=new FakeEffectProvider('synthetic');
+   // The handler opens one transaction for the attempt and a second for the callback; the hold commits between them.
+   let opened=0;
+   const pool=new Proxy(worker,{get(target,key){
+     if(key==='connect')return async()=>{if(++opened===2)await hold(p.outsider);return target.connect();};
+     const value=Reflect.get(target,key);return typeof value==='function'?value.bind(target):value;
+   }});
+   const handler=dispatchHandler({pool,providers:[provider],implementations:[defineEffectImplementation(implementation as EffectImplementationDeclaration,provider,input=>structuredClone(input))],hubId:null,log:silentLogger});
+   try{
+     await handler.run({job,payload:{intentId:intent.intentId!},attemptId:randomUUID(),effectKey:`job:${job.id}`,signal:new AbortController().signal});
+     assert.equal(opened>=2,true);
+     assert.equal(provider.submissions.length,0,'no callback after the hold');
+     assert.equal(await attempts(intent.intentId!),1,'the committed attempt stays for its original receipt');
+   }finally{await clear(p.outsider);}
+ });
+ await t.test('stepping back from a deal never waits on the other side',async()=>{
+   const intentId=await queueIn({kind:'rfq',id:deal.rfqId});
+   const parties=(capability:string)=>db.admin.query(`SELECT d.* FROM trustwork.action_intent i,trustwork.agent_modules_deal_parties(jsonb_populate_record(i,jsonb_build_object('capability_id',$2::text))) d WHERE i.id=$1`,[intentId,capability]);
+   assert.deepEqual((await parties('deal_desk.send_quote')).rows,[{kind:'person',id:p.outsider}]);
+   for(const capability of ['quoting.withdraw_quote','task_marketplace.withdraw_offer','sourcing_desk.withdraw_amendment_request','deal_desk.decline_order','deal_desk.withdraw_agreement','deal_desk.cancel_order'])
+     assert.equal((await parties(capability)).rowCount,0,capability);
+ });
+ await t.test('a company has no place hold: a confirmed match stops a deal action on its project',async()=>{
+   const clearId=await queueIn({kind:'project',id:companyProject.projectId});
+   assert.equal((await dispatch(clearId)).submissions.length,1,'not suspended, it goes ahead');
+   await activateBaseline(db.admin);
+   const subject={kind:'company' as const,id:companyProject.companyId};
+   await screen(db.admin,subject);
+   await decideMatches(db.admin,subject,'confirmed');
+   const intentId=await queueIn({kind:'project',id:companyProject.projectId});
+   assert.equal((await dispatch(intentId)).submissions.length,0);
+   assert.equal(await stateOf(intentId),'revoked');assert.equal(await attempts(intentId),0);
  });
  await t.test('an immutable foreign serving origin cannot be replaced by jurisdiction or process hub',async()=>{
    const intent=await record('1',bindings.foreign);await a.as(p.moderator,trx=>actionIntents.queue(trx,intent.intentId!,300,null));
