@@ -107,7 +107,8 @@ export class CapabilityAuthority {
     const registry = await this.registry(trx);
     if (NON_PURCHASABLE_CAPABILITIES.has(capabilityId)) {
       const canonical = registry.manifests.flatMap(m => m.capabilities).find(c => c.id === capabilityId);
-      if (canonical && (action === null || action === canonical.mandateAction)) return { allowed: true, capabilityId, moduleKey };
+      // No plan or policy turns these off, but a kill switch is neither: it stops them like any other capability.
+      if (canonical && (action === null || action === canonical.mandateAction)) return this.afterKillSwitches(trx, actor, capabilityId, moduleKey, action ?? canonical.mandateAction);
     }
     const { document } = await this.policy(trx, registry);
     const policyReason = capabilityRefusal(document, registry, capabilityId, await this.principalOf(trx, actor));
@@ -117,8 +118,12 @@ export class CapabilityAuthority {
     if (!capability || (action !== null && action !== capability.mandateAction)) {
       return { allowed: false, capabilityId, moduleKey, reason: 'capability.unknown', messageKey: REFUSAL_MESSAGE_KEYS['capability.unknown'], blockedBy: null };
     }
+    return this.afterKillSwitches(trx, actor, capabilityId, moduleKey, action ?? capability?.mandateAction ?? null);
+  }
+
+  private async afterKillSwitches(trx: Transaction, actor: AgentActor, capabilityId: string, moduleKey: string, action: string | null): Promise<AuthorityDecision> {
     const blocked = await agentAuthority.dispatchRefusal(trx, {
-      hubId: this.hubId, moduleKey, capabilityId, action: action ?? capability?.mandateAction ?? null, personId: actor.personId, connectionId: actor.connectionId, representativeOf: actor.representativeOf,
+      hubId: this.hubId as string, moduleKey, capabilityId, action, personId: actor.personId, connectionId: actor.connectionId, representativeOf: actor.representativeOf,
     });
     if (blocked) return { allowed: false, capabilityId, moduleKey, reason: 'kill_switch', messageKey: REFUSAL_MESSAGE_KEYS.kill_switch, blockedBy: blocked };
     return { allowed: true, capabilityId, moduleKey };
