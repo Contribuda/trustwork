@@ -94,7 +94,7 @@ export default async function HubConsoleRoute({ params, searchParams }: { params
   const route: ScreenRoute = { rest, query: await screenQuery(searchParams) };
   return (
     <HubConsolePage params={hubParams} searchParams={searchParams} section={ref}>
-      {(ctx) => (screen ? screen.render(ctx, route) : Designed(ctx, ref))}
+      {(ctx) => (screen && (ref.section.status !== 'designed' || ctx.port.source === 'api') ? screen.render(ctx, route) : Designed(ctx, ref))}
     </HubConsolePage>
   );
 }

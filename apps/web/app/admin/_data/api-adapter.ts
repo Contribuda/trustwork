@@ -16,6 +16,9 @@ import { isRestricted } from '@trustwork/country-packs';
 import { ResidencyConfigPayloadSchema } from '../../../../../packages/contracts/src/hub-core.js';
 import { EffectiveAccessSchema, StaffDirectorySchema, StaffInvitationViewSchema } from '../../../../../packages/contracts/src/staff-lifecycle.js';
 import { evaluateCommand, invitationSeconds, parseTerritory, requestedModes, requestedProfile, type CommandInput, type CommandOutcome, type ActivationTarget, type ReadyApproval, type RejectCode, type WaitingActivation } from './commands.js';
+import { providerCommand, readProviders } from './live-providers.js';
+import { hubApprovals } from './live-approvals.js';
+import { isProviderCommand, PROVIDER_COMMANDS } from '../hubs/[hub]/integrations/providers/_commands.js';
 import type { ConsoleAccess, ConsoleDataPort, StaffViewer } from './port.js';
 import type { ConsoleRequest } from './personas.js';
 import { OverviewSchema, QUEUE_IDS, ResidencySchema, type Overview, type QueueId, type Residency } from './read-models.js';
@@ -379,6 +382,7 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
 
   /** The console commands wired to API routes so far; everything else is `not_found` in live mode. */
   const LIVE_COMMANDS = new Set<CommandInput['command']>([
+    ...PROVIDER_COMMANDS,
     'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke', 'staff.invite', 'staff.invitation_apply', 'staff.invitation_withdraw', 'identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request',
     'launch.mark_passed', 'residency.request_change', 'legal.draft',
   ]);
@@ -469,6 +473,12 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     if (input.command === 'staff.invitation_withdraw') {
       const answer = await send(`/v1/admin/staff/invitations/${encodeURIComponent(f.invitationId ?? '')}/withdraw`, {});
       return answer.status >= 200 && answer.status < 300 ? { status: 'applied' } : invitationRefusal(answer);
+    }
+    if (isProviderCommand(input.command)) {
+      return providerCommand(input.command, f, {
+        send, saveConfig: draftAndActivate, read: () => readProviders(api, orNothing, hub.hub.id, v.person.id, now()), form: { currency: hub.hub.currency, now: now() }, viewerId: v.person.id, hubId: hub.hub.id, now: now(),
+        approvals: async () => hubApprovals(await orNothing(api.get(`/v1/admin/approvals?hubId=${encodeURIComponent(hub.hub.id)}`)), hub.hub.id),
+      });
     }
     if (input.command === 'approvals.request_activation') {
       // Activation without an approval by someone other than the drafter: the API opens the second-person request.
@@ -600,6 +610,11 @@ export function createApiConsolePort(options: ApiPortOptions): ConsoleDataPort {
     localAdditions: async () => [],
     taxonomy: async () => [],
     brandChecks: async () => [],
+    // HC-100 and HC-102: connections, credentials, cost records and egress (`live-providers.ts`).
+    async providers(hubId) {
+      const me = MeSchema.safeParse(await orNothing(api.get('/v1/me'))).data?.person.id ?? null;
+      return readProviders(api, orNothing, hubId, me, now());
+    },
     product: async () => null,
     // The live setup wizard reads `/v1/setup` itself (HUB-004, setup/_live); the console port has no setup run.
     setup: async () => null,

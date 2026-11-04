@@ -46,6 +46,9 @@ export async function consoleRequest(searchParams: PageSearchParams): Promise<{ 
   return { request, port: consolePort(demo), demo };
 }
 
+/** Live mode names a `designed` section with a live screen as built: it has no demo data, but it works here. */
+const liveNav = (group: GroupDef): GroupDef => ({ ...group, sections: group.sections.map((s) => (s.live ? { ...s, status: 'demo' as const } : s)) });
+
 /**
  * Resolves a hub console page. Order of checks (each one narrows): no viewer or unknown hub → not found (anonymous
  * visitors and live mode without a console backend never learn more); no active staff role on this hub → denied
@@ -71,7 +74,7 @@ export async function resolveHub(params: HubParams, searchParams: PageSearchPara
     record,
     access,
     permissions,
-    nav: visibleGroups(GROUPS, permissions, hasRole),
+    nav: visibleGroups(port.source === 'api' ? GROUPS.map(liveNav) : GROUPS, permissions, hasRole),
     current,
     now: port.now(),
     offline: request.demo && request.scenario === 'offline',

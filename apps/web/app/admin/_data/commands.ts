@@ -23,6 +23,8 @@ import {
   type StaffScopeKind,
 } from '@trustwork/contracts/client';
 import type { StaffDirectory, StaffInvitationView } from '../../../../../packages/contracts/src/staff-lifecycle.js';
+// HC-100 and HC-102 on the live API (HUBC-007): their commands live with the screen.
+import { isProviderCommand, PROVIDER_COMMAND_PERMISSIONS, PROVIDER_COMMANDS, PROVIDER_REJECT_CODES, providerFormProblem } from '../hubs/[hub]/integrations/providers/_commands.js';
 import type { ConsoleAccess, StaffViewer } from './port.js';
 // HUBC-005: commands of the agent product, product modules, billing and communications live with their screens.
 import { evaluateProductCommand, isProductCommand, PRODUCT_COMMAND_PERMISSIONS, PRODUCT_COMMANDS, PRODUCT_REJECT_CODES } from '../hubs/[hub]/modules/_kit/commands.js';
@@ -39,6 +41,7 @@ import { LEGAL_DOCUMENT_KINDS, TAXONOMY_KINDS, type ApprovalDecision, type Appro
  */
 
 export const COMMANDS = [
+  ...PROVIDER_COMMANDS,
   'identity.save', 'modes.save', 'lifecycle.request', 'modules.toggle', 'legal.draft', 'legal.request_activation', 'residency.request_change',
   'country.add_addition', 'taxonomy.add_term', 'launch.mark_passed', 'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke',
   'staff.invite', 'staff.invitation_apply', 'staff.invitation_withdraw', 'killswitch.engage', 'setup.save',
@@ -51,6 +54,7 @@ export function isCommandId(value: unknown): value is CommandId {
 
 /** The permission a command needs on the hub (`staff`: any role; the approval commands then check the approval's own permission). */
 export const COMMAND_PERMISSIONS: Record<Exclude<CommandId, 'setup.save'>, 'staff' | readonly ConsolePermission[]> = {
+  ...PROVIDER_COMMAND_PERMISSIONS,
   'identity.save': ['admin.hub.identity.edit'],
   'modes.save': ['admin.hub.modes.edit'],
   'lifecycle.request': ['admin.hub.lifecycle.request'],
@@ -115,6 +119,7 @@ export const APPROVER_PERMISSIONS: Record<ConsoleSecondPersonAction, readonly Co
 };
 
 export const REJECT_CODES = [
+  ...PROVIDER_REJECT_CODES,
   'denied', 'elevation_required', 'offline', 'reason_required', 'stale', 'invalid', 'territory_restricted', 'transition_not_allowed', 'gates_open',
   'modes_violation', 'module_requires', 'module_required_by', 'counsel_missing', 'language_missing', 'own_request', 'not_own_request', 'request_void',
   'request_expired', 'digest_mismatch', 'setup_blocked', 'second_factor_required', 'self_grant', 'sensitive_role', 'role_held',
@@ -348,6 +353,10 @@ export function evaluateCommand(input: CommandInput, ctx: CommandContext): Comma
   const reason = input.reason.trim();
   if (reason.length === 0 || reason.length > 500) return reject('reason_required', 'reason');
   const f = input.fields;
+  if (isProviderCommand(input.command)) {
+    const problem = providerFormProblem(input.command, f, { currency: hub.hub.currency, now: ctx.now });
+    return problem ? reject('invalid', problem.field) : accepted();
+  }
   const revisioned = ['identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request'].includes(input.command);
   if (revisioned && input.expectedRevision !== hub.hub.revision) return reject('stale');
   if (isProductCommand(input.command)) return evaluateProductCommand(input.command, f, { viewerId: viewer.person.id, hub, product: ctx.product ?? null, now: ctx.now, isRestricted: ctx.isRestricted });

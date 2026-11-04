@@ -17,6 +17,7 @@ import type {
 import type { Overview, Residency } from './read-models.js';
 import type { SectionDef } from './section-types.js';
 import type { HubProduct } from '../hubs/[hub]/modules/_kit/schemas.js';
+import type { ProvidersView } from './live-providers.js';
 
 /**
  * The console's data boundary (ADM-002, docs/engine/hub-console/README.md "Data"). Pages and server actions use only
@@ -75,6 +76,8 @@ export interface ConsoleDataPort {
   localAdditions(hubId: string): Promise<LocalAddition[]>;
   taxonomy(hubId: string): Promise<TaxonomyTree[]>;
   brandChecks(hubId: string): Promise<Array<{ locale: string; ratio: string; passes: boolean }>>;
+  /** HC-100 and HC-102 on the API: connections, credentials, cost records and egress. Only the live adapter answers. */
+  providers(hubId: string): Promise<ProvidersView | null>;
   /** The agent product, product modules, billing and communications of a hub (HUBC-005), or null. */
   product(hubId: string): Promise<HubProduct | null>;
   /** The setup run a one-time token opens, or null (unknown, expired, or setup already finished). */

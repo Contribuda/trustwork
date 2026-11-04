@@ -26,6 +26,7 @@ export const unavailableConsolePort: ConsoleDataPort = {
   localAdditions: async () => [],
   taxonomy: async () => [],
   brandChecks: async () => [],
+  providers: async () => null,
   product: async () => null,
   setup: async () => null,
   command: async () => ({ status: 'not_found' }),

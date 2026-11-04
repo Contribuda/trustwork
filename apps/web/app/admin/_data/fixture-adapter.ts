@@ -118,6 +118,8 @@ export const fixtureConsolePort: ConsoleDataPort = {
   async taxonomy(hubId) {
     return TAXONOMY.filter((t) => t.hubId === hubId);
   },
+  // HC-100 and HC-102 have no demo data; in demo mode their sections stay "designed".
+  providers: async () => null,
   async brandChecks(hubId) {
     return [...(BRAND_CHECKS[hubId] ?? [])];
   },

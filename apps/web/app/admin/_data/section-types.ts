@@ -18,6 +18,8 @@ export type SectionDef = {
   read: 'staff' | readonly ConsolePermission[];
   status: SectionStatus;
   screen: string;
+  /** A `designed` section with no demo data whose screen already runs on the live API: live mode shows it as built. */
+  live?: true;
   /** Optional feature-owned locale key for additive navigation entries. */
   labelKey?: `consoleNav.${string}`;
 };

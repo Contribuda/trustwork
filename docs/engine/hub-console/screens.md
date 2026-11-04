@@ -577,6 +577,13 @@ Implementation status: **In review** (SANC-006; hub cohort metrics stay unavaila
 - **States**: secret present → only fingerprint shown, no reveal; test failed → outcome code explained; enable blocked without passing test.
 - **Mobile**: list and detail; secret entry supported.
 - **Locale**: `admin.integrations.providers.*`
+- **Live** (built on the API, HUBC-007; no demo data, so demo mode keeps the "designed" page). One page, no detail route yet: connections with their state, last test and key fingerprints; add a connection; credentials; model cost records.
+  - **Keys.** A key is typed in `SecretEntry`, a client form that posts straight to the write-only route. It never passes a server action or the console's form fields, is not held in component state and is cleared at once; the route answers with a reference. Staff see the version, the keyed fingerprint and the state, never the value. Revoking destroys every version.
+  - **Credentials** name where a secret lives outside the database (`store` and `ref`). The console shows the name and the state and offers no sealed-store option here. A non-fake credential is activated through a second person; a fake one by one person.
+  - **Enabling.** A fake connection is enabled by one person. Any other needs a passing test of the current configuration, then "Ask a second person", approval in Approvals, and "Enable" by the person who asked. The engine ships no live adapter, so a `live` connection cannot pass its test yet.
+  - **Kill switch.** Engaging is immediate. Releasing takes an incident note; the approval binds the note, so the same note both asks and finishes.
+  - **Model cost records** are what a model sale price on HC-91 needs first. They never change a price.
+  - Editing a connection's settings and a page per connection are not built yet.
 
 ### HC-101 Routing — `/integrations/routing`
 - **Data**: job × scope (job, agent module, extension) × route table with primary and fallbacks (catalogue models with pinned revisions), allowed data classes, limits, cap, status, cost per unit, rollout stage. **Actions**: create version, reorder fallbacks (buttons), activate (second person if non-public classes), roll back to the previous pin. **States**: embeddings fallback refused; image route limited to public; model not enabled in the catalogue or limits above its context window refused. **Locale**: `admin.integrations.routing.*`
@@ -588,6 +595,7 @@ Implementation status: **In review** (SANC-006; hub cohort metrics stay unavaila
 - **States**: training vendor cell for private class shows deny with "This provider trains models on submitted data" and no allow option.
 - **Mobile**: one connection at a time as a list of classes.
 - **Locale**: `admin.integrations.egress.*`
+- **Live** (built on the API, HUBC-007; no demo data). The matrix shows allow or deny per connection and class. Public data and every denial take one person. Allowing non-public data asks a second person and carries in-residency processing and zero retention whatever the form says; the approval binds the next version of the cell, so choosing the same cell again finishes it. "Sign off this policy" saves an `egress` configuration version recording the non-public cells, which goes through Approvals like every sensitive draft and is what the gate `ai_egress_policy_reviewed` reads.
 
 ### HC-103 Spending caps — `/integrations/budgets`
 - **Data**: caps by scope with `BudgetMeter`, alerts, on-exhausted behaviour. **Actions**: create, edit. **Locale**: `admin.integrations.budgets.*`
