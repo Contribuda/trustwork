@@ -295,6 +295,8 @@
       "name": "Şirkətin adı",
       "country": "Qeydiyyat ölkəsi",
       "countryHint": "Bu səhifə üzrə sorğulara bu ölkənin habı baxır. Sonradan onu yalnız hab əməkdaşları düzəldə bilər.",
+      "region": "Region kodu",
+      "regionHint": "UA-30 kimi ISO 3166-2 kodu. Burada məcburidir, çünki bu ölkənin bəzi regionlarına xidmət göstərilmir.",
       "handle": "Səhifə ünvanı (istəyə görə)",
       "handleHint": "3-dən 40-a qədər kiçik latın hərfi, rəqəm və defis, məsələn acme-build.",
       "description": "İctimai təsvir (istəyə görə)",
@@ -310,7 +312,9 @@
         "handleLimit": "Səhifənin ünvanı həddindən çox dəyişdirilib.",
         "descriptionTooLong": "Təsvir çox uzundur",
         "countryRequired": "Şirkətin qeydiyyatdan keçdiyi ölkəni seçin",
-        "countryRefused": "Bu ölkəni seçmək olmaz. Başqasını seçin."
+        "countryRefused": "Bu ölkəni seçmək olmaz. Başqasını seçin.",
+        "regionRequired": "Şirkətin qeydiyyatdan keçdiyi regionu daxil edin",
+        "regionRefused": "Bu regionu seçmək olmaz. Kodu yoxlayın."
       }
     },
     "inviteForm": {

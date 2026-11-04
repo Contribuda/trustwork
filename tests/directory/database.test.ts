@@ -44,7 +44,7 @@ test('directory persistence: handle permanence, definer authority, RLS visibilit
     await rejects(withPrincipal(runtime, petr, (trx) => trx.insertInto('company').values({ display_name: 'Self Verified', claim_status: 'verified' }).execute()), '42501');
     await rejects(withPrincipal(runtime, petr, (trx) => sql`SELECT trustwork.directory_assign_handle('person', ${petr.personId}::uuid, 'sneaky-handle', ${petr.personId}::uuid)`.execute(trx)), '42501');
     await rejects(runtime.query("SELECT trustwork.directory_set_handle('person', $1::uuid, 'no-identity')", [petr.personId]), '28000');
-    await rejects(runtime.query("SELECT * FROM trustwork.directory_create_company('No Identity', NULL, NULL, 'US')"), '28000');
+    await rejects(runtime.query("SELECT * FROM trustwork.directory_create_company('No Identity', NULL, NULL, 'US', NULL)"), '28000');
   });
 
   await t.test('handles are permanent for every role: never deleted, never re-pointed to another subject', async () => {
@@ -132,7 +132,7 @@ test('directory persistence: handle permanence, definer authority, RLS visibilit
   await t.test('concurrency: parallel company creation by one person yields one company with one administrator and no orphans', async () => {
     const [founder] = await newPeople(1);
     const before = Number((await db.admin.query<{ n: number }>('SELECT count(*)::int AS n FROM trustwork.company')).rows[0]?.n);
-    const results = await Promise.all([1, 2, 3, 4, 5].map((i) => settle(as(founder as string, (trx) => directory.createCompany(trx, { name: `Parallel ${i}`, publicDescription: null, handle: `parallel-${i}`, country: 'US' })))));
+    const results = await Promise.all([1, 2, 3, 4, 5].map((i) => settle(as(founder as string, (trx) => directory.createCompany(trx, { name: `Parallel ${i}`, publicDescription: null, handle: `parallel-${i}`, country: 'US', region: null })))));
     assert.equal(results.filter((r) => r === null).length, 1);
     // A loser either hits the one-active-employer index or, when the winner committed first, fails closed on the
     // bumped authorization epoch (the API re-resolves the principal and then answers membership.already_employed).

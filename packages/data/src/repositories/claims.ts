@@ -132,13 +132,14 @@ export const claims = {
   get(trx: Transaction, claimId: string): Promise<CompanyClaimRow | undefined> {
     return trx.selectFrom('company_claim').selectAll().where('id', '=', claimId).executeTakeFirst();
   },
-  /** The trusted country a reviewer sees on a claim; null on a company older than the rule. */
-  async companyCountry(trx: Transaction, companyId: string): Promise<string | null> {
-    return (await trx.selectFrom('company').select('country_code').where('id', '=', companyId).executeTakeFirst())?.country_code ?? null;
+  /** The trusted place a reviewer sees on a claim; nulls on a company older than the rule. */
+  async companyPlace(trx: Transaction, companyId: string): Promise<{ country: string | null; region: string | null }> {
+    const row = await trx.selectFrom('company').select(['country_code', 'country_region']).where('id', '=', companyId).executeTakeFirst();
+    return { country: row?.country_code ?? null, region: row?.country_region ?? null };
   },
-  /** `from` restates the country the reviewer saw. Hints: `directory.country_changed`, `directory.outside_territory`, `directory.country_refused`. */
-  correctCompanyCountry(trx: Transaction, ctx: CommandContext, hubId: string, companyId: string, from: string | null, to: string): Promise<CompanyCountryCorrection> {
-    return one(sql<CompanyCountryCorrection>`SELECT * FROM trustwork.directory_correct_company_country(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${companyId}::uuid, ${from}, ${to})`, trx, 'directory_correct_company_country');
+  /** `from` restates what the reviewer saw. Hints: `directory.country_changed`, `directory.outside_territory`, `directory.country_refused`, `directory.region_required`, `directory.region_refused`. */
+  correctCompanyCountry(trx: Transaction, ctx: CommandContext, hubId: string, companyId: string, from: { country: string | null; region: string | null }, to: { country: string; region: string | null }): Promise<CompanyCountryCorrection> {
+    return one(sql<CompanyCountryCorrection>`SELECT * FROM trustwork.directory_correct_company_country(${ctxJson(ctx)}::jsonb, ${hubId}::uuid, ${companyId}::uuid, ${from.country}, ${from.region}, ${to.country}, ${to.region})`, trx, 'directory_correct_company_country');
   },
   own(trx: Transaction, personId: string): Promise<CompanyClaimRow[]> {
     return trx.selectFrom('company_claim').selectAll().where('claimant_id', '=', personId).orderBy('created_at').execute();

@@ -295,6 +295,8 @@
       "name": "Kompaniya nomi",
       "country": "Ro‘yxatdan o‘tgan mamlakat",
       "countryHint": "Bu sahifa bo‘yicha so‘rovlarni shu mamlakat habi ko‘rib chiqadi. Keyinchalik uni faqat hab xodimlari tuzata oladi.",
+      "region": "Hudud kodi",
+      "regionHint": "UA-30 kabi ISO 3166-2 kodi. Bu yerda majburiy, chunki bu mamlakatning ayrim hududlariga xizmat ko‘rsatilmaydi.",
       "handle": "Sahifa manzili (ixtiyoriy)",
       "handleHint": "3 dan 40 gacha kichik lotin harflari, raqamlar va chiziqchalar, masalan acme-build.",
       "description": "Ommaviy tavsif (ixtiyoriy)",
@@ -310,7 +312,9 @@
         "handleLimit": "Sahifa manzili juda ko‘p marta o‘zgartirilgan.",
         "descriptionTooLong": "Tavsif juda uzun",
         "countryRequired": "Kompaniya ro‘yxatdan o‘tgan mamlakatni tanlang",
-        "countryRefused": "Bu mamlakatni tanlab bo‘lmaydi. Boshqasini tanlang."
+        "countryRefused": "Bu mamlakatni tanlab bo‘lmaydi. Boshqasini tanlang.",
+        "regionRequired": "Kompaniya ro‘yxatdan o‘tgan hududni kiriting",
+        "regionRefused": "Bu hududni tanlab bo‘lmaydi. Kodni tekshiring."
       }
     },
     "inviteForm": {

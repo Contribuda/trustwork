@@ -8,7 +8,7 @@ Status: claims, disputes, hand-overs, the cooling period, per-hub badges with ex
 |---|---|
 | A claim comes from a verified login and names an active company recipe for its level (`claim_claimed` or `claim_verified`) | `claims_submit`, `claims_recipe` |
 | One open claim per page; a second claim opens a dispute and a third waits until it ends | `company_claim_open_uq`, `claims_submit` |
-| A company's country decides which hub reviews it: deciding a claim, re-checking a verification, proposing or confirming a dispute and verifying an identifier are refused for a hub whose territories do not contain the country (`outside_territory`) and for a company with no country (`company_country_missing`), a rejection included. A region or a place of the country is not the country | `claims_require_territory`, `directory_lock_hub_cover` |
+| A company's country decides which hub reviews it: deciding a claim, re-checking a verification, proposing or confirming a dispute and verifying an identifier are refused for a hub with no territory inside the country (`outside_territory`) and for a company with no country, or without the region its country needs (`company_country_missing`), a rejection included. Any territory counts, the country itself, a region or a place | `claims_require_territory`, `directory_lock_hub_cover` |
 | A company with a country is claimed only at a hub of that country (`company_outside_hub`), so no dispute lands where nobody may decide it. A company with no country may be claimed anywhere and waits for a correction | `claims_submit` |
 | The check and the write do not race: the company row is locked first, so a correction finishes before or after, and the territory row stays locked until the commit, so its removal does too | `claims_decide`, `directory_lock_hub_cover` |
 | A company's country changes only by a staff correction: audited, by a holder of `admin.claims.authority.decide` at a hub covering the old or the new country. Whoever corrected it does not approve a claim on that company or re-check it (`own_country_correction`), so nobody moves a company into their hub and hands it over alone | `directory_correct_company_country`, `directory_company_country_guard`, `claims_refuse_own_correction` |
@@ -53,7 +53,7 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | Method and path | Permission | Use |
 |---|---|---|
 | `GET /?state=` | any claims permission | Claims, disputes and the hub's periods |
-| `GET /requests/:claimId` | any claims permission | One claim, with `companyCountry` (null for a company older than the rule) |
+| `GET /requests/:claimId` | any claims permission | One claim, with `companyCountry` and `companyRegion` (null for a company older than the rule) |
 | `GET /handovers?companyId=` | any claims permission | Hand-overs of the hub or one company |
 | `POST /requests/:claimId/evidence` | `admin.claims.decide` | `{ checkIds }`: binds checks to the claim |
 | `POST /requests/:claimId/decide` | `admin.claims.decide` | `{ expectedRevision, decision, officerMatch, note }` |
@@ -64,7 +64,7 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | `POST /verifications/:verificationId/recheck` | `admin.claims.decide` | `{ recipeId }`, an active recipe of the level |
 | `GET /companies/:companyId/records` | any claims permission, with an open claim or case there | The company's records, without tax registrations; audited (`claims.records_read`) |
 | `POST /companies/:companyId/records` | `admin.claims.decide`, with an open claim or case there | `{ record, sourceRef }`: an identifier or a registration, labelled `sourced` |
-| `POST /companies/:companyId/country` | `admin.claims.authority.decide`, at a hub covering the old or the new country | `{ fromCountry, country }`: `fromCountry` restates what the reviewer saw (`409 country_changed` otherwise); audited as `company.country_corrected` |
+| `POST /companies/:companyId/country` | `admin.claims.authority.decide`, at a hub covering the old or the new country | `{ fromCountry, fromRegion, country, region }`: the first two restate what the reviewer saw (`409 country_changed` otherwise); `region` follows the rule of company creation; audited as `company.country_corrected` |
 | `POST /identifiers/:identifierId/verify` | `admin.claims.decide` | `{ expectedRevision, checkId }`: ties the identifier to a passing check; moves no badge |
 | `POST /settings` | `admin.claims.policy.edit` | `{ waitingDays, coolingDays }`, each 1 to 30 |
 
@@ -102,7 +102,7 @@ The triggers write the bell notice and plan the e-mail (`expired` comes from the
 
 ## Limits of the territory rule
 
-- A hub with only region or place territories covers no country, so it reviews no claim until a company has a place finer than its country.
+- A city hub covers its whole country: a company has no place finer than the country yet, so a hub with one city in it reviews claims on every company of that country.
 - `claims_revoke` has no territory check on purpose: the hub that gave a hand-over can always undo it.
 - A dispute already open at a hub that loses the country (a correction, a removed territory) stays open until a claimant withdraws or the territory returns: nobody may decide it there.
 - A correction does not tell the page's people yet: it needs a notice template of its own.

@@ -4,8 +4,8 @@
 --
 -- Rules:
 --   * deciding a claim, re-checking a verification, proposing or confirming a dispute and verifying an identifier are
---     refused for a hub whose territories do not contain the company's country, and for a company with no country. A
---     rejection counts: it is a decision too, and a claim on a company with no country waits for a correction;
+--     refused for a hub with no territory inside the company's country, and for a company with no country. A rejection
+--     counts: it is a decision too, and a claim on a company with no country waits for a correction;
 --   * a dispute lives at the hub of the claim that opened it, so `claims_submit` keeps a company with a country at the
 --     hubs of that country. Otherwise a claim filed elsewhere would park a dispute where nobody may decide it;
 --   * the check and the write cannot race: the company row is locked first, so a correction finishes before or after,
@@ -21,12 +21,14 @@ CREATE FUNCTION trustwork.claims_require_territory(p_hub uuid, p_company uuid) R
 LANGUAGE plpgsql VOLATILE SET search_path = trustwork, pg_temp AS $$
 DECLARE
   v_country text;
+  v_region text;
 BEGIN
-  SELECT country_code INTO v_country FROM trustwork.company WHERE id = p_company;
-  IF v_country IS NULL THEN
+  SELECT country_code, country_region INTO v_country, v_region FROM trustwork.company WHERE id = p_company;
+  -- The restricted list may have split the country, or named the region, since the company was created.
+  IF v_country IS NULL OR (v_region IS NULL AND trustwork.attestation_region_required(v_country)) THEN
     RAISE EXCEPTION 'the company has no country on record' USING ERRCODE = 'insufficient_privilege', HINT = 'claims.company_country_missing';
   END IF;
-  IF NOT trustwork.directory_lock_hub_cover(p_hub, v_country) THEN
+  IF NOT trustwork.directory_lock_hub_cover(p_hub, v_country) OR trustwork.kernel_place_restricted(coalesce(v_region, v_country)) THEN
     RAISE EXCEPTION 'this hub does not cover the company''s country' USING ERRCODE = 'insufficient_privilege', HINT = 'claims.outside_territory';
   END IF;
 END $$;

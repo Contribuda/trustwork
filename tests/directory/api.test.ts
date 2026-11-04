@@ -75,6 +75,15 @@ test('directory API: company creation, handles with redirects, keyset directorie
       expectError(refused, 422, 'validation.schema');
       assert.deepEqual((refused.body as { details?: unknown }).details, { field: 'country', reason: 'country_refused' });
     }
+    // A country the restricted list splits does not pass on its own, and its restricted regions do not pass at all.
+    const ukraine = await petr.post('/v1/companies', { ...attempt, country: 'UA' });
+    expectError(ukraine, 422, 'validation.schema');
+    assert.deepEqual((ukraine.body as { details?: unknown }).details, { field: 'region', reason: 'region_required' });
+    for (const region of ['UA-43', 'UA-40', 'UA-14', 'UA-09', 'US-CA']) {
+      const refused = await petr.post('/v1/companies', { ...attempt, country: 'UA', region });
+      expectError(refused, 422, 'validation.schema');
+      assert.deepEqual((refused.body as { details?: unknown }).details, { field: 'region', reason: 'region_refused' });
+    }
     assert.equal(await count("SELECT count(*)::int AS n FROM trustwork.company WHERE display_name = 'Fixture Placeless'"), 0);
   });
 

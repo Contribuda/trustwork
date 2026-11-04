@@ -181,10 +181,11 @@ export const directory = {
    * Creates a registered, unclaimed company with the caller as its only administrator (all company permissions) and
    * the optional handle, atomically. 23505 on `membership_one_active_employer` when the caller is already employed;
    * hints `directory.handle_unavailable` / `directory.handle_invalid` for the handle, `directory.country_refused` for
-   * a country that cannot be chosen (unknown, not selectable or restricted).
+   * a country that cannot be chosen (unknown, not selectable or restricted), `directory.region_required` and
+   * `directory.region_refused` for the region of a country the restricted list splits.
    */
-  async createCompany(trx: Transaction, input: { name: string; publicDescription: string | null; handle: string | null; country: string }): Promise<{ company_id: string; membership_id: string }> {
-    const { rows } = await sql<{ company_id: string; membership_id: string }>`SELECT * FROM trustwork.directory_create_company(${input.name}, ${input.publicDescription}, ${input.handle}, ${input.country})`.execute(trx);
+  async createCompany(trx: Transaction, input: { name: string; publicDescription: string | null; handle: string | null; country: string; region: string | null }): Promise<{ company_id: string; membership_id: string }> {
+    const { rows } = await sql<{ company_id: string; membership_id: string }>`SELECT * FROM trustwork.directory_create_company(${input.name}, ${input.publicDescription}, ${input.handle}, ${input.country}, ${input.region})`.execute(trx);
     const row = rows[0];
     if (!row) throw new Error('directory_create_company returned no row');
     return row;

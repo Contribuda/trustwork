@@ -188,7 +188,8 @@ export class ClaimsService {
       const row = ClaimsService.ofHub(await claims.get(trx, claimId), hubId);
       if (row.claimant_id === p.personId) return { claim: toOwnClaim(row) };
       if (row.dispute_id !== null && (await claims.own(trx, p.personId)).some((c) => c.dispute_id === row.dispute_id)) throw new ApiError('access.not_found', 'access.not_found');
-      return { claim: { ...toClaim(row), companyCountry: await claims.companyCountry(trx, row.company_id), evidence: await claims.evidence(trx, claimId) } };
+      const place = await claims.companyPlace(trx, row.company_id);
+      return { claim: { ...toClaim(row), companyCountry: place.country, companyRegion: place.region, evidence: await claims.evidence(trx, claimId) } };
     });
   }
 
@@ -267,7 +268,7 @@ export class ClaimsService {
   /** The only way a company's country changes. The database asks for a hub covering the old or the new country and audits it. */
   correctCountry(e: Elevated, hubId: string, companyId: string, body: Body<typeof CorrectCountryCommandSchema>) {
     return this.staff(e, body, { hubId, permission: 'admin.claims.authority.decide', action: 'company.country_corrected', objectType: 'company', objectId: companyId },
-      async (trx, cmd) => ({ correction: toCountryCorrection(await claims.correctCompanyCountry(trx, cmd, hubId, companyId, body.fromCountry, body.country)) }));
+      async (trx, cmd) => ({ correction: toCountryCorrection(await claims.correctCompanyCountry(trx, cmd, hubId, companyId, { country: body.fromCountry, region: body.fromRegion }, { country: body.country, region: body.region })) }));
   }
 
   /** The label on the identifier is all that changes: a badge comes only from a claim decision. */

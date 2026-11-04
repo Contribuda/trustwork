@@ -295,6 +295,8 @@
       "name": "Nombre de la empresa",
       "country": "País de registro",
       "countryHint": "Los reclamos sobre esta página los revisa el hub de este país. Después solo el personal del hub puede corregirlo.",
+      "region": "Código de región",
+      "regionHint": "Un código ISO 3166-2 como UA-30. Es obligatorio aquí porque algunas regiones de este país no pueden atenderse.",
       "handle": "Dirección de la página (opcional)",
       "handleHint": "De 3 a 40 letras latinas minúsculas, dígitos y guiones, por ejemplo acme-build.",
       "description": "Descripción pública (opcional)",
@@ -310,7 +312,9 @@
         "handleLimit": "La dirección de la página se cambió demasiadas veces.",
         "descriptionTooLong": "La descripción es demasiado larga",
         "countryRequired": "Elija el país donde está registrada la empresa",
-        "countryRefused": "Este país no se puede elegir. Elija otro."
+        "countryRefused": "Este país no se puede elegir. Elija otro.",
+        "regionRequired": "Escriba la región donde está registrada la empresa",
+        "regionRefused": "Esta región no se puede elegir. Revise el código."
       }
     },
     "inviteForm": {

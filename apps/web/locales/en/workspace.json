@@ -295,6 +295,8 @@
       "name": "Company name",
       "country": "Country of registration",
       "countryHint": "Claims on this page are reviewed by the hub of this country. Only hub staff can correct it later.",
+      "region": "Region code",
+      "regionHint": "An ISO 3166-2 code such as UA-30. Required here because some regions of this country cannot be served.",
       "handle": "Page address (optional)",
       "handleHint": "3 to 40 lowercase Latin letters, digits and hyphens, for example acme-build.",
       "description": "Public description (optional)",
@@ -310,7 +312,9 @@
         "handleLimit": "The page address has been changed too many times.",
         "descriptionTooLong": "The description is too long",
         "countryRequired": "Choose the country where the company is registered",
-        "countryRefused": "This country cannot be chosen. Choose another one."
+        "countryRefused": "This country cannot be chosen. Choose another one.",
+        "regionRequired": "Enter the region where the company is registered",
+        "regionRefused": "This region cannot be chosen. Check the code."
       }
     },
     "inviteForm": {

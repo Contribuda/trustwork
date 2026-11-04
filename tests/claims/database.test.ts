@@ -46,7 +46,8 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     await staffRoleDefinitions.release(trx, { version: 1, role: 'data-steward', scopes: ['hub'], permissions: ['admin.claims.authority.decide'],
       caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
     await kernelSync.apply(trx, await kernelReference.fromRepository());
-    for (const code of ['US', 'GB', 'MX']) await hubs.addTerritory(trx, { hubId: w.hubId, level: 'country', code });
+    for (const code of ['US', 'GB']) await hubs.addTerritory(trx, { hubId: w.hubId, level: 'country', code });
+    await hubs.addTerritory(trx, { hubId: w.hubId, level: 'region', code: 'MX-GUA' });
   });
   const hub = { kind: 'hub', hubId: w.hubId } as const;
   await assign({ personId: p.hubOwner, role: 'trust-reviewer', scope: hub });
@@ -207,6 +208,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     assert.deepEqual([await status(companyId), await roleOf(admin_, companyId)], ['unclaimed', null]);
   });
 
+  const US = { country: 'US', region: null };
   /** A transaction held open: the callback has written, the caller decides when it commits. */
   const held = () => {
     let wrote!: () => void;
@@ -238,7 +240,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     const { companyId, claim } = await provenClaim('Synthetic Moved Builders', 'moved@moved.synthetic.invalid', 'US');
     const tx = held();
     const correction = cmd(steward, async (trx, ctx) => {
-      await claims.correctCompanyCountry(trx, ctx, w.hubId, companyId, 'US', 'CA');
+      await claims.correctCompanyCountry(trx, ctx, w.hubId, companyId, US, { country: 'CA', region: null });
       await tx.hold();
     });
     await tx.written;
@@ -268,7 +270,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     assert.deepEqual([await status(companyId), await handovers(companyId)], ['unclaimed', 0]);
   });
 
-  await t.test('a territory cannot go while a decision stands on it: the removal waits for the commit', async () => {
+  await t.test('a region of the country is enough to cover it, and it cannot go while a decision stands on it: the removal waits for the commit', async () => {
     const { companyId, who, claim } = await provenClaim('Synthetic Covered Builders', 'covered@covered.synthetic.invalid', 'MX');
     const tx = held();
     const decision = cmd(reviewer, async (trx, ctx) => {
@@ -276,7 +278,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
       await tx.hold();
     });
     await tx.written;
-    const removal = withMaintenance(admin, (trx) => trx.deleteFrom('hub_territory').where('hub_id', '=', w.hubId).where('code', '=', 'MX').execute());
+    const removal = withMaintenance(admin, (trx) => trx.deleteFrom('hub_territory').where('hub_id', '=', w.hubId).where('code', '=', 'MX-GUA').execute());
     await queued();
     tx.commit();
     await Promise.all([decision, removal]);
@@ -285,7 +287,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
 
   await t.test('two corrections from the same country: one wins, the other is told to reload', async () => {
     const companyId = await page('Synthetic Twice Moved Builders', null, 'US');
-    const results = await Promise.all(['CA', 'FR'].map((to) => settle(cmd(steward, (trx, ctx) => claims.correctCompanyCountry(trx, ctx, w.hubId, companyId, 'US', to)))));
+    const results = await Promise.all(['CA', 'FR'].map((to) => settle(cmd(steward, (trx, ctx) => claims.correctCompanyCountry(trx, ctx, w.hubId, companyId, US, { country: to, region: null })))));
     assert.deepEqual(results.map((r) => r?.hint ?? null).sort(), ['directory.country_changed', null].sort());
     const rows = await owner((trx) => trx.selectFrom('company_country_correction').selectAll().where('company_id', '=', companyId).execute());
     assert.equal(rows.length, 1);
@@ -303,14 +305,25 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     await rejects(owner((trx) => trx.updateTable('company').set({ country_code: null }).where('id', '=', companyId).execute()), '23000', 'directory.country_locked');
     for (const code of ['RU', 'CU', 'IR', 'KP', 'ZZ']) {
       await rejects(owner((trx) => trx.insertInto('company').values({ display_name: 'Synthetic Refused Builders', country_code: code }).execute()), '23514', 'directory.country_refused');
-      await rejects(cmd(steward, (trx, ctx) => claims.correctCompanyCountry(trx, ctx, w.hubId, companyId, 'US', code)), '23514', 'directory.country_refused');
+      await rejects(cmd(steward, (trx, ctx) => claims.correctCompanyCountry(trx, ctx, w.hubId, companyId, US, { country: code, region: null })), '23514', 'directory.country_refused');
     }
     assert.equal(await countryOf(companyId), 'US');
     // A correction of an earlier transaction opens nothing, and its row is a record.
-    await cmd(steward, (trx, ctx) => claims.correctCompanyCountry(trx, ctx, w.hubId, companyId, 'US', 'CA'));
+    await cmd(steward, (trx, ctx) => claims.correctCompanyCountry(trx, ctx, w.hubId, companyId, US, { country: 'CA', region: null }));
     await rejects(owner((trx) => trx.updateTable('company').set({ country_code: 'US' }).where('id', '=', companyId).execute()), '23000', 'directory.country_locked');
     await rejects(owner((trx) => sql`DELETE FROM trustwork.company_country_correction WHERE company_id = ${companyId}::uuid`.execute(trx)), '23000');
     await rejects(as(founder, (trx) => trx.selectFrom('company_country_correction').selectAll().execute()), '42501');
+    // A country the restricted list splits is stated with its region, and a restricted region is refused.
+    await rejects(owner((trx) => trx.insertInto('company').values({ display_name: 'Synthetic Split Builders', country_code: 'UA' }).execute()), '23514', 'directory.region_required');
+    for (const region of ['UA-43', 'UA-40', 'UA-14', 'UA-09', 'US-CA']) {
+      await rejects(owner((trx) => trx.insertInto('company').values({ display_name: 'Synthetic Split Builders', country_code: 'UA', country_region: region }).execute()), '23514', 'directory.region_refused');
+    }
+    const split = await page('Synthetic Split Builders', null, 'US');
+    await rejects(cmd(steward, (trx, ctx) => claims.correctCompanyCountry(trx, ctx, w.hubId, split, US, { country: 'UA', region: null })), '23514', 'directory.region_required');
+    await rejects(cmd(steward, (trx, ctx) => claims.correctCompanyCountry(trx, ctx, w.hubId, split, US, { country: 'UA', region: 'UA-43' })), '23514', 'directory.region_refused');
+    await cmd(steward, (trx, ctx) => claims.correctCompanyCountry(trx, ctx, w.hubId, split, US, { country: 'UA', region: 'UA-30' }));
+    assert.equal(await countryOf(split), 'UA');
+    await rejects(owner((trx) => trx.updateTable('company').set({ country_region: 'UA-46' }).where('id', '=', split).execute()), '23000', 'directory.country_locked');
     // Whatever imports a company has to bring its country; a row older than the rule keeps none.
     await rejects(owner((trx) => trx.insertInto('company').values({ display_name: 'Synthetic Imported Builders', sourced_status: 'sourced' }).execute()), '23514', 'directory.country_required');
     await owner((trx) => trx.insertInto('company').values({ display_name: 'Synthetic Imported Builders', sourced_status: 'sourced', country_code: 'US' }).execute());

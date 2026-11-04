@@ -19,10 +19,18 @@ import { currencyCode, identifierLabel } from '@/app/_lib/country';
 import { typo } from '@/app/_lib/typo';
 import { primeLocale } from '@/app/_lib/locale';
 import { switcherCountries } from '@/components/locale/LocaleControls';
+import { RESTRICTED } from '@trustwork/country-packs';
+import { attestationRegionRequired, restrictedPlaces } from '@trustwork/contracts/client';
 
 export async function generateMetadata(): Promise<Metadata> {
   await primeLocale();
   return { title: t('company.title') };
+}
+
+/** What the form offers, with the countries the restricted list splits marked: they are stated with their region. */
+function offeredCountries(active: Parameters<typeof switcherCountries>[0]) {
+  const restricted = restrictedPlaces(RESTRICTED.places.map((place) => place.code));
+  return switcherCountries(active).map(({ code, name }) => ({ code, name, regionRequired: attestationRegionRequired(code, restricted) }));
 }
 
 /**
@@ -67,7 +75,7 @@ export default async function CompanyWorkspacePage({ searchParams }: { searchPar
             </NextLink>
           </div>
         </div>
-        {live ? <CompanyCreateForm countries={switcherCountries(active).map(({ code, name }) => ({ code, name }))} /> : null}
+        {live ? <CompanyCreateForm countries={offeredCountries(active)} /> : null}
       </>
     );
   }

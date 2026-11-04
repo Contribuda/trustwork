@@ -153,10 +153,12 @@ export const ProjectLookupSchema = handleLookupSchema(ProjectDirectoryEntrySchem
  * `membership.already_employed` while the creator has an active employer (one active employer per person).
  * Claims and verification never come from this command. `country` (ISO 3166-1) is what claim review follows: it decides
  * which hub may review the page, and afterwards only an audited staff correction changes it. The database refuses a
- * country that is unknown, not selectable or restricted.
+ * country that is unknown, not selectable or restricted. `region` (ISO 3166-2) is required for a country the restricted
+ * list splits (`UA`, for `UA-43`), and a restricted region is refused there too.
  */
 export const CompanyCountrySchema = z.string().regex(/^[A-Z]{2}$/);
-export const CreateCompanyCommandSchema = z.strictObject({ name: NameSchema, handle: HandleSchema.nullable(), publicDescription: TextSchema.nullable(), country: CompanyCountrySchema });
+export const CompanyRegionSchema = z.string().regex(/^[A-Z]{2}-[A-Z0-9]{1,3}$/);
+export const CreateCompanyCommandSchema = z.strictObject({ name: NameSchema, handle: HandleSchema.nullable(), publicDescription: TextSchema.nullable(), country: CompanyCountrySchema, region: CompanyRegionSchema.nullable().optional() });
 export type CreateCompanyCommand = z.infer<typeof CreateCompanyCommandSchema>;
 export const CreateCompanyResultSchema = z.strictObject({ company: CompanyDirectoryEntrySchema, membership: MembershipSchema });
 export type CreateCompanyResult = z.infer<typeof CreateCompanyResultSchema>;
