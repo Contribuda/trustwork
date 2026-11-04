@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import sharp from 'sharp';
@@ -239,6 +240,26 @@ test('PROV-001 generated images: labelled in the file, gated at release, public 
     await stack.drain();
     assert.deepEqual((await images(piece.id)).map(i => [i.status, i.failure]), [['failed', 'source_unavailable']]);
     assert.deepEqual(await stack.store.list(`provenance/${id}`), []);
+  });
+
+  await t.test('a stalled attempt that finds the source gone leaves the bytes of a copy a retry already carried', async () => {
+    const piece = await create();
+    const v = await declare(piece.id);
+    const asset = await upload(piece.id, await png(22));
+    const id = ok<{ imageId: string }>(await petr.post('/v1/provenance/images', body(v, asset.id)), 202).imageId;
+    const key = `provenance/${id}`, labelled = await png(22);
+    const read = stack.store.read.bind(stack.store);
+    // While this attempt stalls before its read, a retry stores and carries the image; then the source is unreadable.
+    stack.store.read = async () => {
+      stack.store.read = read;
+      await stack.store.put(key, labelled);
+      await inTransaction(stack.env.workerPool(2), trx => provenanceWorker.imageComplete(trx, id, { key, sha256: createHash('sha256').update(labelled).digest('hex'), bytes: labelled.byteLength, credentials: null }));
+      return null;
+    };
+    await stack.drain();
+    stack.store.read = read;
+    assert.deepEqual((await images(piece.id)).map(i => i.status), ['carried']);
+    assert.deepEqual(await stack.store.list(key), [key], 'the live file keeps its bytes');
   });
 
   await t.test('a deletion in flight when the job completes is waited for, and wins', async () => {

@@ -60,10 +60,10 @@ export function registerProvenanceImages(registry: HandlerRegistry, runtime: Pro
           storageFailure(error);
         }
       };
-      // An earlier attempt may have stored the labelled bytes and died before completing, so every failure clears them.
+      // An earlier attempt may have stored the labelled bytes and died before completing, so a failure clears them. Only
+      // one this attempt recorded: if another attempt carried the image meanwhile, those bytes are the published file.
       const fail = async (failure: string) => {
-        await inTransaction(pool, (trx) => provenanceWorker.imageFail(trx, id, failure));
-        await discard();
+        if (await inTransaction(pool, (trx) => provenanceWorker.imageFail(trx, id, failure))) await discard();
       };
       const target = await inTransaction(pool, (trx) => provenanceWorker.imageTarget(trx, id));
       // A retry after a refused completion or a failure: the store was unreachable when the bytes were to go.
