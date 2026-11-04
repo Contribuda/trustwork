@@ -20,6 +20,12 @@ export const SOURCING_CAPABILITY_OPERATIONS: readonly SourcingOperation[] = [
   { route: 'GET /v1/sourcing/level-sheet-versions/:id', capabilityId: null, proposed: 'sourcing_desk.view_event' },
   { route: 'POST /v1/sourcing/level-sheet-versions/:id', capabilityId: 'sourcing_desk.level_bids' },
   { route: 'POST /v1/sourcing/level-sheet-versions/:id/freeze', capabilityId: 'sourcing_desk.propose_award' },
+  { route: 'POST /v1/sourcing/rfqs/:id/awards', capabilityId: 'sourcing_desk.propose_award' },
+  { route: 'GET /v1/sourcing/awards/:id', capabilityId: null, proposed: 'sourcing_desk.view_event' },
+  { route: 'POST /v1/sourcing/awards/:id/execute', capabilityId: 'sourcing_desk.execute_award' },
+  { route: 'POST /v1/sourcing/awards/:id/cancel', capabilityId: null, proposed: 'sourcing_desk.cancel_award' },
+  { route: 'POST /v1/sourcing/rfqs/:id/outcome-notices', capabilityId: 'sourcing_desk.notify_outcomes' },
+  { route: 'GET /v1/sourcing/outcome-notices', capabilityId: null, proposed: 'sales.view_outcome_notices' },
 ];
 
 /** Registry entries to add (PRC-023): kind, mandate action and default confirmation, in the vocabulary of the supply table. */
@@ -27,4 +33,6 @@ export const PROPOSED_SOURCING_CAPABILITIES = [
   { id: 'sourcing_desk.view_event', kind: 'read', mandateAction: null, confirmation: 'none', route: '/app/sourcing' },
   { id: 'sourcing_desk.set_eligibility', kind: 'draft', mandateAction: 'prepare', confirmation: 'none', route: '/app/sourcing' },
   { id: 'sourcing_desk.list_candidates', kind: 'read', mandateAction: null, confirmation: 'none', route: '/app/sourcing' },
+  { id: 'sourcing_desk.cancel_award', kind: 'commit', mandateAction: null, confirmation: 'human_only', route: '/app/sourcing/award' },
+  { id: 'sales.view_outcome_notices', kind: 'read', mandateAction: null, confirmation: 'none', route: '/app/sales' },
 ] as const;

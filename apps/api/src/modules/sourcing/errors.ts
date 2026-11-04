@@ -14,6 +14,21 @@ const HINTS: Record<string, { code: Code; reason: string }> = {
   'sourcing.pin_mismatch': { code: 'commercial.digest_mismatch', reason: 'pin_mismatch' },
   'sourcing.stale_comparable': { code: 'commercial.stale_version', reason: 'stale_comparable' },
   'sourcing.captured_quote_unavailable': { code: 'validation.schema', reason: 'captured_quote_unavailable' },
+  'sourcing.company_buyer_required': { code: 'validation.schema', reason: 'company_buyer_required' },
+  'sourcing.rfq_not_open': { code: 'validation.schema', reason: 'rfq_not_open' },
+  'sourcing.rfq_not_closed': { code: 'validation.schema', reason: 'rfq_not_closed' },
+  'sourcing.sheet_not_frozen': { code: 'validation.schema', reason: 'sheet_not_frozen' },
+  'sourcing.sheet_superseded': { code: 'validation.revision_conflict', reason: 'sheet_superseded' },
+  'sourcing.not_comparable': { code: 'commercial.stale_version', reason: 'not_comparable' },
+  'sourcing.award_exists': { code: 'validation.revision_conflict', reason: 'award_exists' },
+  'sourcing.award_required': { code: 'access.forbidden', reason: 'award_required' },
+  'sourcing.award_not_approved': { code: 'access.forbidden', reason: 'award_not_approved' },
+  'sourcing.award_not_executed': { code: 'validation.schema', reason: 'award_not_executed' },
+  'sourcing.approval_digest_mismatch': { code: 'access.approval_digest_mismatch', reason: 'digest_mismatch' },
+  'sourcing.execution_incomplete': { code: 'validation.schema', reason: 'execution_incomplete' },
+  'sourcing.already_notified': { code: 'validation.revision_conflict', reason: 'already_notified' },
+  'sourcing.feedback_needs_award': { code: 'validation.schema', reason: 'feedback_needs_award' },
+  'approvals.first_party_required': { code: 'access.forbidden', reason: 'first_party_required' },
 };
 
 /** Database refusals of the sourcing commands as contract codes; `details.reason` names the rule. Deal hints fall through. */

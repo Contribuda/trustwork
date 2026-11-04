@@ -100,7 +100,7 @@ export class AppModule {
         ApprovalRoutesModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-001
         SalesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
         SourcesModule.forRoot(ctx, identity), // SRC-001
-        SourcingModule.forRoot(ctx, identity, { mandates: store.port(['sourcing_desk']) }), // PRC-004
+        SourcingModule.forRoot(ctx, identity, { mandates: store.port(['sourcing_desk']), dealMandates: store.port(MODULE_KEYS.deals) }), // PRC-004
         SupplierBaseModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-003
         SupportModule.forRoot(ctx, identity),
         TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),

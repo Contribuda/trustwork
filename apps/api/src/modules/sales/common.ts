@@ -28,6 +28,7 @@ const HINTS: Record<string, { code: ConstructorParameters<typeof ApiError>[0]; r
   'commercial.quote_not_acceptable': { code: 'commercial.quote_not_acceptable', reason: 'quote_not_acceptable' },
   'commercial.quote_expired': { code: 'commercial.quote_expired', reason: 'quote_expired' },
   'sourcing.sealed_deadline_passed': { code: 'commercial.quote_not_acceptable', reason: 'sealed_deadline_passed' },
+  'sourcing.award_required': { code: 'access.forbidden', reason: 'award_required' },
   'commercial.rfq_version_mismatch': { code: 'commercial.rfq_version_mismatch', reason: 'rfq_version_mismatch' },
   'commercial.authority_missing': { code: 'commercial.authority_missing', reason: 'authority_missing' },
   'commercial.budget_insufficient': { code: 'commercial.budget_insufficient', reason: 'budget_insufficient' },

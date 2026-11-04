@@ -183,7 +183,7 @@ export const negotiationRounds = {
 export interface AgreementInsert {
   id?: string; buyer_person_id: string | null; buyer_company_id: string | null; seller_person_id: string | null; seller_company_id: string | null; rfq_id: string; quote_id: string;
   quote_version_id: string; rfq_version_id: string; offer_version: number; offer_digest: string; request_version: number; request_digest: string; accepted_terms_digest: string;
-  status: AgreementStatusValue; supersedes_id: string | null; created_by_person_id: string;
+  status: AgreementStatusValue; supersedes_id: string | null; created_by_person_id: string; award_decision_id?: string | null;
 }
 export const agreements = {
   insert(trx: Transaction, row: AgreementInsert): Promise<AgreementRow> {
@@ -198,6 +198,11 @@ export const agreements = {
   },
   liveForRfq(trx: Transaction, rfqId: string): Promise<AgreementRow | undefined> {
     return trx.selectFrom('agreement').selectAll().where('rfq_id', '=', rfqId).where('status', 'in', ['proposed', 'accepted_by_buyer', 'accepted_by_both']).executeTakeFirst();
+  },
+  /** PRC-004: a live agreement that stops an award from taking this quote: a direct one, one of another award, or this quote's own. */
+  liveBlockingAward(trx: Transaction, input: { rfqId: string; awardDecisionId: string; quoteId: string }): Promise<AgreementRow | undefined> {
+    return trx.selectFrom('agreement').selectAll().where('rfq_id', '=', input.rfqId).where('status', 'in', ['proposed', 'accepted_by_buyer', 'accepted_by_both'])
+      .where((eb) => eb.or([eb('award_decision_id', 'is', null), eb('award_decision_id', '!=', input.awardDecisionId), eb('quote_id', '=', input.quoteId)])).executeTakeFirst();
   },
   /** RFQ-quote agreements where the principal (or the company it acts for) is a party, newest first. */
   listForParties(trx: Transaction, scope: PartyScope): Promise<AgreementRow[]> {

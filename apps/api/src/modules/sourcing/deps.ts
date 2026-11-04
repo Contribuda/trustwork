@@ -9,7 +9,9 @@ export {
 } from '../../../../../packages/contracts/src/supply/sourcing.js';
 export { DraftBidLevelSheetCommandSchema, ExecuteAwardCommandSchema, NotifyOutcomesCommandSchema, ProposeAwardCommandSchema } from '../../../../../packages/contracts/src/supply/commands.js';
 export { KeySchema } from '../../../../../packages/contracts/src/supply/common.js';
-export { eligibilityRules, levelSheets, sourcingAccess } from '../../../../../packages/data/src/repositories/sourcing.js';
-export type { BidLevelSheetRow, BidLevelSheetVersionRow, SourcingEligibilityRuleSetRow } from '../../../../../packages/data/src/schema/sourcing.js';
+export { awardDecisions, eligibilityRules, levelSheets, outcomeNotices, sourcingAccess } from '../../../../../packages/data/src/repositories/sourcing.js';
+export type { AwardDecisionRow, BidLevelSheetRow, BidLevelSheetVersionRow, BidOutcomeNoticeRow, SourcingEligibilityRuleSetRow } from '../../../../../packages/data/src/schema/sourcing.js';
 export { quotes, quoteVersions, rfqInvitations, rfqs, rfqVersions, type QuoteRow, type QuoteVersionRow, type RfqRow, type RfqVersionRow } from '../sales/deps.js';
+export { ElectronicRecordsConsentSchema } from '../../../../../packages/contracts/src/deals.js';
+export { PROCUREMENT_HUB_DEFAULTS } from '../../../../../packages/contracts/src/supply/settings.js';
 export { supplierRecords, type SupplierRecordRow, type SupplierStatus } from '../supplier-base/deps.js';

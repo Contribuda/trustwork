@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { DigestSchema, IdSchema, MoneySchema, RegionCodeSchema, RevisionSchema } from '../../deps/contracts.js';
-import { BidLevelSheetPayloadSchema, DraftBidLevelSheetCommandSchema, KeySchema } from './deps.js';
+import { DigestSchema, IdSchema, MoneySchema, RegionCodeSchema, RevisionSchema, ShortTextSchema } from '../../deps/contracts.js';
+import { BidLevelSheetPayloadSchema, DraftBidLevelSheetCommandSchema, ElectronicRecordsConsentSchema, ExecuteAwardCommandSchema, KeySchema, NotifyOutcomesCommandSchema, ProposeAwardCommandSchema } from './deps.js';
 
 /**
  * HTTP bodies: the frozen supply commands (PRC-000) plus the actor (the person on their own authority, or their agent
@@ -28,3 +28,8 @@ export const SaveEligibilityBodySchema = z.strictObject({ rules: z.array(Eligibi
 export const DraftSheetBodySchema = DraftBidLevelSheetCommandSchema.extend(actor);
 export const SaveSheetBodySchema = z.strictObject({ payload: BidLevelSheetPayloadSchema, expectedRevision: RevisionSchema, ...actor });
 export const FreezeSheetBodySchema = z.strictObject({ digest: DigestSchema, expectedRevision: RevisionSchema, ...actor });
+/** `expectedRevision` is the RFQ's on a proposal and on notices, the award's on execution and cancellation. */
+export const ProposeAwardBodySchema = ProposeAwardCommandSchema.extend(actor);
+export const ExecuteAwardBodySchema = ExecuteAwardCommandSchema.extend({ electronicRecords: ElectronicRecordsConsentSchema.nullable(), ...actor });
+export const CancelAwardBodySchema = z.strictObject({ reason: ShortTextSchema, expectedRevision: RevisionSchema, ...actor });
+export const NotifyOutcomesBodySchema = NotifyOutcomesCommandSchema.extend(actor);

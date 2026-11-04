@@ -43,7 +43,7 @@ export const ProcurementHubSettingsSchema = z.strictObject({
   autoRelease: z.strictObject({ enabled: z.boolean(), payeeUnchangedDays: z.int().min(PAYEE_COOLING_OFF_MINIMUM_BUSINESS_DAYS).max(365), ceiling: NonNegativeMoneySchema.nullable() }),
   /** R46 and ADR 012 decision 34: no bank payment file exports for now. */
   bankPaymentFileExport: z.literal(false),
-  /** Feedback bands for not-awarded bidders: the per-event default for buyers, off unless the hub allows the buyer opt-in. */
+  /** Whether a buyer may opt in to feedback bands for not-awarded bidders. Allowed by the engine default; a hub may refuse it, and bands stay off until the buyer opts in per event. */
   feedbackBandsAllowed: z.boolean(),
   benchmarks: BenchmarkSettingsSchema,
   /** Demand pooling only after benchmarks are enabled (ADR 012 decision 34). */
