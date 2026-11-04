@@ -375,7 +375,9 @@ test('staff invitations: invited in the console, answered in the workspace with 
   await secondFactor(inviteeCtx);
   await workspace.goto('/app/settings');
   await expect(workspace.getByTestId('invitation-second-factor')).toHaveText(msg('settings.staffInvitations.secondFactorReady', LANG));
-  for (const width of [768, 375]) {
+  // 320 is the reflow width of WCAG 1.4.10. At 375 this page once had under 4 px to spare, so a font that drew Georgian a
+  // little wider overflowed it, and a check at 375 alone passed or failed by that margin.
+  for (const width of [768, 375, 320]) {
     await workspace.setViewportSize({ width, height: 900 });
     await expectNoHorizontalOverflow(workspace);
     await shot(workspace, `console-13-invitation-${width}-ka`);

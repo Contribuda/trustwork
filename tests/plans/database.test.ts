@@ -105,6 +105,14 @@ test('plans database: RLS, frozen versions, approval authority, shares and concu
     }), 'invisible');
   });
 
+  const untilInsertWaits = async () => {
+    for (let n = 0; n < 3000; n++) {
+      const { rows } = await db.admin.query("SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query ILIKE '%plan_item%'");
+      if (rows.length) return;
+      await sleep(10);
+    }
+    assert.fail('the insert never waited for the version lock');
+  };
   await t.test('a proposal racing an item insert: the insert waits for the version lock, then finds it frozen', async () => {
     let started!: () => void;
     const startedP = new Promise<void>((r) => { started = r; });
@@ -118,12 +126,14 @@ test('plans database: RLS, frozen versions, approval authority, shares and concu
       return planVersions.propose(trx, v1, { digest: computeDigest(planVersionDigestInput({ planId, version: 1, content: CONTENT })).value, personId: petr, via: 'person', mandateId: null, at: new Date() });
     });
     await startedP;
-    const late = as(pure, (trx) => trx.insertInto('plan_item').values({ plan_version_id: v1, item_key: 'late', position: 9, kind: 'milestone', title: 'Late', step_terms: [], required_skills: [], sources: '[]', attachments: '[]' }).execute());
-    await sleep(300);
+    // Handled from the start: the refusal can arrive before the proposal's own commit returns, and a rejection nobody
+    // is listening to yet fails the test.
+    const late = fails(as(pure, (trx) => trx.insertInto('plan_item').values({ plan_version_id: v1, item_key: 'late', position: 9, kind: 'milestone', title: 'Late', step_terms: [], required_skills: [], sources: '[]', attachments: '[]' }).execute()), 'plans.version_frozen');
+    await untilInsertWaits();
     release();
     const proposed = await proposal;
     assert.equal(proposed.status, 'proposed');
-    await fails(late, 'plans.version_frozen');
+    await late;
     assert.equal((await as(petr, (trx) => planParts.items(trx, v1))).length, 2, 'the frozen version has exactly its proposed items');
   });
 

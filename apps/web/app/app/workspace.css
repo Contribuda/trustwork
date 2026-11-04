@@ -1157,9 +1157,20 @@ a.ws-chip:hover {
   margin-top: 6px;
 }
 
+@media (max-width: 767.98px) {
+  /* A long Georgian or Armenian word or button label must not set the width of the page on a phone. */
+  .ws-settings {
+    overflow-wrap: anywhere;
+  }
+
+  .ws-settings button > span {
+    white-space: normal;
+  }
+}
+
 @media (max-width: 1023.98px) {
   .ws-settings {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .ws-settings__nav {
