@@ -14,7 +14,14 @@ const FIELD_MAP = {
   handle: { invalid: 'company.create.error.handleInvalid', too_short: 'company.create.error.handleInvalid', too_long: 'company.create.error.handleInvalid' },
   publicDescription: { too_long: 'company.create.error.descriptionTooLong', invalid: 'company.create.error.descriptionTooLong' },
   country: { required: 'company.create.error.countryRequired', invalid: 'company.create.error.countryRequired' },
+  region: { required: 'company.create.error.regionRequired', invalid: 'company.create.error.regionRefused' },
 } as const;
+
+/** A country the restricted list splits needs its region; the API names the field and the reason. */
+const REGION_REASONS: Record<string, LocaleKey> = {
+  region_required: 'company.create.error.regionRequired',
+  region_refused: 'company.create.error.regionRefused',
+};
 
 /** Directory handle problems come as `validation.schema` with `{ field: 'handle', reason }` (BE-003). */
 const HANDLE_REASONS: Record<string, LocaleKey> = {
@@ -29,20 +36,24 @@ const HANDLE_REASONS: Record<string, LocaleKey> = {
  * taken handle; both render localized copy. The page address is optional: without it the page uses its identifier.
  * The country is required and never preselected: it decides which hub reviews claims on the page, and only staff can
  * correct it afterwards. `countries` comes from the server and holds what the deployment offers, never a restricted
- * place. A native select, as in the country switcher: searchable by typing, and no combobox script for one field.
+ * place. A native select, as in the country switcher: searchable by typing, and no combobox script for one field. A
+ * country the restricted list splits also asks for its region, typed as a code because no list of its regions exists.
  */
-export function CompanyCreateForm({ countries }: { countries: ReadonlyArray<{ code: string; name: string }> }) {
+export function CompanyCreateForm({ countries }: { countries: ReadonlyArray<{ code: string; name: string; regionRequired: boolean }> }) {
   const router = useRouter();
   const [name, setName] = useState('');
   const [handle, setHandle] = useState('');
   const [description, setDescription] = useState('');
   const [country, setCountry] = useState('');
+  const [region, setRegion] = useState('');
+  const regionRequired = countries.some((c) => c.code === country && c.regionRequired);
   const form = useAuthForm();
 
   const onError = (error: ErrorEnvelopeLike) => {
     const reason = error.details?.reason;
     if (error.details?.field === 'handle' && typeof reason === 'string' && HANDLE_REASONS[reason]) return { handle: t(HANDLE_REASONS[reason]!) };
     if (error.details?.field === 'country') return { country: t('company.create.error.countryRefused') };
+    if (error.details?.field === 'region' && typeof reason === 'string' && REGION_REASONS[reason]) return { region: t(REGION_REASONS[reason]!) };
     return mapFieldErrors(form.fieldIssues(error), FIELD_MAP);
   };
 
@@ -70,7 +81,7 @@ export function CompanyCreateForm({ countries }: { countries: ReadonlyArray<{ co
         isBusy={form.busy}
         onSubmit={async (event) => {
           event.preventDefault();
-          const payload = { name, handle: handle.trim() ? handle.trim() : null, publicDescription: description.trim() ? description.trim() : null, country };
+          const payload = { name, handle: handle.trim() ? handle.trim() : null, publicDescription: description.trim() ? description.trim() : null, country, region: regionRequired && region.trim() ? region.trim().toUpperCase() : null };
           const response = await form.submit({ path: '/v1/companies', payload, schema: CreateCompanyCommandSchema, idempotent: true, onError });
           if (response.kind === 'ok') router.refresh();
         }}
@@ -100,6 +111,9 @@ export function CompanyCreateForm({ countries }: { countries: ReadonlyArray<{ co
             <small id="company-country-hint">{t('company.create.countryHint')}</small>
             {form.fields.country ? <small id="company-country-error" className="ws-native-field__error">{form.fields.country}</small> : null}
           </div>
+          {regionRequired ? (
+            <TextField id="company-region" label={t('company.create.region')} description={t('company.create.regionHint')} value={region} onChange={setRegion} autoComplete="off" isRequired errorMessage={form.fields.region} isDisabled={form.busy} />
+          ) : null}
           <TextField
             id="company-handle"
             label={t('company.create.handle')}

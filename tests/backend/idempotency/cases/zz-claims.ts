@@ -152,7 +152,7 @@ export default {
       evidenceRef: 'register:SYN-CRASH-SOS' }), { idempotencyKey: 'crash-claims.check_records' }));
     await run('claims.identifier_verify', a, `${base}/claims/identifiers/${sourced.record.id}/verify`, { expectedRevision: 1, checkId: check.check.id }, audits('claims.identifier_verified', sourced.record.id));
 
-    await run('claims.company_country_correct', a, `${base}/claims/companies/${records}/country`, { fromCountry: 'US', country: 'GB' }, audits('company.country_corrected', records));
+    await run('claims.company_country_correct', a, `${base}/claims/companies/${records}/country`, { fromCountry: 'US', fromRegion: null, country: 'GB', region: null }, audits('company.country_corrected', records));
 
     await run('claims.verification_recheck', a, `${base}/claims/verifications/${verificationId}/recheck`, { recipeId: claimedRecipe }, () => count(admin, 'SELECT 1 FROM trustwork.company_verification WHERE company_id = $1', [renewed]));
   },

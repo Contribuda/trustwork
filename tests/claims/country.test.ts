@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { withMaintenance } from '@trustwork/data';
+import { hubs } from '../../packages/data/src/repositories/kernel.js';
 import { command, expectRefusal } from '../admin/helpers.js';
 import { SKIP_REASON, startHarness, type Client, type Response } from '../backend/helpers/app.js';
 import { claimsWorld, ok, type Claim } from './helpers.js';
@@ -33,8 +34,8 @@ test('Claim review stays inside a hub\'s territories', { skip: h ? false : SKIP_
     return drafted.recipe.id;
   })();
   const submitElsewhere = (client: Client, companyId: string): Promise<Response> => client.post('/v1/claims', { hubId: otherHubId, companyId, level: 'verified', recipeId: otherRecipe, tie: null });
-  const correct = (client: Client, hub: string, companyId: string, fromCountry: string | null, country: string): Promise<Response> =>
-    command(client, `/v1/admin/hubs/${hub}/claims/companies/${companyId}/country`, { fromCountry, country });
+  const correct = (client: Client, hub: string, companyId: string, fromCountry: string | null, country: string, region: string | null = null, fromRegion: string | null = null): Promise<Response> =>
+    command(client, `/v1/admin/hubs/${hub}/claims/companies/${companyId}/country`, { fromCountry, fromRegion, country, region });
   const countryOf = async (companyId: string) => (await withMaintenance(admin, (trx) => trx.selectFrom('company').select('country_code').where('id', '=', companyId).executeTakeFirstOrThrow())).country_code;
   const audits = async (action: string, objectId: string) => (await admin.query<{ outcome: string; reason_code: string; hub_id: string; before_digest: string | null; after_digest: string | null }>(
     'SELECT outcome, reason_code, hub_id, before_digest, after_digest FROM trustwork.admin_audit_event WHERE action = $1 AND object_id = $2 ORDER BY sequence', [action, objectId])).rows;
@@ -48,6 +49,17 @@ test('Claim review stays inside a hub\'s territories', { skip: h ? false : SKIP_
     const claim = ok<{ claim: Claim }>(await submit(person.client, companyId, 'verified')).claim;
     ok(await decide(reviewer, { ...claim, companyId, recipeId: recipes.verified }));
     assert.deepEqual([await statusOf(companyId), await roleOf(person.id, companyId)], ['verified', 'administrator']);
+  });
+
+  await t.test('a hub covers a company when any of its territories lies inside the company\'s country: a city hub reviews its whole country', async () => {
+    await withMaintenance(admin, (trx) => hubs.addTerritory(trx, { hubId: otherHubId, level: 'region', code: 'MX-GUA' }));
+    const companyId = await page('Synthetic Far Side Builders', null, 'MX');
+    const person = await claimant('Synthetic Far Side Claimant', 'claimant@farside.synthetic.invalid');
+    const claim = ok<{ claim: Claim }>(await submitElsewhere(person.client, companyId)).claim;
+    const decided = ok<{ claim: Claim }>(await command(otherReviewer, `${otherBase}/claims/requests/${claim.id}/decide`, { expectedRevision: claim.revision, decision: 'rejected', officerMatch: false, note: null })).claim;
+    assert.equal(decided.state, 'rejected', 'the hub holds one region of the country, and the company has no place finer than the country');
+    // A territory of another country still covers nothing here.
+    expectRefusal(await submit(person.client, companyId, 'verified'), 422, 'validation.schema', 'company_outside_hub');
   });
 
   await t.test('a company with no country is refused to every reviewer, whichever way they decide, until a correction', async () => {
@@ -131,7 +143,7 @@ test('Claim review stays inside a hub\'s territories', { skip: h ? false : SKIP_
   await t.test('a correction needs the permission, a hub covering the old or the new country, and the country the reviewer saw', async () => {
     const companyId = await page('Synthetic Corrected Builders');
     const url = `${base}/claims/companies/${companyId}/country`;
-    const move = { fromCountry: 'US', country: 'CA' };
+    const move = { fromCountry: 'US', fromRegion: null, country: 'CA', region: null };
     // Deciding claims is not enough; neither is staff without any claims permission, an unelevated person or the company.
     expectRefusal(await correct(reviewer, hubId, companyId, 'US', 'CA'), 403, 'access.forbidden', 'forbidden');
     expectRefusal(await correct(w.clients.moderator, hubId, companyId, 'US', 'CA'), 403, 'access.forbidden', 'forbidden');
@@ -141,6 +153,9 @@ test('Claim review stays inside a hub\'s territories', { skip: h ? false : SKIP_
     expectRefusal(await correct(steward, hubId, companyId, 'CA', 'GB'), 409, 'validation.revision_conflict', 'country_changed');
     expectRefusal(await correct(steward, hubId, companyId, 'US', 'US'), 422, 'validation.schema', 'country_unchanged');
     for (const country of ['RU', 'KP', 'IR', 'CU']) expectRefusal(await correct(steward, hubId, companyId, 'US', country), 422, 'validation.schema', 'country_refused');
+    // A country the restricted list splits needs its region, and a restricted region is refused.
+    expectRefusal(await correct(steward, hubId, companyId, 'US', 'UA'), 422, 'validation.schema', 'region_required');
+    for (const region of ['UA-43', 'UA-40', 'UA-14', 'UA-09']) expectRefusal(await correct(steward, hubId, companyId, 'US', 'UA', region), 422, 'validation.schema', 'region_refused');
     assert.equal((await correct(steward, hubId, '00000000-0000-4000-8000-00000000dead', 'US', 'CA')).status, 404);
     assert.equal(await countryOf(companyId), 'US');
 

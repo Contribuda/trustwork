@@ -25,7 +25,9 @@ export interface CompanyCountryCorrectionTable {
   company_id: string;
   hub_id: string;
   from_country: string | null;
+  from_region: string | null;
   to_country: string;
+  to_region: string | null;
   corrected_by: string;
   corrected_at: GeneratedTimestamp;
 }
@@ -44,5 +46,5 @@ declare module './index.js' {
 const columns = columnsOf<DirectoryDatabase>();
 export const TABLE_COLUMNS: TableColumns<DirectoryDatabase> = {
   directory_handle: columns('directory_handle', ['kind', 'handle', 'subject_id', 'assigned_by', 'assigned_at', 'retired_at']),
-  company_country_correction: columns('company_country_correction', ['id', 'company_id', 'hub_id', 'from_country', 'to_country', 'corrected_by', 'corrected_at']),
+  company_country_correction: columns('company_country_correction', ['id', 'company_id', 'hub_id', 'from_country', 'from_region', 'to_country', 'to_region', 'corrected_by', 'corrected_at']),
 };

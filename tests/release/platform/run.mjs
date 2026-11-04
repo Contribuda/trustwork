@@ -156,6 +156,15 @@ async function runStack(options) {
       return 'screening_available() = false';
     });
 
+    // Public projections need the origin registered (agent_serving_hub, requirePublicServingContext). That is an operator
+    // step with no default, so this stack does it as tests/web/live-api/stack.ts does, on a synthetic hub.
+    await check('the operator registers the public origin with a synthetic hub', async () => {
+      const register = `WITH hub AS (INSERT INTO trustwork.hub (slug, lifecycle) VALUES ('synthetic-release', 'draft') RETURNING id)
+        INSERT INTO trustwork.agent_serving_hub (origin, hub_id) SELECT '${origin}', id FROM hub`;
+      const q = compose(['exec', '-T', 'postgres', 'psql', '-U', 'trustwork_dev', '-d', 'trustwork_stack', '-v', 'ON_ERROR_STOP=1', '-tA', '-c', register]);
+      if (q.status !== 0) throw new Error(q.stderr);
+    });
+
     await check('browser journey and HTTP gates (en/es, desktop/phone)', async () => {
       const run = await new Promise((resolveRun) => {
         const child = spawn('npx', ['playwright', 'test', '-c', '../../tests/release/platform/playwright.config.ts'], {

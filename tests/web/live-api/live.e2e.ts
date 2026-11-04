@@ -274,6 +274,42 @@ test('negative authorization: other people, anonymous visitors, forged requests 
   expect(noKey.status()).toBeGreaterThanOrEqual(400);
 });
 
+test('the country field in Georgian: a split country asks for its region and a restricted region is refused', async ({ browser }) => {
+  for (const [width, height, label] of [[1280, 900, '1280'], [375, 812, '375']] as const) {
+    const ctx = await browser.newContext({
+      viewport: { width, height },
+      locale: 'ka-GE',
+      storageState: {
+        cookies: [
+          { name: 'trustwork.country', value: 'GE', domain: '127.0.0.1', path: '/', expires: -1, httpOnly: false, secure: false, sameSite: 'Lax' },
+          { name: 'trustwork.locale', value: 'ka', domain: '127.0.0.1', path: '/', expires: -1, httpOnly: false, secure: false, sameSite: 'Lax' },
+        ],
+        origins: [],
+      },
+    });
+    const page = await ctx.newPage();
+    await verifiedAccount(page.request, `Georgian Founder ${label}`);
+    await page.goto(`${WEB_ORIGIN}/app/company`);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'ka');
+    await ready(page);
+    const country = page.getByLabel(msg('company.create.country', 'ka'));
+    await country.scrollIntoViewIfNeeded();
+    await expect(country).toHaveValue('');
+    await expect(country.locator('option[value="RU"], option[value="CU"], option[value="IR"], option[value="KP"]')).toHaveCount(0);
+    await shot(page, `company-create-${label}-ka`);
+    await page.getByLabel(msg('company.create.name', 'ka')).fill('სინთეტიკური მშენებლები');
+    await expect(page.getByLabel(msg('company.create.region', 'ka'))).toHaveCount(0);
+    await country.selectOption('UA');
+    await page.getByLabel(msg('company.create.region', 'ka')).fill('ua-43');
+    await page.getByRole('button', { name: msg('company.create.submit', 'ka') }).click();
+    await expect(page.getByText(msg('company.create.error.regionRefused', 'ka')).first()).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.getByLabel(msg('company.create.region', 'ka')).scrollIntoViewIfNeeded();
+    await shot(page, `company-create-region-${label}-ka`);
+    await ctx.close();
+  }
+});
+
 test('a taken company address and other API errors render localized copy, never the code', async ({ page, browser }) => {
   await verifiedAccount(page.request, 'First Founder');
   const handle = `taken-${Date.now().toString(36)}`;

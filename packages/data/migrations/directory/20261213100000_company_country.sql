@@ -8,23 +8,30 @@
 --     refused without one, so whatever imports companies later has to bring it;
 --   * the country is an ISO 3166-1 code of a selectable, live jurisdiction, and never a restricted place. With no
 --     restricted list loaded every place counts as restricted, so nothing is accepted (kernel_place_restricted);
---   * a change needs a correction row of the same transaction, for every role, maintenance included. Only
+--   * a country the restricted list splits (UA, for UA-43) needs its region, the rule of the deployment attestation
+--     (`attestation_region_required`), and a restricted region is refused. The region is a stated ISO 3166-2 code: no
+--     list of the regions of such a country exists yet, so a code the list does not name passes;
+--   * a change of either needs a correction row of the same transaction, for every role, maintenance included. Only
 --     `directory_correct_company_country` writes one: audited, a person holding `admin.claims.authority.decide` at a
---     hub whose territories contain the old or the new country;
+--     hub covering the old or the new country;
 --   * rows that exist today stay NULL. Nothing guesses a country for them; claim review refuses them until a correction
 --     sets one.
 
 ALTER TABLE trustwork.company ADD COLUMN country_code text NULL CHECK (country_code ~ '^[A-Z]{2}$');
+ALTER TABLE trustwork.company ADD COLUMN country_region text NULL CHECK (country_region ~ '^[A-Z]{2}-[A-Z0-9]{1,3}$');
+ALTER TABLE trustwork.company ADD CONSTRAINT company_country_region CHECK (country_region IS NULL OR left(country_region, 2) = country_code);
 
 CREATE TABLE trustwork.company_country_correction (
   id uuid PRIMARY KEY DEFAULT trustwork.new_uuid(),
   company_id uuid NOT NULL REFERENCES trustwork.company (id),
   hub_id uuid NOT NULL REFERENCES trustwork.hub (id),
   from_country text NULL CHECK (from_country ~ '^[A-Z]{2}$'),
+  from_region text NULL CHECK (from_region ~ '^[A-Z]{2}-[A-Z0-9]{1,3}$'),
   to_country text NOT NULL CHECK (to_country ~ '^[A-Z]{2}$'),
+  to_region text NULL CHECK (to_region ~ '^[A-Z]{2}-[A-Z0-9]{1,3}$'),
   corrected_by uuid NOT NULL REFERENCES trustwork.person (id),
   corrected_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT company_country_correction_moves CHECK (from_country IS DISTINCT FROM to_country)
+  CONSTRAINT company_country_correction_moves CHECK ((from_country, from_region) IS DISTINCT FROM (to_country, to_region))
 );
 CREATE INDEX company_country_correction_company_idx ON trustwork.company_country_correction (company_id, corrected_at);
 CREATE TRIGGER company_country_correction_append_only BEFORE UPDATE OR DELETE ON trustwork.company_country_correction FOR EACH ROW EXECUTE FUNCTION trustwork.forbid_mutation();
@@ -36,20 +43,21 @@ LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
      AND EXISTS (SELECT 1 FROM trustwork.jurisdiction j WHERE j.code = p_code AND j.level = 'country' AND j.selectable AND NOT j.restricted AND j.retired_at IS NULL)
 $$;
 
--- Whether a hub's territories contain the country. A region or a place inside it does not: the territory has to hold
--- the place, not the place the territory, the direction `payments` uses for the same question.
+-- Whether a hub covers a company of this country: any of its territories lies inside the country, the country itself, a
+-- region or a place. The engine has hubs per country and per city, so a city hub reviews companies of its whole country
+-- until a company has a place finer than that.
 CREATE FUNCTION trustwork.directory_hub_covers(p_hub uuid, p_country text) RETURNS boolean
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
-  SELECT EXISTS (SELECT 1 FROM trustwork.hub_territory t WHERE t.hub_id = p_hub AND t.code = p_country)
+  SELECT EXISTS (SELECT 1 FROM trustwork.hub_territory t WHERE t.hub_id = p_hub AND left(t.code, 2) = p_country)
 $$;
 
--- The same answer for a command that writes on it: the territory row stays locked until the transaction ends, so
--- `hubs_remove_territory` cannot take it away between this check and the write. A removal in flight is waited for, and
--- then the row is gone. A country restricted since it was added counts as covered by nobody.
+-- The same answer for a command that writes on it: the territory rows stay locked until the transaction ends, so
+-- `hubs_remove_territory` cannot take them away between this check and the write. A removal in flight is waited for,
+-- and then the row is gone. A country restricted since it was added counts as covered by nobody.
 CREATE FUNCTION trustwork.directory_lock_hub_cover(p_hub uuid, p_country text) RETURNS boolean
 LANGUAGE plpgsql VOLATILE SET search_path = trustwork, pg_temp AS $$
 BEGIN
-  PERFORM 1 FROM trustwork.hub_territory t WHERE t.hub_id = p_hub AND t.code = p_country FOR SHARE;
+  PERFORM 1 FROM trustwork.hub_territory t WHERE t.hub_id = p_hub AND left(t.code, 2) = p_country ORDER BY t.id FOR SHARE;
   RETURN FOUND AND NOT trustwork.kernel_place_restricted(p_country);
 END $$;
 
@@ -57,12 +65,13 @@ CREATE FUNCTION trustwork.directory_company_country_guard() RETURNS trigger
 LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
 BEGIN
   IF TG_OP = 'UPDATE' THEN
-    IF NEW.country_code IS NOT DISTINCT FROM OLD.country_code THEN
+    IF (NEW.country_code, NEW.country_region) IS NOT DISTINCT FROM (OLD.country_code, OLD.country_region) THEN
       RETURN NEW;
     END IF;
     IF NEW.country_code IS NULL OR NOT EXISTS (
       SELECT 1 FROM trustwork.company_country_correction r
-       WHERE r.company_id = NEW.id AND r.from_country IS NOT DISTINCT FROM OLD.country_code AND r.to_country = NEW.country_code AND r.corrected_at = now()) THEN
+       WHERE r.company_id = NEW.id AND (r.from_country, r.from_region) IS NOT DISTINCT FROM (OLD.country_code, OLD.country_region)
+         AND (r.to_country, r.to_region) IS NOT DISTINCT FROM (NEW.country_code, NEW.country_region) AND r.corrected_at = now()) THEN
       RAISE EXCEPTION 'a company''s country changes only through a staff correction' USING ERRCODE = 'integrity_constraint_violation', HINT = 'directory.country_locked';
     END IF;
   ELSIF NEW.country_code IS NULL THEN
@@ -75,13 +84,19 @@ BEGIN
   IF NOT trustwork.directory_country_ok(NEW.country_code) THEN
     RAISE EXCEPTION 'country % cannot be chosen', NEW.country_code USING ERRCODE = 'check_violation', HINT = 'directory.country_refused';
   END IF;
+  IF NEW.country_region IS NULL AND trustwork.attestation_region_required(NEW.country_code) THEN
+    RAISE EXCEPTION 'country % is stated with its region', NEW.country_code USING ERRCODE = 'check_violation', HINT = 'directory.region_required';
+  END IF;
+  IF NEW.country_region IS NOT NULL AND (left(NEW.country_region, 2) <> NEW.country_code OR trustwork.kernel_place_restricted(NEW.country_region)) THEN
+    RAISE EXCEPTION 'region % cannot be chosen', NEW.country_region USING ERRCODE = 'check_violation', HINT = 'directory.region_refused';
+  END IF;
   RETURN NEW;
 END $$;
 CREATE TRIGGER company_country_guard BEFORE INSERT OR UPDATE ON trustwork.company FOR EACH ROW EXECUTE FUNCTION trustwork.directory_company_country_guard();
 
 -- Company creation as before, with its country (see 20261031110000_directory.sql for the founding administrator).
 DROP FUNCTION trustwork.directory_create_company(text, text, text);
-CREATE FUNCTION trustwork.directory_create_company(p_display_name text, p_public_description text, p_handle text, p_country text)
+CREATE FUNCTION trustwork.directory_create_company(p_display_name text, p_public_description text, p_handle text, p_country text, p_region text)
 RETURNS TABLE (company_id uuid, membership_id uuid)
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
@@ -95,8 +110,8 @@ BEGIN
   IF p_country IS NULL THEN
     RAISE EXCEPTION 'a company is created with its country' USING ERRCODE = 'check_violation', HINT = 'directory.country_required';
   END IF;
-  INSERT INTO trustwork.company (display_name, public_description, sourced_status, claim_status, country_code)
-    VALUES (p_display_name, p_public_description, 'registered', 'unclaimed', p_country)
+  INSERT INTO trustwork.company (display_name, public_description, sourced_status, claim_status, country_code, country_region)
+    VALUES (p_display_name, p_public_description, 'registered', 'unclaimed', p_country, p_region)
     RETURNING id INTO v_company;
   INSERT INTO trustwork.membership (person_id, company_id, role, permissions, status, invited_by, valid_from)
     VALUES (v_person, v_company, 'administrator',
@@ -109,35 +124,37 @@ BEGIN
   RETURN QUERY SELECT v_company, v_membership;
 END $$;
 
--- The staff correction. `p_from` restates the country the reviewer saw, so a second correction in flight is refused
--- rather than overwritten. The company row is locked first: a decision on this company either finished under the old
+-- The staff correction. `p_from` and `p_from_region` restate what the reviewer saw, so a second correction in flight is
+-- refused rather than overwritten. The company row is locked first: a decision on this company either finished under the old
 -- country or waits and reads the new one.
-CREATE FUNCTION trustwork.directory_correct_company_country(p_ctx jsonb, p_hub uuid, p_company uuid, p_from text, p_to text) RETURNS trustwork.company_country_correction
+CREATE FUNCTION trustwork.directory_correct_company_country(p_ctx jsonb, p_hub uuid, p_company uuid, p_from text, p_from_region text, p_to text, p_to_region text) RETURNS trustwork.company_country_correction
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE
   v_actor trustwork.admin_actor;
   v_current text;
+  v_region text;
   v_row trustwork.company_country_correction%ROWTYPE;
 BEGIN
   PERFORM trustwork.admin_require_caller();
   v_actor := trustwork.claims_staff(p_ctx, ARRAY['admin.claims.authority.decide'], p_hub);
-  SELECT country_code INTO v_current FROM trustwork.company WHERE id = p_company FOR UPDATE;
+  SELECT country_code, country_region INTO v_current, v_region FROM trustwork.company WHERE id = p_company FOR UPDATE;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'no such company' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
   END IF;
-  IF v_current IS DISTINCT FROM p_from THEN
+  IF (v_current, v_region) IS DISTINCT FROM (p_from, p_from_region) THEN
     RAISE EXCEPTION 'the country changed; reload' USING ERRCODE = 'serialization_failure', HINT = 'directory.country_changed';
   END IF;
-  IF p_to IS NULL OR p_to IS NOT DISTINCT FROM v_current THEN
-    RAISE EXCEPTION 'a correction names another country' USING ERRCODE = 'check_violation', HINT = 'directory.country_unchanged';
+  IF p_to IS NULL OR (p_to, p_to_region) IS NOT DISTINCT FROM (v_current, v_region) THEN
+    RAISE EXCEPTION 'a correction names another place' USING ERRCODE = 'check_violation', HINT = 'directory.country_unchanged';
   END IF;
   IF NOT (trustwork.directory_lock_hub_cover(p_hub, v_current) OR trustwork.directory_lock_hub_cover(p_hub, p_to)) THEN
     RAISE EXCEPTION 'this hub covers neither country' USING ERRCODE = 'insufficient_privilege', HINT = 'directory.outside_territory';
   END IF;
-  INSERT INTO trustwork.company_country_correction (company_id, hub_id, from_country, to_country, corrected_by)
-  VALUES (p_company, p_hub, v_current, p_to, v_actor.person_id) RETURNING * INTO v_row;
-  UPDATE trustwork.company SET country_code = p_to WHERE id = p_company;
-  PERFORM trustwork.admin_record(v_actor, p_ctx, NULL, p_hub, 'company.country_corrected', 'company', p_company, jsonb_build_object('country', v_current), jsonb_build_object('country', p_to));
+  INSERT INTO trustwork.company_country_correction (company_id, hub_id, from_country, from_region, to_country, to_region, corrected_by)
+  VALUES (p_company, p_hub, v_current, v_region, p_to, p_to_region, v_actor.person_id) RETURNING * INTO v_row;
+  UPDATE trustwork.company SET country_code = p_to, country_region = p_to_region WHERE id = p_company;
+  PERFORM trustwork.admin_record(v_actor, p_ctx, NULL, p_hub, 'company.country_corrected', 'company', p_company,
+    jsonb_build_object('country', v_current, 'region', v_region), jsonb_build_object('country', p_to, 'region', p_to_region));
   RETURN v_row;
 END $$;
 
@@ -146,4 +163,4 @@ ALTER TABLE trustwork.company_country_correction FORCE ROW LEVEL SECURITY;
 CREATE POLICY maintenance_all ON trustwork.company_country_correction AS PERMISSIVE FOR ALL TO trustwork_owner USING (trustwork.maintenance_on()) WITH CHECK (trustwork.maintenance_on());
 
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA trustwork FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION trustwork.directory_create_company(text, text, text, text), trustwork.directory_correct_company_country(jsonb, uuid, uuid, text, text) TO trustwork_app;
+GRANT EXECUTE ON FUNCTION trustwork.directory_create_company(text, text, text, text, text), trustwork.directory_correct_company_country(jsonb, uuid, uuid, text, text, text, text) TO trustwork_app;
