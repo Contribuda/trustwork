@@ -183,6 +183,26 @@ test('federation node persistence', { skip: db ? false : SKIP_REASON }, async (t
     await assert.rejects(runtime.query('SELECT * FROM trustwork.federation_nonce'), /permission denied/);
   });
 
+  await t.test('fail closed without any refresh: a peer past its refresh by more than a day, or with an expired attestation, has no flow, handshake or request until a fresh admission', async () => {
+    const stale = { peerNode: CITY, peerHubId: 'us-tx-austin-stale', localHubId: w.hubId, level: 'syndicate' as const, manifestDigest: computeDigest(peerManifest).value, keyId: 'a1', ...terms };
+    assert.equal(await federationPeers.flowAllowed(runtime, CITY, 'syndicate', w.hubId), 'ok');
+    // Within the day after the due refresh the admission still stands; past that day it does not, whatever a timer did.
+    await db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '2 hours' WHERE peer_node = $1", [CITY]);
+    assert.equal(await federationPeers.flowAllowed(runtime, CITY, 'syndicate', w.hubId), 'ok');
+    await db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '25 hours' WHERE peer_node = $1", [CITY]);
+    assert.equal(await federationPeers.flowAllowed(runtime, CITY, 'syndicate', w.hubId), 'federation.peer_restricted');
+    await rejects(peeringRecords.handshakeReceived(runtime, stale), '42501', 'federation.peer_restricted');
+    await rejects(a.cmd(p.owner, (trx, ctx) => peeringRecords.request(trx, ctx, { localHubId: w.hubId, peerNode: CITY, peerHubId: 'us-tx-austin-stale', level: 'syndicate', approvalId: null, ...terms })), '42501', 'federation.peer_restricted');
+    // An expired attestation fails closed the same way.
+    await db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() + interval '20 hours', attestation_expires_at = now() - interval '1 minute' WHERE peer_node = $1", [CITY]);
+    assert.equal(await federationPeers.flowAllowed(runtime, CITY, 'syndicate', w.hubId), 'federation.peer_restricted');
+    await rejects(peeringRecords.handshakeReceived(runtime, stale), '42501', 'federation.peer_restricted');
+    // A fresh admission restores the flows; the records themselves were never touched.
+    await admitPeer();
+    assert.equal(await federationPeers.flowAllowed(runtime, CITY, 'syndicate', w.hubId), 'ok');
+    assert.equal(await count("SELECT 1 FROM trustwork.peering_record WHERE peer_hub_id = 'us-tx-austin-stale'"), 0);
+  });
+
   await t.test('replay nonces: concurrent notes of one nonce accept exactly once; expired nonces are purged', async () => {
     const nonce = randomBytes(24).toString('base64url');
     const results = await Promise.all(Array.from({ length: 6 }, () => federationPeers.noteNonce(runtime, { peerNode: CITY, keyId: 'a1', nonce, expiresAt: new Date(Date.now() + 300_000) })));

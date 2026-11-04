@@ -4,7 +4,9 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { computeDigest, HUB_CONSOLE_CONTRACT_VERSION } from '@trustwork/contracts';
 import { createApp, type CreatedApp } from '../../../apps/api/src/app.js';
 import { fakeNodeKeySealer } from '../../../apps/api/src/modules/federation/node/crypto.js';
-import { FederationNodeService } from '../../../apps/api/src/modules/federation/node/federation-node.service.js';
+import { FederationNodeService, REFRESH_LOCK } from '../../../apps/api/src/modules/federation/node/federation-node.service.js';
+import { FederationRefreshTimer } from '../../../apps/api/src/modules/federation/node/federation-node.module.js';
+import { federationPeers } from '../../../packages/data/src/repositories/federation-node.js';
 import { signRequest, verifySignedMessage } from '../../../apps/api/src/modules/federation/node/http-signatures.js';
 import { keyRotationDigestInput, peeringLevelDigestInput } from '../../../apps/api/src/modules/federation/node/schemas.js';
 import { canonicalize } from '../../../packages/contracts/src/common/canonical.js';
@@ -490,6 +492,49 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     assert.equal(transport.manifestFetches.length, fetches + 1);
     assert.ok((await h.db.admin.query<{ due: Date }>('SELECT refresh_due_at AS due FROM trustwork.federation_peer WHERE peer_node = $1', [CITY])).rows[0]!.due.getTime() > Date.now() + 23 * 3_600_000);
     assert.deepEqual(await service.refreshDue(), []);
+  });
+
+  await t.test('the refresh timer: off with a fake transport unless opted in, one instance at a time under the advisory lock, cleared on shutdown; one failed peer does not stop the rest', async () => {
+    const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+    const waitUntil = async (condition: () => boolean, ms: number) => { const until = Date.now() + ms; while (!condition() && Date.now() < until) await sleep(50); assert.ok(condition(), 'condition within time'); };
+    assert.equal(app.app.get(FederationRefreshTimer).active, false, 'a fake transport without opt-in starts no timer');
+    // One failed peer does not stop the rest: Houston (held and admitted here through a direct record) answers 500, Austin refreshes.
+    const houstonManifest = asManifest(transport.peers.get('houston.example.org')!.manifest());
+    await federationPeers.record(h.pool, { peerNode: 'houston.example.org', manifest: houstonManifest, manifestDigest: computeDigest(houstonManifest).value, manifestIssuedAt: new Date(houstonManifest.issuedAt), currentKeyId: 'a1', attestationExpiresAt: new Date(houstonManifest.deploymentAttestation.expiresAt), admitted: true, judged: ['declared', 'attested', 'observed'], trigger: 'manual' });
+    transport.peers.get('houston.example.org')!.manifestStatus = 500;
+    await h.db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '2 minutes' WHERE peer_node = 'houston.example.org'");
+    await h.db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '1 minute' WHERE peer_node = $1", [CITY]);
+    const locked = await service.refreshDueLocked();
+    assert.deepEqual(locked, { refreshed: [{ host: 'houston.example.org', outcome: 'failed' }, { host: CITY, outcome: 'admitted' }] });
+    assert.ok((await h.db.admin.query<{ due: Date }>("SELECT refresh_due_at AS due FROM trustwork.federation_peer WHERE peer_node = 'houston.example.org'")).rows[0]!.due.getTime() < Date.now(), 'the failed peer stays due');
+    // A second instance with the timer on (short interval for the test), while another instance holds the lock.
+    const app2 = await createApp({
+      env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: 'https://trustwork.test', TRUSTWORK_HUB_ID: w.hubId, MAIL_SECRET_KEY: randomBytes(32).toString('hex'), TRUSTWORK_JURISDICTION_GATE: 'fake' },
+      pool: h.pool, clock: h.clock, federation: { sealer: fakeNodeKeySealer(), transport, refresh: { enabled: true, intervalMs: 100 } }, logSink: () => undefined,
+    });
+    const timer = app2.app.get(FederationRefreshTimer);
+    assert.equal(timer.active, true);
+    transport.peers.get('houston.example.org')!.manifestStatus = 200;
+    const lockHolder = await h.db.admin.connect();
+    try {
+      await lockHolder.query('SELECT pg_advisory_lock(hashtextextended($1, 0))', [REFRESH_LOCK]);
+      await h.db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '1 minute' WHERE peer_node = $1", [CITY]);
+      const fetches = transport.manifestFetches.length;
+      assert.deepEqual(await service.refreshDueLocked(), { skipped: 'locked' });
+      await sleep(400);
+      assert.equal(transport.manifestFetches.length, fetches, 'nothing is fetched while another instance refreshes');
+      await lockHolder.query('SELECT pg_advisory_unlock(hashtextextended($1, 0))', [REFRESH_LOCK]);
+      await waitUntil(() => transport.manifestFetches.length > fetches, 5_000);
+    } finally {
+      lockHolder.release();
+    }
+    await app2.close();
+    assert.equal(timer.active, false, 'the timer is cleared on shutdown');
+    await h.db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '1 minute' WHERE peer_node = $1", [CITY]);
+    const afterClose = transport.manifestFetches.length;
+    await sleep(400);
+    assert.equal(transport.manifestFetches.length, afterClose, 'no tick after shutdown');
+    await service.refreshDue();
   });
 
   await t.test('no federation record carries a network address', async () => {

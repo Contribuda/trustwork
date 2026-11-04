@@ -543,6 +543,18 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET tr
 $$;
 
 -- 8. Node-run commands (the node's own process, no identity) -------------------------------------------------------------
+-- A peer's admission is current when the last check admitted it, its attestation has not expired and its manifest is not
+-- past its refresh by more than a day. Every point of use (flows, handshakes, requests, acceptances, lifting a
+-- suspension) requires this, so a peer never keeps a flow because no refresh ran: fail closed until a fresh admission.
+CREATE FUNCTION trustwork.federation_admission_stale_after() RETURNS interval
+LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT interval '1 day'
+$$;
+CREATE FUNCTION trustwork.federation_peer_current(p_peer trustwork.federation_peer) RETURNS boolean
+LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
+  SELECT p_peer.admission_state = 'admitted' AND p_peer.attestation_expires_at > now() AND p_peer.refresh_due_at + trustwork.federation_admission_stale_after() > now()
+$$;
+
 -- The hubs the manifest publishes and the only hubs a peer may address: launched hubs (soft_launch, public, suspended,
 -- closing) by slug (the manifest's hub id), with their territories, languages and country pack. A draft or preparing hub
 -- is not published on the unauthenticated URL and a handshake or request naming it is refused like an unknown hub
@@ -668,7 +680,7 @@ BEGIN
   -- Concurrent handshakes for one hub pair serialize here, so a repeated or racing handshake finds the first record.
   PERFORM trustwork.federation_lock_pair(p_peer, p_local_hub, p_peer_hub);
   SELECT * INTO v_peer FROM trustwork.federation_peer WHERE node_id = v_node AND peer_node = p_peer FOR SHARE;
-  IF NOT FOUND OR v_peer.admission_state <> 'admitted' THEN
+  IF NOT FOUND OR NOT trustwork.federation_peer_current(v_peer) THEN
     RAISE EXCEPTION 'the peer is not admitted' USING ERRCODE = 'insufficient_privilege', HINT = 'federation.peer_restricted';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM trustwork.federation_manifest_hubs() m WHERE m.hub_id = p_local_hub) THEN
@@ -812,7 +824,7 @@ BEGIN
   IF NOT FOUND THEN
     RETURN 'federation.not_peered';
   END IF;
-  IF v_peer.admission_state <> 'admitted' OR v_peer.attestation_expires_at <= now() THEN
+  IF NOT trustwork.federation_peer_current(v_peer) THEN
     RETURN 'federation.peer_restricted';
   END IF;
   SELECT r.level INTO v_best FROM trustwork.peering_record r WHERE r.node_id = v_node AND r.peer_node = p_peer AND r.state = 'active' AND r.suspended_at IS NULL
@@ -989,7 +1001,7 @@ BEGIN
   END IF;
   PERFORM trustwork.federation_lock_pair(p_peer, p_local_hub, p_peer_hub);
   SELECT * INTO v_peer FROM trustwork.federation_peer WHERE node_id = v_node AND peer_node = p_peer FOR SHARE;
-  IF NOT FOUND OR v_peer.admission_state <> 'admitted' OR v_peer.attestation_expires_at <= now() THEN
+  IF NOT FOUND OR NOT trustwork.federation_peer_current(v_peer) THEN
     RAISE EXCEPTION 'the peer is not admitted' USING ERRCODE = 'insufficient_privilege', HINT = 'federation.peer_restricted';
   END IF;
   IF p_level = ANY (trustwork.federation_second_approver_levels()) THEN
@@ -1035,7 +1047,7 @@ BEGIN
   IF NOT FOUND OR NOT (p_level = ANY (v_identity.offered_levels)) THEN
     RAISE EXCEPTION 'a node accepts only a level it offers itself' USING ERRCODE = 'check_violation', HINT = 'federation.level_not_offered';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM trustwork.federation_peer p WHERE p.node_id = v_before.node_id AND p.peer_node = v_before.peer_node AND p.admission_state = 'admitted' AND p.attestation_expires_at > now()) THEN
+  IF NOT EXISTS (SELECT 1 FROM trustwork.federation_peer p WHERE p.node_id = v_before.node_id AND p.peer_node = v_before.peer_node AND trustwork.federation_peer_current(p)) THEN
     RAISE EXCEPTION 'the peer is not admitted' USING ERRCODE = 'insufficient_privilege', HINT = 'federation.peer_restricted';
   END IF;
   IF p_level = ANY (trustwork.federation_second_approver_levels()) THEN
@@ -1140,8 +1152,8 @@ BEGIN
   IF v_before.state <> 'active' OR v_before.suspension_reason IS DISTINCT FROM 'operator' THEN
     RAISE EXCEPTION 'only an operator suspension is lifted by a person; the admission check lifts its own' USING ERRCODE = 'check_violation', HINT = 'federation.invalid_transition';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM trustwork.federation_peer p WHERE p.node_id = v_before.node_id AND p.peer_node = v_before.peer_node AND p.admission_state = 'admitted'
-      AND p.attestation_expires_at > now() AND p.equivocation_at IS NULL) THEN
+  IF NOT EXISTS (SELECT 1 FROM trustwork.federation_peer p WHERE p.node_id = v_before.node_id AND p.peer_node = v_before.peer_node AND trustwork.federation_peer_current(p)
+      AND p.equivocation_at IS NULL) THEN
     RAISE EXCEPTION 'the peer is not admitted' USING ERRCODE = 'insufficient_privilege', HINT = 'federation.peer_restricted';
   END IF;
   UPDATE trustwork.peering_record SET suspended_at = NULL, suspension_reason = NULL, revision = revision + 1 WHERE id = p_record RETURNING * INTO v_row;
