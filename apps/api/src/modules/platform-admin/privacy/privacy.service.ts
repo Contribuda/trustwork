@@ -90,12 +90,13 @@ export class PrivacyService {
         await this.store.put(key, body, 'application/json');
         const stored = await this.store.read(key, body.length);
         if (!stored || createHash('sha256').update(stored).digest('hex') !== digest) throw new ApiError('validation.schema', 'export storage verification failed');
-        await this.checkDeliverySession(trx, p, state);
-        await consume({ sha256: digest, archive });
       } finally {
-        // The authenticated response is the delivery. No personal export bytes remain as an ungoverned cache.
+        // The authenticated response is the delivery and goes out from memory. No personal export bytes remain as an
+        // ungoverned cache, not even while a slow client reads: the object is gone before the first byte is sent.
         await this.store.delete(key);
       }
+      await this.checkDeliverySession(trx, p, state);
+      await consume({ sha256: digest, archive });
     });
   }
   private async authorizeDownload(trx: Transaction, p: Principal, state: RequestState, id: string) {
