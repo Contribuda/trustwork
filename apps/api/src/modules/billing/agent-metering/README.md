@@ -8,7 +8,7 @@ Status: in progress. No operational price is seeded or activated: every amount i
 
 ADR 010 decision 25. A hub prices agent usage per module unit, per capability, per catalogue model (one price per direction) or as a hub-wide rate of one meter.
 
-A sale price is an ordinary `price_version` of its own offer (kind `agent_metered`). Second-person activation, no back-dating, no overlapping active versions and immutable `price_acceptance` are therefore the BILL-001 rules and the BILL-001 guard, not a parallel set. `metered_price_term` adds what a price version cannot hold: the subject, the exact unit price in decimal minor units and the cost beside it. `price_version.amount_minor` carries the same price as a whole number of minor units for `per_units` units, so 0.3 minor units per thousand tokens is stored as 3 for 10 units and no rounding happens.
+A sale price is an ordinary `price_version` of its own offer (kind `agent_metered`). Second-person activation, no back-dating, no overlapping active versions and immutable `price_acceptance` are therefore the BILL-001 rules and the BILL-001 guard, not a parallel set. `metered_price_term` adds what a price version cannot hold: the subject, the exact unit price and the cost beside it. Money stays integer: `sale_micro` and `cost_micro` are millionths of a minor unit, and the API carries the same value as an exact decimal string. `price_version.amount_minor` is the same price as a whole number of minor units for `per_units` units, so 0.3 minor units per thousand tokens is stored as 3 for 10 units and no rounding happens.
 
 | Route (staff, elevated, server-configured hub) | Permission | What it does |
 |---|---|---|
@@ -22,7 +22,7 @@ A sale price is an ordinary `price_version` of its own offer (kind `agent_metere
 
 A markup is computed in `billing_metered_draft`, once, from the current cost record, and stored as a fixed number with the identifier of that record. The caller cannot supply the result. No trigger, job or reader writes a stored price: a new cost record only changes what the staff list reports (`currentCost`, `currentMarginPerUnitMinor`, `suggestedSalePerUnitMinor`). Taking that suggestion is an ordinary new draft with the normal second person and effective date. A negative margin is allowed and shown.
 
-Costs are rounded up at six decimals, so a cost is never understated and a markup never falls below it. Meters without a priced unit (`METER_TO_METERING_UNIT`: `document_pages`, `translation_characters`) are reported, not priced: the refusal is `billing.meter_unpriced`.
+Costs and markups round up to a millionth of a minor unit, so a cost is never understated and a markup never falls below it. Meters without a priced unit (`METER_TO_METERING_UNIT`: `document_pages`, `translation_characters`) are reported, not priced: the refusal is `billing.meter_unpriced`.
 
 ### Public disclosure
 

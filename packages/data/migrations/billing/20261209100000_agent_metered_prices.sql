@@ -36,7 +36,7 @@ CREATE TABLE trustwork.metered_cost_record (
   subject_id uuid NOT NULL REFERENCES trustwork.metered_subject (id),
   version integer NOT NULL CHECK (version >= 1),
   currency text NOT NULL CHECK (currency ~ '^[A-Z]{3}$'),
-  cost_per_unit_minor numeric(30, 6) NOT NULL CHECK (cost_per_unit_minor >= 0),
+  cost_micro bigint NOT NULL CHECK (cost_micro >= 0),
   basis text NOT NULL CHECK (basis IN ('model_list_price', 'measured_average', 'contract')),
   observed_at timestamptz NOT NULL,
   recorded_by uuid NOT NULL REFERENCES trustwork.person (id),
@@ -46,16 +46,18 @@ CREATE TABLE trustwork.metered_cost_record (
 CREATE TRIGGER metered_cost_record_append_only BEFORE UPDATE OR DELETE ON trustwork.metered_cost_record FOR EACH ROW EXECUTE FUNCTION trustwork.forbid_mutation();
 
 -- The unit terms of one price version. Immutable from its first moment: a correction is a new version.
+-- Money is integers throughout: `*_micro` columns are millionths of a minor unit, because a unit price can be a fraction
+-- of a cent. The API carries the same value as an exact decimal string.
 -- `price_version.amount_minor` is the same price as a whole number of minor units for `per_units` units, which keeps the
 -- integer money column honest for prices such as 0.2 minor units per thousand tokens.
 CREATE TABLE trustwork.metered_price_term (
   price_version_id uuid PRIMARY KEY REFERENCES trustwork.price_version (id),
   subject_id uuid NOT NULL REFERENCES trustwork.metered_subject (id),
-  sale_per_unit_minor numeric(30, 6) NOT NULL CHECK (sale_per_unit_minor >= 0),
+  sale_micro bigint NOT NULL CHECK (sale_micro >= 0),
   per_units bigint NOT NULL CHECK (per_units IN (1, 10, 100, 1000, 10000, 100000, 1000000)),
   basis text NOT NULL CHECK (basis IN ('flat', 'markup')),
   markup_percent integer NULL CHECK (markup_percent BETWEEN 0 AND 1000),
-  cost_per_unit_minor numeric(30, 6) NOT NULL CHECK (cost_per_unit_minor >= 0),
+  cost_micro bigint NOT NULL CHECK (cost_micro >= 0),
   cost_basis text NOT NULL CHECK (cost_basis IN ('model_list_price', 'measured_average', 'contract')),
   model_pricing_id uuid NULL REFERENCES trustwork.model_pricing (id),
   cost_record_id uuid NULL REFERENCES trustwork.metered_cost_record (id),
@@ -82,10 +84,20 @@ LANGUAGE sql IMMUTABLE PARALLEL SAFE SET search_path = trustwork, pg_temp AS $$
   SELECT CASE WHEN p_currency IN ('BIF','CLP','DJF','GNF','ISK','JPY','KMF','KRW','PYG','RWF','UGX','UYI','VND','VUV','XAF','XOF','XPF') THEN 0
               WHEN p_currency IN ('BHD','IQD','JOD','KWD','LYD','OMR','TND') THEN 3 ELSE 2 END
 $$;
--- Rounded up to the six decimals of a stored unit price: a cost is never understated and a markup never falls below it.
-CREATE FUNCTION trustwork.billing_ceil_decimal(p_value numeric) RETURNS numeric
+-- Rounded up: a markup never falls below the cost it was set against.
+CREATE FUNCTION trustwork.billing_ceil_percent(p_micro bigint, p_percent integer) RETURNS bigint
 LANGUAGE sql IMMUTABLE PARALLEL SAFE SET search_path = trustwork, pg_temp AS $$
-  SELECT trim_scale(ceil(p_value * 1000000) / 1000000)
+  SELECT (p_micro * p_percent + 99) / 100
+$$;
+-- Millionths of a minor unit to and from the exact decimal text of the API. Integer arithmetic only.
+CREATE FUNCTION trustwork.billing_micro_text(p_micro bigint) RETURNS text
+LANGUAGE sql IMMUTABLE PARALLEL SAFE SET search_path = trustwork, pg_temp AS $$
+  SELECT (p_micro / 1000000)::text || CASE WHEN p_micro % 1000000 = 0 THEN '' ELSE '.' || rtrim(lpad((p_micro % 1000000)::text, 6, '0'), '0') END
+$$;
+CREATE FUNCTION trustwork.billing_micro_parse(p_text text) RETURNS bigint
+LANGUAGE sql IMMUTABLE PARALLEL SAFE SET search_path = trustwork, pg_temp AS $$
+  SELECT CASE WHEN p_text ~ '^(0|[1-9][0-9]{0,11})(\.[0-9]{1,6})?$'
+    THEN split_part(p_text, '.', 1)::bigint * 1000000 + rpad(split_part(p_text, '.', 2), 6, '0')::bigint END
 $$;
 -- The meter's priced unit (METER_TO_METERING_UNIT in agent-catalog.ts); meters without one are reported, never priced.
 CREATE FUNCTION trustwork.billing_meter_unit(p_meter text) RETURNS text
@@ -145,17 +157,18 @@ END $$;
 -- The current cost of one subject in one currency. Model costs convert from major units per million tokens to minor
 -- units per thousand; a direction without a recorded price has no cost.
 CREATE FUNCTION trustwork.billing_metered_current_cost(p_subject trustwork.metered_subject, p_currency text,
-  OUT cost_per_unit_minor numeric, OUT cost_basis text, OUT model_pricing_id uuid, OUT cost_record_id uuid, OUT observed_at timestamptz)
+  OUT cost_micro bigint, OUT cost_basis text, OUT model_pricing_id uuid, OUT cost_record_id uuid, OUT observed_at timestamptz)
 LANGUAGE plpgsql STABLE SET search_path = trustwork, pg_temp AS $$
-DECLARE v_model trustwork.model_pricing%ROWTYPE; v_cost trustwork.metered_cost_record%ROWTYPE; v_major numeric;
+DECLARE v_model trustwork.model_pricing%ROWTYPE; v_cost trustwork.metered_cost_record%ROWTYPE;
 BEGIN
   IF p_subject.kind = 'model' THEN
     SELECT * INTO v_model FROM trustwork.model_pricing WHERE hub_id = p_subject.hub_id AND lower(model_id) = p_subject.subject_key AND currency = p_currency
       ORDER BY recorded_at DESC, version DESC, id LIMIT 1;
     IF NOT FOUND THEN RETURN; END IF;
-    v_major := CASE p_subject.direction WHEN 'input' THEN v_model.input_per_million_tokens ELSE v_model.output_per_million_tokens END;
-    IF v_major IS NULL THEN RETURN; END IF;
-    cost_per_unit_minor := trustwork.billing_ceil_decimal(v_major * (10 ^ trustwork.billing_currency_exponent(p_currency))::numeric / 1000);
+    -- Major units per million tokens to millionths of a minor unit per thousand: exact integer scale, rounded up once.
+    cost_micro := ceil(CASE p_subject.direction WHEN 'input' THEN v_model.input_per_million_tokens ELSE v_model.output_per_million_tokens END
+      * CASE trustwork.billing_currency_exponent(p_currency) WHEN 0 THEN 1000 WHEN 3 THEN 1000000 ELSE 100000 END)::bigint;
+    IF cost_micro IS NULL THEN RETURN; END IF;
     cost_basis := CASE v_model.basis WHEN 'provider_list' THEN 'model_list_price' WHEN 'contract' THEN 'contract' ELSE 'measured_average' END;
     model_pricing_id := v_model.id;
     observed_at := v_model.observed_at;
@@ -163,7 +176,7 @@ BEGIN
   END IF;
   SELECT * INTO v_cost FROM trustwork.metered_cost_record WHERE subject_id = p_subject.id AND currency = p_currency ORDER BY version DESC LIMIT 1;
   IF NOT FOUND THEN RETURN; END IF;
-  cost_per_unit_minor := v_cost.cost_per_unit_minor;
+  cost_micro := v_cost.cost_micro;
   cost_basis := v_cost.basis;
   cost_record_id := v_cost.id;
   observed_at := v_cost.observed_at;
@@ -173,8 +186,8 @@ CREATE FUNCTION trustwork.billing_metered_terms(p_price trustwork.price_version)
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
   SELECT jsonb_build_object(
     'subject', jsonb_strip_nulls(jsonb_build_object('kind', s.kind, 'key', s.subject_key, 'direction', s.direction, 'meter', s.meter)),
-    'unit', s.unit, 'currency', p_price.currency, 'salePerUnitMinor', trim_scale(t.sale_per_unit_minor)::text, 'amountMinor', p_price.amount_minor::text, 'perUnits', t.per_units,
-    'basis', t.basis, 'markupPercent', t.markup_percent, 'costPerUnitMinor', trim_scale(t.cost_per_unit_minor)::text, 'costBasis', t.cost_basis,
+    'unit', s.unit, 'currency', p_price.currency, 'salePerUnitMinor', trustwork.billing_micro_text(t.sale_micro), 'amountMinor', p_price.amount_minor::text, 'perUnits', t.per_units,
+    'basis', t.basis, 'markupPercent', t.markup_percent, 'costPerUnitMinor', trustwork.billing_micro_text(t.cost_micro), 'costBasis', t.cost_basis,
     'modelPricingId', t.model_pricing_id, 'costRecordId', t.cost_record_id, 'effectiveFrom', trustwork.billing_iso(p_price.effective_from),
     'effectiveTo', trustwork.billing_iso(p_price.effective_to), 'acceptanceTextVersion', p_price.acceptance_text_version)
   FROM trustwork.metered_price_term t JOIN trustwork.metered_subject s ON s.id = t.subject_id WHERE t.price_version_id = p_price.id
@@ -197,13 +210,13 @@ BEGIN
   SELECT * INTO v_term FROM trustwork.metered_price_term WHERE price_version_id = p_price.id;
   SELECT * INTO v_subject FROM trustwork.metered_subject WHERE id = v_term.subject_id;
   SELECT * INTO v_cost FROM trustwork.billing_metered_current_cost(v_subject, p_price.currency);
-  v_changed := v_cost.cost_per_unit_minor IS NOT NULL AND (v_cost.model_pricing_id IS DISTINCT FROM v_term.model_pricing_id OR v_cost.cost_record_id IS DISTINCT FROM v_term.cost_record_id);
+  v_changed := v_cost.cost_micro IS NOT NULL AND (v_cost.model_pricing_id IS DISTINCT FROM v_term.model_pricing_id OR v_cost.cost_record_id IS DISTINCT FROM v_term.cost_record_id);
   RETURN jsonb_build_object('id', p_price.id, 'hubId', v_subject.hub_id, 'offerId', p_price.offer_id, 'version', p_price.version, 'status', p_price.status,
     'digest', trustwork.billing_metered_digest(p_price), 'terms', trustwork.billing_metered_terms(p_price), 'draftedBy', p_price.drafted_by, 'activatedBy', p_price.activated_by,
     'acceptances', (SELECT count(*) FROM trustwork.price_acceptance a WHERE a.price_version_id = p_price.id),
-    'currentCost', CASE WHEN v_changed THEN jsonb_build_object('costPerUnitMinor', trim_scale(v_cost.cost_per_unit_minor)::text, 'costBasis', v_cost.cost_basis,
+    'currentCost', CASE WHEN v_changed THEN jsonb_build_object('costPerUnitMinor', trustwork.billing_micro_text(v_cost.cost_micro), 'costBasis', v_cost.cost_basis,
       'modelPricingId', v_cost.model_pricing_id, 'costRecordId', v_cost.cost_record_id, 'observedAt', trustwork.billing_iso(v_cost.observed_at),
-      'suggestedSalePerUnitMinor', CASE WHEN v_term.basis = 'markup' THEN trustwork.billing_ceil_decimal(v_cost.cost_per_unit_minor * (100 + v_term.markup_percent) / 100)::text END) END);
+      'suggestedSalePerUnitMinor', CASE WHEN v_term.basis = 'markup' THEN trustwork.billing_micro_text(trustwork.billing_ceil_percent(v_cost.cost_micro, 100 + v_term.markup_percent)) END) END);
 END $$;
 
 CREATE FUNCTION trustwork.billing_metered_require_hub(p_hub uuid) RETURNS void
@@ -229,14 +242,12 @@ BEGIN
     RAISE EXCEPTION 'model cost lives in the provider cost records' USING ERRCODE = '22023', HINT = 'billing.invalid_terms';
   END IF;
   v_subject := trustwork.billing_metered_subject(p_hub, p_input -> 'subject', a.person_id);
-  INSERT INTO trustwork.metered_cost_record (subject_id, version, currency, cost_per_unit_minor, basis, observed_at, recorded_by)
+  INSERT INTO trustwork.metered_cost_record (subject_id, version, currency, cost_micro, basis, observed_at, recorded_by)
   VALUES (v_subject.id, coalesce((SELECT max(version) FROM trustwork.metered_cost_record WHERE subject_id = v_subject.id), 0) + 1, p_input ->> 'currency',
-    (p_input ->> 'costPerUnitMinor')::numeric, p_input ->> 'basis', (p_input ->> 'observedAt')::timestamptz, a.person_id)
+    trustwork.billing_micro_parse(p_input ->> 'costPerUnitMinor'), p_input ->> 'basis', (p_input ->> 'observedAt')::timestamptz, a.person_id)
   RETURNING * INTO v_row;
-  -- Audit digests refuse fractions: the unit cost enters the row image as text.
-  PERFORM trustwork.admin_record(a, p_ctx, NULL, p_hub, 'billing.metered_cost_recorded', 'metered_cost_record', v_row.id, NULL,
-    jsonb_set(to_jsonb(v_row), '{cost_per_unit_minor}', to_jsonb(trim_scale(v_row.cost_per_unit_minor)::text)));
-  RETURN jsonb_build_object('id', v_row.id, 'version', v_row.version, 'costPerUnitMinor', trim_scale(v_row.cost_per_unit_minor)::text, 'currency', v_row.currency, 'basis', v_row.basis,
+  PERFORM trustwork.admin_record(a, p_ctx, NULL, p_hub, 'billing.metered_cost_recorded', 'metered_cost_record', v_row.id, NULL, to_jsonb(v_row));
+  RETURN jsonb_build_object('id', v_row.id, 'version', v_row.version, 'costPerUnitMinor', trustwork.billing_micro_text(v_row.cost_micro), 'currency', v_row.currency, 'basis', v_row.basis,
     'observedAt', trustwork.billing_iso(v_row.observed_at));
 END $$;
 
@@ -250,33 +261,39 @@ DECLARE
   v_cost record;
   v_kind text := p_terms #>> '{basis,kind}';
   v_percent integer := (p_terms #>> '{basis,percent}')::integer;
-  v_sale numeric;
-  v_scale integer;
+  v_sale bigint;
+  v_amount bigint;
+  v_per bigint := 1000000;
   v_price trustwork.price_version%ROWTYPE;
 BEGIN
   PERFORM trustwork.billing_metered_require_hub(p_hub);
   a := trustwork.admin_authorize(p_ctx, ARRAY['admin.commerce.price.draft'], NULL, p_hub);
   v_subject := trustwork.billing_metered_subject(p_hub, p_terms -> 'subject', a.person_id);
   SELECT * INTO v_cost FROM trustwork.billing_metered_current_cost(v_subject, p_terms ->> 'currency');
-  IF v_cost.cost_per_unit_minor IS NULL THEN
+  IF v_cost.cost_micro IS NULL THEN
     RAISE EXCEPTION 'no cost record for this subject and currency' USING ERRCODE = '23514', HINT = 'billing.cost_record_missing';
   END IF;
   IF v_kind = 'markup' AND v_percent IS NOT NULL THEN
-    v_sale := trustwork.billing_ceil_decimal(v_cost.cost_per_unit_minor * (100 + v_percent) / 100);
+    v_sale := trustwork.billing_ceil_percent(v_cost.cost_micro, 100 + v_percent);
   ELSIF v_kind = 'flat' AND v_percent IS NULL THEN
-    v_sale := trim_scale((p_terms #>> '{basis,salePerUnitMinor}')::numeric);
+    v_sale := trustwork.billing_micro_parse(p_terms #>> '{basis,salePerUnitMinor}');
   END IF;
-  IF v_sale IS NULL OR v_sale < 0 OR scale(v_sale) > 6 THEN
+  IF v_sale IS NULL THEN
     RAISE EXCEPTION 'invalid price basis' USING ERRCODE = '22023', HINT = 'billing.invalid_terms';
   END IF;
-  v_scale := scale(v_sale);
+  -- The smallest whole-number form of the price: 0.3 minor units per unit is 3 for 10 units.
+  v_amount := v_sale;
+  WHILE v_per > 1 AND v_amount % 10 = 0 LOOP
+    v_amount := v_amount / 10;
+    v_per := v_per / 10;
+  END LOOP;
   INSERT INTO trustwork.price_version (offer_id, version, amount_minor, currency, effective_from, effective_to, acceptance_text_version, drafted_by)
   VALUES (v_subject.offer_id, coalesce((SELECT max(version) FROM trustwork.price_version WHERE offer_id = v_subject.offer_id), 0) + 1,
-    (v_sale * (10 ^ v_scale)::numeric)::bigint, p_terms ->> 'currency', (p_terms ->> 'effectiveFrom')::timestamptz, (p_terms ->> 'effectiveTo')::timestamptz,
+    v_amount, p_terms ->> 'currency', (p_terms ->> 'effectiveFrom')::timestamptz, (p_terms ->> 'effectiveTo')::timestamptz,
     p_terms ->> 'acceptanceTextVersion', a.person_id)
   RETURNING * INTO v_price;
-  INSERT INTO trustwork.metered_price_term (price_version_id, subject_id, sale_per_unit_minor, per_units, basis, markup_percent, cost_per_unit_minor, cost_basis, model_pricing_id, cost_record_id)
-  VALUES (v_price.id, v_subject.id, v_sale, (10 ^ v_scale)::bigint, v_kind, v_percent, v_cost.cost_per_unit_minor, v_cost.cost_basis, v_cost.model_pricing_id, v_cost.cost_record_id);
+  INSERT INTO trustwork.metered_price_term (price_version_id, subject_id, sale_micro, per_units, basis, markup_percent, cost_micro, cost_basis, model_pricing_id, cost_record_id)
+  VALUES (v_price.id, v_subject.id, v_sale, v_per, v_kind, v_percent, v_cost.cost_micro, v_cost.cost_basis, v_cost.model_pricing_id, v_cost.cost_record_id);
   PERFORM trustwork.admin_record(a, p_ctx, NULL, p_hub, 'billing.metered_price_drafted', 'price_version', v_price.id, NULL, to_jsonb(v_price));
   RETURN trustwork.billing_metered_staff_view(v_price);
 END $$;
@@ -353,7 +370,7 @@ CREATE FUNCTION trustwork.billing_metered_public(p_hub uuid, p_at timestamptz) R
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
   SELECT coalesce(jsonb_agg(jsonb_build_object('id', p.id, 'version', p.version, 'offerId', o.id, 'code', o.code, 'name', o.name, 'kind', s.kind, 'key', s.subject_key,
       'direction', s.direction, 'meter', s.meter, 'unit', s.unit, 'currency', p.currency, 'amountMinor', p.amount_minor::text, 'perUnits', t.per_units,
-      'salePerUnitMinor', trim_scale(t.sale_per_unit_minor)::text, 'effectiveFrom', trustwork.billing_iso(p.effective_from), 'effectiveTo', trustwork.billing_iso(p.effective_to),
+      'salePerUnitMinor', trustwork.billing_micro_text(t.sale_micro), 'effectiveFrom', trustwork.billing_iso(p.effective_from), 'effectiveTo', trustwork.billing_iso(p.effective_to),
       'acceptanceTextVersion', p.acceptance_text_version) ORDER BY s.kind, s.subject_key, s.direction, s.meter, p.effective_from), '[]'::jsonb)
   FROM trustwork.price_version p JOIN trustwork.metered_price_term t ON t.price_version_id = p.id JOIN trustwork.metered_subject s ON s.id = t.subject_id
   JOIN trustwork.offer o ON o.id = p.offer_id JOIN trustwork.hub h ON h.id = s.hub_id

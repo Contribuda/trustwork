@@ -166,7 +166,7 @@ test('AGT-004 agent usage prices: real authentication, second person, cost never
     const draft = MeteredPriceVersionSchema.parse((await w.clients.owner.post(`${url}/prices`, { reason, terms: syntheticTerms({ effectiveFrom: new Date(Date.now() + 7200000).toISOString() }) })).body);
     assert.equal((await w.clients.owner.post(`${url}/prices/${draft.id}/cancel`, { reason })).status, 200);
     assert.equal((await w.clients.owner.post(`${url}/prices/${v1.id}/cancel`, { reason })).status, 409);
-    await assert.rejects(withMaintenance(h.db.admin, (trx) => trx.updateTable('metered_price_term').set({ sale_per_unit_minor: '0' }).where('price_version_id', '=', v1.id).execute()));
+    await assert.rejects(withMaintenance(h.db.admin, (trx) => trx.updateTable('metered_price_term').set({ sale_micro: '0' }).where('price_version_id', '=', v1.id).execute()));
   });
 
   await t.test('another hub sees neither the price nor the staff view', async () => {
