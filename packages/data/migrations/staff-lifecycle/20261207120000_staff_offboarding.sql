@@ -15,8 +15,10 @@
 -- the checklist (roles, eligible roles, activations, open approval requests, admin clients, accountabilities with the
 -- fallback offers, open support cases and incidents to reassign, with suggested people chosen by role), and completes
 -- it in one transaction: every role, eligible role and activation covered by the scope is revoked, every open approval
--- request of the person revoked, and nothing completes while an accountability is still open. Past actions stay
--- attributed. There is no admin-client table yet (console design 4.3 is not built); the checklist lists none.
+-- request of the person revoked, their open invitations withdrawn, their admin MCP connections (trustwork.connection,
+-- surface 'admin') revoked with their tokens, and, when no staff role is left, their sessions ended; nothing completes
+-- while an accountability is still open, and nobody starts, completes or cancels their own offboarding. Past actions
+-- stay attributed.
 
 -- 0. The function catalogue keys (TEAM-001 publishes the catalogue; the keys are fixed here so rows validate) --------
 CREATE FUNCTION trustwork.staff_function_keys() RETURNS text[]
@@ -318,6 +320,11 @@ BEGIN
   IF v_before.status = 'ended' THEN
     RAISE EXCEPTION 'already ended' USING ERRCODE = 'check_violation', HINT = 'admin.invalid_transition';
   END IF;
+  -- While the holder is being offboarded the accountability is a blocker that only a hand-over clears: one administrator
+  -- cannot end it instead of the fallback accepting.
+  IF EXISTS (SELECT 1 FROM trustwork.staff_offboarding o WHERE o.person_id = v_before.person_id AND o.status = 'open') THEN
+    RAISE EXCEPTION 'the holder is being offboarded; the accountability is handed over, not ended' USING ERRCODE = 'check_violation', HINT = 'admin.offboarding_open';
+  END IF;
   UPDATE trustwork.staff_accountability_offer SET status = 'withdrawn' WHERE accountability_id = v_before.id AND status = 'pending';
   UPDATE trustwork.staff_accountability SET status = 'ended', suspended_reason = NULL, ended_at = now(), ended_by = v_actor.person_id, end_reason = 'ended' WHERE id = v_before.id RETURNING * INTO v_row;
   PERFORM trustwork.admin_record(v_actor, p_ctx, NULL, v_row.hub_id, 'staff.accountability_ended', 'staff_accountability', v_row.id,
@@ -584,7 +591,12 @@ BEGIN
     'approvalRequests', coalesce((SELECT jsonb_agg(jsonb_build_object('approvalId', p.id, 'action', p.action, 'status', p.status) ORDER BY p.requested_at)
       FROM trustwork.second_person_approval p WHERE p.requested_by = v_row.person_id AND p.status IN ('pending', 'approved')
         AND trustwork.staff_offboarding_covers(v_row.scope_kind, v_target.node, v_target.hub, p.scope_kind, p.node_id, p.hub_id)), '[]'::jsonb),
-    'adminClients', '[]'::jsonb,
+    'adminClients', coalesce((SELECT jsonb_agg(jsonb_build_object('connectionId', c.id, 'clientId', c.client_id, 'status', c.status, 'hubId', c.hub_id) ORDER BY c.created_at)
+      FROM trustwork.connection c WHERE c.person_id = v_row.person_id AND c.surface = 'admin' AND c.status IN ('active', 'suspended')), '[]'::jsonb),
+    'invitations', coalesce((SELECT jsonb_agg(jsonb_build_object('invitationId', i.id, 'role', i.role, 'scope', trustwork.admin_scope_json(i.scope_kind, i.node_id, i.hub_id), 'status', i.status) ORDER BY i.created_at)
+      FROM trustwork.staff_invitation i WHERE i.status IN ('pending', 'accepted')
+        AND (i.person_id = v_row.person_id OR (i.person_id IS NULL AND EXISTS (SELECT 1 FROM trustwork.email_binding b WHERE b.person_id = v_row.person_id AND b.email_normalized = i.email_normalized)))
+        AND trustwork.staff_offboarding_covers(v_row.scope_kind, v_target.node, v_target.hub, i.scope_kind, i.node_id, i.hub_id)), '[]'::jsonb),
     'accountabilities', coalesce((SELECT jsonb_agg(jsonb_build_object('accountabilityId', a.id, 'hubId', a.hub_id, 'functionKey', a.function_key, 'kind', a.kind, 'agentRoleKey', a.agent_role_key,
         'status', a.status, 'requiredRole', a.required_role,
         'offers', coalesce((SELECT jsonb_agg(jsonb_build_object('offerId', o.id, 'toPersonId', o.to_person_id, 'toPersonName', pp.display_name, 'status', o.status) ORDER BY pp.display_name)
@@ -622,6 +634,8 @@ DECLARE
   v_actor trustwork.admin_actor;
   v_blockers integer;
   v_act trustwork.staff_activation%ROWTYPE;
+  v_inv trustwork.staff_invitation%ROWTYPE;
+  v_conn record;
 BEGIN
   SELECT * INTO v_before FROM trustwork.staff_offboarding WHERE id = p_id FOR UPDATE;
   IF NOT FOUND THEN
@@ -629,6 +643,9 @@ BEGIN
   END IF;
   SELECT * INTO v_target FROM trustwork.admin_target(v_before.scope_kind, v_before.node_id, v_before.hub_id);
   v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.staff.revoke'], v_target.node, v_target.hub);
+  IF v_actor.person_id = v_before.person_id THEN
+    RAISE EXCEPTION 'nobody completes their own offboarding' USING ERRCODE = 'insufficient_privilege', HINT = 'admin.self_offboarding';
+  END IF;
   IF v_before.status <> 'open' THEN
     RAISE EXCEPTION 'the offboarding is %', v_before.status USING ERRCODE = 'check_violation', HINT = 'admin.invalid_transition';
   END IF;
@@ -653,6 +670,28 @@ BEGIN
   UPDATE trustwork.staff_role_assignment SET revoked_at = now(), revoked_by = v_actor.person_id, revoke_reason = p_ctx ->> 'reasonText'
    WHERE person_id = v_before.person_id AND revoked_at IS NULL AND (valid_until IS NULL OR valid_until > now())
      AND trustwork.staff_offboarding_covers(v_before.scope_kind, v_target.node, v_target.hub, scope_kind, node_id, hub_id);
+  -- Open invitations of the person at covered scopes are withdrawn (their approvals revoked), so the inviter cannot
+  -- re-apply a role; pending ones are matched by the person's verified addresses, accepted ones by the person.
+  FOR v_inv IN SELECT i.* FROM trustwork.staff_invitation i
+                WHERE i.status IN ('pending', 'accepted')
+                  AND (i.person_id = v_before.person_id OR (i.person_id IS NULL AND EXISTS (SELECT 1 FROM trustwork.email_binding b WHERE b.person_id = v_before.person_id AND b.email_normalized = i.email_normalized)))
+                  AND trustwork.staff_offboarding_covers(v_before.scope_kind, v_target.node, v_target.hub, i.scope_kind, i.node_id, i.hub_id) FOR UPDATE LOOP
+    IF v_inv.approval_id IS NOT NULL THEN
+      UPDATE trustwork.second_person_approval SET status = 'revoked', revoked_by = v_actor.person_id WHERE id = v_inv.approval_id AND status IN ('pending', 'approved');
+    END IF;
+    UPDATE trustwork.staff_invitation SET status = 'withdrawn', withdrawn_by = v_actor.person_id WHERE id = v_inv.id;
+  END LOOP;
+  -- The person's admin MCP connections (console design 4.3, MCP-002) end with their tokens and consents, so a regained
+  -- role never revives an old token.
+  FOR v_conn IN SELECT c.id, c.consent_id FROM trustwork.connection c WHERE c.person_id = v_before.person_id AND c.surface = 'admin' AND c.status IN ('active', 'suspended') FOR UPDATE LOOP
+    PERFORM trustwork.connections_revoke_families(v_conn.id, 'person_revocation');
+    UPDATE trustwork.connection_consent SET withdrawn_at = now(), withdrawn_reason = 'person_revocation' WHERE id = v_conn.consent_id AND withdrawn_at IS NULL;
+    UPDATE trustwork.connection SET status = 'revoked', status_reason = 'person_revocation', revoked_at = now(), updated_at = now(), revision = revision + 1 WHERE id = v_conn.id;
+  END LOOP;
+  -- When no staff role is left anywhere, the person's sessions end too (the console design: offboarding ends access at once).
+  IF NOT EXISTS (SELECT 1 FROM trustwork.staff_role_assignment a WHERE a.person_id = v_before.person_id AND a.revoked_at IS NULL AND a.valid_from <= now() AND (a.valid_until IS NULL OR a.valid_until > now())) THEN
+    UPDATE trustwork.session SET revoked_at = now(), revoked_reason = 'admin' WHERE person_id = v_before.person_id AND revoked_at IS NULL;
+  END IF;
   UPDATE trustwork.staff_offboarding SET status = 'completed', completed_at = now(), completed_by = v_actor.person_id WHERE id = v_before.id RETURNING * INTO v_row;
   PERFORM trustwork.admin_record(v_actor, p_ctx, v_target.node, v_target.hub, 'staff.offboarding_completed', 'staff_offboarding', v_row.id,
     trustwork.staff_offboarding_image(v_before), trustwork.staff_offboarding_image(v_row));
@@ -674,6 +713,9 @@ BEGIN
   END IF;
   SELECT * INTO v_target FROM trustwork.admin_target(v_before.scope_kind, v_before.node_id, v_before.hub_id);
   v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.staff.revoke'], v_target.node, v_target.hub);
+  IF v_actor.person_id = v_before.person_id THEN
+    RAISE EXCEPTION 'nobody cancels their own offboarding' USING ERRCODE = 'insufficient_privilege', HINT = 'admin.self_offboarding';
+  END IF;
   IF v_before.status <> 'open' THEN
     RAISE EXCEPTION 'the offboarding is %', v_before.status USING ERRCODE = 'check_violation', HINT = 'admin.invalid_transition';
   END IF;

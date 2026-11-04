@@ -120,10 +120,16 @@ test('function accountability and offboarding through the API (ADM-004 part 5)',
     assert.equal(done.status, 200, JSON.stringify(done.body));
     assert.deepEqual([offboardingOf(done).status, offboardingOf(done).completedBy], ['completed', p.hubOwner]);
     assert.deepEqual(await activeRoles(p.lead), []);
-    expectRefusal(await c.lead.get(`/v1/admin/staff/directory?hubId=${hubId}`), 403, 'access.forbidden', 'staff');
+    // With the last staff role gone the lead's sessions ended too: the next request is not even signed in.
+    expectRefusal(await c.lead.get(`/v1/admin/staff/directory?hubId=${hubId}`), 401, 'auth.session_invalid');
     const cancelled = offboardingOf(await command(c.hubOwner, '/v1/admin/staff/offboardings', { personId: p.moderator, scope: hub }));
     assert.equal(offboardingOf(await command(c.hubOwner, `/v1/admin/staff/offboardings/${cancelled.id}/cancel`)).status, 'cancelled');
     assert.deepEqual(await activeRoles(p.moderator), ['moderator']);
+    // Nobody completes or cancels their own offboarding, even with admin.staff.revoke.
+    const ofOwner = offboardingOf(await command(c.admin, '/v1/admin/staff/offboardings', { personId: p.hubOwner, scope: hub }));
+    expectRefusal(await command(c.hubOwner, `/v1/admin/staff/offboardings/${ofOwner.id}/cancel`), 403, 'access.forbidden', 'self_offboarding');
+    expectRefusal(await command(c.hubOwner, `/v1/admin/staff/offboardings/${ofOwner.id}/complete`), 403, 'access.forbidden', 'self_offboarding');
+    assert.equal(offboardingOf(await command(c.admin, `/v1/admin/staff/offboardings/${ofOwner.id}/cancel`)).status, 'cancelled');
   });
 
   await t.test('no field of these views describes what a staff member does (schema walk)', () => {
