@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import { sql } from 'kysely';
 import { createPool, withMaintenance, type DataPool } from '@trustwork/data';
 import { PROVIDER_CAPABILITIES } from '@trustwork/contracts';
@@ -48,12 +49,12 @@ test('BILL-003 model, capability and credit-pack sale versions on real PostgreSQ
   assert.ok(peopleBefore.length >= 2);
   const neutralBefore = neutralOutputs(p.outsider);
   const draft = (input: SalePriceTerms, hubId = hubA, person = p.owner) => a.cmd(person, (trx, ctx) => billingSalePrices.draft(trx, ctx, hubId, input));
-  const approve = async (v: SalePriceVersion, digest = v.digest, action: 'commerce.activate_price_version' | 'billing.activate_fee_version' = 'commerce.activate_price_version') => {
+  const approve = async (v: SalePriceVersion, digest = v.activationDigest, action: 'commerce.activate_price_version' | 'billing.activate_fee_version' = 'commerce.activate_price_version') => {
     const request = await a.cmd(p.officer, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId: v.hubId }, actionDigest: digest }));
     await a.cmd(p.owner, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     return request.id;
   };
-  const activate = (v: SalePriceVersion, approval: string, person = p.officer, digest = v.digest, supersede = false) => a.cmd(person, (trx, ctx) => billingSalePrices.activate(trx, ctx, v.hubId, v.id, digest, approval, supersede));
+  const activate = (v: SalePriceVersion, approval: string, person = p.officer, digest = v.digest, supersede: string | null = null) => a.cmd(person, (trx, ctx) => billingSalePrices.activate(trx, ctx, v.hubId, v.id, digest, approval, supersede));
 
   const model = await draft(modelTerms());
   await t.test('strict terms hold no discovery or participant control, and an expiry always has notice', () => {
@@ -88,6 +89,7 @@ test('BILL-003 model, capability and credit-pack sale versions on real PostgreSQ
   await t.test('the runtime role has no table access, and terms cannot change even through maintenance', async () => {
     await rejects(runtime.query('SELECT * FROM trustwork.price_sale_terms'), '42501');
     await rejects(runtime.query('SELECT * FROM trustwork.price_sale_activation'), '42501');
+    await rejects(runtime.query('SELECT * FROM trustwork.price_sale_supersession'), '42501');
     await rejects(withMaintenance(db.admin, (trx) => sql`UPDATE trustwork.price_sale_terms SET per_units=1 WHERE price_version_id=${model.id}::uuid`.execute(trx)), '23000', 'audit.append_only');
     await rejects(withMaintenance(db.admin, (trx) => sql`DELETE FROM trustwork.price_sale_terms WHERE price_version_id=${model.id}::uuid`.execute(trx)), '23000', 'audit.append_only');
   });
@@ -103,7 +105,8 @@ test('BILL-003 model, capability and credit-pack sale versions on real PostgreSQ
     await rejects(activate(model, randomUUID(), p.owner), '42501', 'admin.self_approval');
     await rejects(activate(model, randomUUID()), '42501', 'admin.not_requester');
     await rejects(activate(model, await approve(model, 'f'.repeat(64))), '23514', 'admin.approval_mismatch');
-    await rejects(activate(model, await approve(model, model.digest, 'billing.activate_fee_version')), '23514', 'admin.approval_mismatch');
+    await rejects(activate(model, await approve(model, model.digest)), '23514', 'admin.approval_mismatch');
+    await rejects(activate(model, await approve(model, model.activationDigest, 'billing.activate_fee_version')), '23514', 'admin.approval_mismatch');
     const correct = await approve(model);
     await rejects(activate(model, correct, p.officer, 'a'.repeat(64)), '42501', 'admin.approval_mismatch');
     await rejects(a.cmd(p.otherOwner, (trx, ctx) => billingSalePrices.activate(trx, ctx, hubB, model.id, model.digest, correct)), 'P0002', 'admin.not_found');
@@ -132,21 +135,126 @@ test('BILL-003 model, capability and credit-pack sale versions on real PostgreSQ
     assert.deepEqual(await billingSalePrices.publicList(runtime, hubA, 'model'), before);
   });
   await t.test('concurrent overlapping activations of one offer have exactly one winner', async () => {
-    const input = modelTerms({ code: 'synthetic_race', name: 'Synthetic race' });
+    await seedModel(db.admin, hubA, p.owner, 'synthetic-race');
+    const input = modelTerms({ code: 'synthetic_race', name: 'Synthetic race', modelId: 'synthetic-race' });
     const left = await draft(input); const right = await draft(input);
     const made = [await approve(left), await approve(right)];
     const results = await Promise.allSettled([activate(left, made[0]!), activate(right, made[1]!)]);
     assert.equal(results.filter((x) => x.status === 'fulfilled').length, 1);
     assert.equal((results.find((x) => x.status === 'rejected') as PromiseRejectedResult).reason.hint, 'billing.version_overlap');
   });
-  await t.test('an open-ended version is replaced only by naming it; the approval covers the end date', async () => {
-    const first = await draft(modelTerms({ code: 'synthetic_open', name: 'Synthetic open', effectiveTo: null }));
+  const at = (minutes: number) => new Date(Date.now() + minutes * 60000).toISOString();
+  const boundDigest = async (v: SalePriceVersion, supersedes: string) => (await db.admin.query<{ d: string }>('SELECT trustwork.billing_sale_activation_digest($1,$2::uuid) AS d', [v.digest, supersedes])).rows[0]!.d;
+  const signedDigest = (id: string) => withMaintenance(db.admin, async (trx) => (await sql<{ d: string }>`SELECT trustwork.billing_sale_digest(p,o,s) AS d FROM trustwork.price_version p
+    JOIN trustwork.offer o ON o.id=p.offer_id JOIN trustwork.price_sale_terms s ON s.price_version_id=p.id WHERE p.id=${id}::uuid`.execute(trx)).rows[0]!.d);
+  await t.test('supersession: the approved digest binds the choice, the signed end stays, and the change is audited', async () => {
+    await seedModel(db.admin, hubA, p.owner, 'synthetic-open');
+    const terms = (overrides: Parameters<typeof modelTerms>[0]) => modelTerms({ code: 'synthetic_open', name: 'Synthetic open', modelId: 'synthetic-open', ...overrides });
+    const early = await draft(terms({ effectiveFrom: at(3), effectiveTo: at(6) }));
+    await activate(early, await approve(early));
+    const first = await draft(terms({ effectiveFrom: early.terms.effectiveTo!, effectiveTo: null }));
     await activate(first, await approve(first));
-    const next = await draft(modelTerms({ code: 'synthetic_open', name: 'Synthetic open', effectiveFrom: new Date(Date.now() + 120000).toISOString(), effectiveTo: null, amountMinor: '250' }));
-    await rejects(activate(next, await approve(next)), '23P01', 'billing.version_overlap');
-    await activate(next, await approve(next), p.officer, next.digest, true);
-    const rows = (await billingSalePrices.publicList(runtime, hubA, 'model')).filter((r) => r.code === 'synthetic_open');
-    assert.equal(rows.length, 2); assert.equal(rows[0]?.effectiveTo, next.terms.effectiveFrom); assert.equal(rows[1]?.effectiveTo, null);
+    const next = await draft(terms({ effectiveFrom: at(12), effectiveTo: null, amountMinor: '250' }));
+    const staffRow = async (id: string) => (await a.cmd(p.officer, (trx, ctx) => billingSalePrices.staffList(trx, ctx, hubA))).find((x) => x.id === id);
+
+    const offered = (await staffRow(next.id))?.supersedable;
+    assert.deepEqual(offered?.map((x) => x.versionId), [first.id], 'a draft offers only what it may supersede');
+    const bound = offered![0]!.activationDigest;
+    assert.equal(bound, await boundDigest(next, first.id));
+    assert.notEqual(bound, next.activationDigest, 'superseding is a different approval from plain activation');
+
+    const plain = await approve(next);
+    await rejects(activate(next, plain), '23P01', 'billing.version_overlap');
+    await rejects(activate(next, plain, p.officer, next.digest, first.id), '23514', 'admin.approval_mismatch');
+    const approved = await approve(next, bound);
+    await rejects(activate(next, approved), '23514', 'admin.approval_mismatch');
+    const forEarly = await approve(next, await boundDigest(next, early.id));
+    await rejects(activate(next, forEarly, p.officer, next.digest, first.id), '23514', 'admin.approval_mismatch');
+    await rejects(activate(next, forEarly, p.officer, next.digest, early.id), '23514', 'billing.supersede_invalid');
+    await rejects(activate(next, approved, p.officer, next.digest, model.id), '23514', 'billing.supersede_invalid');
+    assert.equal((await staffRow(first.id))?.status, 'active', 'every refusal left the live version alone');
+
+    await activate(next, approved, p.officer, next.digest, first.id);
+
+    const row = (await db.admin.query('SELECT effective_to,status FROM trustwork.price_version WHERE id=$1', [first.id])).rows[0];
+    assert.equal(row.effective_to, null, 'the digested end date is not rewritten');
+    assert.equal(row.status, 'superseded');
+    assert.equal(await signedDigest(first.id), first.digest, 'the digest its approver signed still recomputes');
+    const staff = await staffRow(first.id);
+    assert.equal(staff?.digest, first.digest); assert.equal(staff?.terms.effectiveTo, null);
+    assert.equal(staff?.effectiveEnd, next.terms.effectiveFrom); assert.equal(staff?.supersededBy, next.id);
+    const shown = (await billingSalePrices.publicList(runtime, hubA, 'model')).filter((r) => r.code === 'synthetic_open');
+    assert.deepEqual(shown.map((r) => r.id), [early.id, first.id, next.id], 'the old price stays published until the new one starts');
+    const old = shown.find((r) => r.id === first.id);
+    assert.equal(old?.effectiveTo, next.terms.effectiveFrom, 'readers see the effective end');
+    assert.equal(old?.disclosure?.digest, first.digest);
+    assert.equal(old?.disclosure?.supersededBy?.versionId, next.id); assert.equal(old?.disclosure?.supersededBy?.signedEffectiveTo, null);
+
+    const audit = (await db.admin.query("SELECT actor_person_id,second_approver_person_id,reason_text FROM trustwork.admin_audit_event WHERE action='billing.sale_price_superseded' AND object_id=$1", [first.id])).rows;
+    assert.equal(audit.length, 1);
+    assert.equal(audit[0].actor_person_id, p.officer); assert.equal(audit[0].second_approver_person_id, p.owner);
+    assert.equal(audit[0].reason_text, `Superseded by ${next.id}; end none to ${next.terms.effectiveFrom}`, 'the audit row names the new version, the old end and the new end');
+
+    await rejects(withMaintenance(db.admin, (trx) => sql`UPDATE trustwork.price_version SET effective_to=effective_from+interval '1 day' WHERE id=${next.id}::uuid`.execute(trx)), '23514', 'billing.version_frozen');
+    await rejects(withMaintenance(db.admin, (trx) => sql`UPDATE trustwork.price_version SET status='superseded' WHERE id=${next.id}::uuid`.execute(trx)), '42501', 'admin.approval_mismatch');
+    await rejects(withMaintenance(db.admin, (trx) => sql`UPDATE trustwork.price_sale_supersession SET ends_at=now() WHERE price_version_id=${first.id}::uuid`.execute(trx)), '23000', 'audit.append_only');
+    const again = await draft(terms({ effectiveFrom: at(20), effectiveTo: null }));
+    await rejects(activate(again, await approve(again, await boundDigest(again, first.id)), p.officer, again.digest, first.id), '23514', 'billing.supersede_invalid');
+  });
+  await t.test('a short version cannot end a longer one; a version that outlasts it can', async () => {
+    await seedModel(db.admin, hubA, p.owner, 'synthetic-promo');
+    const terms = (overrides: Parameters<typeof modelTerms>[0]) => modelTerms({ code: 'synthetic_promo', name: 'Synthetic promo', modelId: 'synthetic-promo', ...overrides });
+    const open = await draft(terms({ effectiveFrom: at(3), effectiveTo: null }));
+    await activate(open, await approve(open));
+    const promo = await draft(terms({ effectiveFrom: at(8), effectiveTo: at(9), amountMinor: '1' }));
+    assert.deepEqual((await a.cmd(p.officer, (trx, ctx) => billingSalePrices.staffList(trx, ctx, hubA))).find((x) => x.id === promo.id)?.supersedable, [], 'it is not even offered');
+    await rejects(activate(promo, await approve(promo, await boundDigest(promo, open.id)), p.officer, promo.digest, open.id), '23514', 'billing.supersede_leaves_gap');
+    const row = (await billingSalePrices.publicList(runtime, hubA, 'model')).find((r) => r.id === open.id);
+    assert.equal(row?.effectiveTo, null, 'the open-ended price still stands');
+
+    await seedModel(db.admin, hubA, p.owner, 'synthetic-finite');
+    const finite = (overrides: Parameters<typeof modelTerms>[0]) => modelTerms({ code: 'synthetic_finite', name: 'Synthetic finite', modelId: 'synthetic-finite', ...overrides });
+    const short = await draft(finite({ effectiveFrom: at(3), effectiveTo: at(20) }));
+    await activate(short, await approve(short));
+    const shorter = await draft(finite({ effectiveFrom: at(8), effectiveTo: at(10) }));
+    await rejects(activate(shorter, await approve(shorter, await boundDigest(shorter, short.id)), p.officer, shorter.digest, short.id), '23514', 'billing.supersede_leaves_gap');
+    const longer = await draft(finite({ effectiveFrom: at(8), effectiveTo: at(30) }));
+    await activate(longer, await approve(longer, await boundDigest(longer, short.id)), p.officer, longer.digest, short.id);
+  });
+  await t.test('activation takes the advisory lock before the offer row, the same order as drafting', async () => {
+    await seedModel(db.admin, hubA, p.owner, 'synthetic-lock');
+    const v = await draft(modelTerms({ code: 'synthetic_lock', name: 'Synthetic lock', modelId: 'synthetic-lock' }));
+    const approval = await approve(v);
+    let release!: () => void; let held!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const holding = new Promise<void>((resolve) => { held = resolve; });
+    const holder = withMaintenance(db.admin, async (trx) => {
+      await sql`SELECT pg_advisory_xact_lock(hashtext('trustwork.billing.sale'), hashtext(${`${hubA}:synthetic_lock`}::text))`.execute(trx);
+      held(); await gate;
+    });
+    await holding;
+    const pending = activate(v, approval);
+    try {
+      const blocked = async () => (await db.admin.query<{ n: number }>("SELECT count(*)::int n FROM pg_locks l JOIN pg_database d ON d.oid=l.database WHERE d.datname=current_database() AND l.locktype='advisory' AND NOT l.granted")).rows[0]!.n > 0;
+      for (let i = 0; i < 200 && !await blocked(); i++) await delay(50);
+      assert.ok(await blocked(), 'activation waits on the advisory lock');
+      await withMaintenance(db.admin, (trx) => sql`SELECT id FROM trustwork.offer WHERE hub_id=${hubA}::uuid AND code='synthetic_lock' FOR UPDATE NOWAIT`.execute(trx));
+    } finally { release(); }
+    await holder; await pending;
+  });
+  await t.test('two offers cannot price one model or capability on one meter at once, even concurrently', async () => {
+    await seedModel(db.admin, hubA, p.owner, 'synthetic-shared');
+    const left = await draft(modelTerms({ code: 'synthetic_left', name: 'Synthetic left', modelId: 'synthetic-shared' }));
+    const right = await draft(modelTerms({ code: 'synthetic_right', name: 'Synthetic right', modelId: 'synthetic-shared' }));
+    const made = [await approve(left), await approve(right)];
+    const results = await Promise.allSettled([activate(left, made[0]!), activate(right, made[1]!)]);
+    assert.equal(results.filter((x) => x.status === 'fulfilled').length, 1);
+    assert.equal((results.find((x) => x.status === 'rejected') as PromiseRejectedResult).reason.hint, 'billing.version_overlap');
+    const otherMeter = await draft(modelTerms({ code: 'synthetic_meter', name: 'Synthetic meter', modelId: 'synthetic-shared', meter: 'agent_actions' }));
+    await activate(otherMeter, await approve(otherMeter));
+    const winner = results[0]!.status === 'fulfilled' ? left : right;
+    const later = await draft(modelTerms({ code: 'synthetic_later', name: 'Synthetic later', modelId: 'synthetic-shared', effectiveFrom: winner.terms.effectiveTo!, effectiveTo: null }));
+    await activate(later, await approve(later));
   });
   await t.test('staff lists show every version at their own hub only, under the matching permission', async () => {
     const prices = await a.cmd(p.officer, (trx, ctx) => billingSalePrices.staffList(trx, ctx, hubA));
@@ -167,7 +275,7 @@ test('BILL-003 model, capability and credit-pack sale versions on real PostgreSQ
   await t.test('real directory order, quote comparison, reputation and acceptance digest are identical with sale prices active', async () => {
     assert.deepEqual(await a.as(p.outsider, (trx) => directory.publicPeople(trx, { after: null, limit: 100 })), peopleBefore);
     assert.deepEqual(neutralOutputs(p.outsider), neutralBefore);
-    for (const table of ['price_sale_terms', 'price_sale_activation']) {
+    for (const table of ['price_sale_terms', 'price_sale_activation', 'price_sale_supersession']) {
       const columns = (await db.admin.query("SELECT column_name FROM information_schema.columns WHERE table_schema='trustwork' AND table_name=$1", [table])).rows.map((x) => x.column_name as string);
       assert.ok(!columns.some((c) => /rank|match|recommend|reputation|boost|score|weight|priorit|participant/.test(c)), table);
     }

@@ -31,8 +31,22 @@ CREATE TABLE trustwork.price_sale_activation (
  price_version_id uuid PRIMARY KEY REFERENCES trustwork.price_version(id),
  approval_id uuid NOT NULL UNIQUE REFERENCES trustwork.second_person_approval(id),
  activated_by uuid NOT NULL REFERENCES trustwork.person(id),
+ -- The version this activation replaces. It is part of the digest the second person approves.
+ supersedes_version_id uuid NULL REFERENCES trustwork.price_version(id),
  created_at timestamptz NOT NULL DEFAULT now()
 );
+-- A version's signed end date never changes, so its digest stays verifiable. Replacing it is recorded here, and its
+-- effective end is derived: `ends_at` when this row exists, otherwise the signed `effective_to`.
+CREATE TABLE trustwork.price_sale_supersession (
+ price_version_id uuid PRIMARY KEY REFERENCES trustwork.price_version(id),
+ superseded_by uuid NOT NULL UNIQUE REFERENCES trustwork.price_version(id),
+ superseded_at timestamptz NOT NULL DEFAULT now(),
+ signed_end timestamptz NULL,
+ ends_at timestamptz NOT NULL,
+ approval_id uuid NOT NULL REFERENCES trustwork.second_person_approval(id),
+ CONSTRAINT price_sale_supersession_earlier CHECK (signed_end IS NULL OR ends_at < signed_end)
+);
+CREATE TRIGGER price_sale_supersession_frozen BEFORE UPDATE OR DELETE ON trustwork.price_sale_supersession FOR EACH ROW EXECUTE FUNCTION trustwork.forbid_mutation();
 CREATE TRIGGER price_sale_terms_frozen BEFORE UPDATE OR DELETE ON trustwork.price_sale_terms FOR EACH ROW EXECUTE FUNCTION trustwork.forbid_mutation();
 CREATE TRIGGER price_sale_activation_frozen BEFORE UPDATE OR DELETE ON trustwork.price_sale_activation FOR EACH ROW EXECUTE FUNCTION trustwork.forbid_mutation();
 
@@ -51,22 +65,32 @@ CREATE FUNCTION trustwork.billing_sale_digest(p trustwork.price_version, o trust
 LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
  SELECT trustwork.admin_digest(jsonb_build_object('action', 'commerce.activate_price_version', 'id', p.id, 'hubId', o.hub_id, 'version', p.version, 'terms', trustwork.billing_sale_terms(p, o, s)))
 $$;
+-- What the second person approves: the exact terms, and exactly which version they replace, or none.
+CREATE FUNCTION trustwork.billing_sale_activation_digest(p_version_digest text, p_supersedes uuid) RETURNS text
+LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
+ SELECT trustwork.admin_digest(jsonb_build_object('action', 'commerce.activate_price_version', 'versionDigest', p_version_digest, 'supersedes', p_supersedes))
+$$;
 CREATE FUNCTION trustwork.billing_sale_version(p trustwork.price_version, o trustwork.offer, s trustwork.price_sale_terms) RETURNS jsonb
 LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
- SELECT jsonb_build_object('id', p.id, 'hubId', o.hub_id, 'version', p.version, 'digest', trustwork.billing_sale_digest(p, o, s), 'terms', trustwork.billing_sale_terms(p, o, s))
+ SELECT jsonb_build_object('id', p.id, 'hubId', o.hub_id, 'version', p.version, 'digest', trustwork.billing_sale_digest(p, o, s),
+   'activationDigest', trustwork.billing_sale_activation_digest(trustwork.billing_sale_digest(p, o, s), NULL), 'terms', trustwork.billing_sale_terms(p, o, s))
 $$;
 -- The explicit public serializer: the shape of PublicPriceSchema. No staff, approval, provider-cost or payer value.
-CREATE FUNCTION trustwork.billing_sale_public(p trustwork.price_version, o trustwork.offer, s trustwork.price_sale_terms) RETURNS jsonb
+-- `effectiveTo` is the effective end; `supersededBy.signedEffectiveTo` is the end inside the digest.
+CREATE FUNCTION trustwork.billing_sale_public(p trustwork.price_version, o trustwork.offer, s trustwork.price_sale_terms, x trustwork.price_sale_supersession) RETURNS jsonb
 LANGUAGE sql IMMUTABLE SET search_path = trustwork, pg_temp AS $$
  SELECT jsonb_build_object('id', p.id, 'version', p.version, 'kind', o.kind, 'code', o.code, 'currency', p.currency, 'amountMinor', p.amount_minor::text,
    'effectiveFrom', to_char(p.effective_from AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
-   'effectiveTo', to_char(p.effective_to AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+   'effectiveTo', to_char(coalesce(x.ends_at, p.effective_to) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
    'validity', CASE WHEN s.sale_kind <> 'credit_pack' THEN NULL WHEN s.validity_days IS NULL THEN 'none' ELSE 'P' || s.validity_days || 'D' END,
    'planVersion', NULL,
    'disclosure', jsonb_build_object('offerId', o.id, 'name', o.name, 'acceptanceTextVersion', p.acceptance_text_version, 'plan', NULL, 'digest', trustwork.billing_sale_digest(p, o, s),
      'sale', CASE WHEN s.sale_kind = 'credit_pack' THEN NULL ELSE jsonb_build_object('modelId', s.model_id, 'capabilityId', s.capability_id, 'meter', s.meter, 'perUnits', s.per_units::text) END,
      'creditPack', CASE WHEN s.sale_kind <> 'credit_pack' THEN NULL ELSE jsonb_build_object('creditMinor', s.credit_minor::text, 'validityDays', s.validity_days,
-       'expiryNoticeDays', s.expiry_notice_days, 'refundPolicyVersion', s.refund_policy_version) END))
+       'expiryNoticeDays', s.expiry_notice_days, 'refundPolicyVersion', s.refund_policy_version) END,
+     'supersededBy', CASE WHEN x.price_version_id IS NULL THEN NULL ELSE jsonb_build_object('versionId', x.superseded_by,
+       'at', to_char(x.superseded_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+       'signedEffectiveTo', to_char(x.signed_end AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')) END))
 $$;
 
 -- Audit digests refuse integers above 2^53-1, and a price may be any bigint, so the amount enters the audit image as text.
@@ -80,9 +104,20 @@ CREATE FUNCTION trustwork.billing_sale_price_guard() RETURNS trigger
 LANGUAGE plpgsql SET search_path = trustwork, pg_temp AS $$
 DECLARE o trustwork.offer%ROWTYPE; s trustwork.price_sale_terms%ROWTYPE; x trustwork.price_sale_activation%ROWTYPE; a trustwork.second_person_approval%ROWTYPE;
 BEGIN
- IF NOT (OLD.status = 'draft' AND NEW.status = 'active') THEN RETURN NEW; END IF;
  SELECT * INTO o FROM trustwork.offer WHERE id = NEW.offer_id;
  IF o.kind NOT IN ('model','capability','credit_pack') THEN RETURN NEW; END IF;
+ -- The end date is inside the digest a person signed. billing_version_guard would allow an earlier end; these kinds never.
+ IF NEW.effective_to IS DISTINCT FROM OLD.effective_to THEN
+  RAISE EXCEPTION 'a signed end date never changes' USING ERRCODE = '23514', HINT = 'billing.version_frozen';
+ END IF;
+ IF OLD.status = 'active' AND NEW.status = 'superseded' THEN
+  IF NOT EXISTS (SELECT 1 FROM trustwork.price_sale_supersession r JOIN trustwork.price_sale_activation c ON c.price_version_id = r.superseded_by
+    WHERE r.price_version_id = NEW.id AND c.supersedes_version_id = NEW.id AND c.approval_id = r.approval_id) THEN
+   RAISE EXCEPTION 'a supersession needs its approved record' USING ERRCODE = '42501', HINT = 'admin.approval_mismatch';
+  END IF;
+  RETURN NEW;
+ END IF;
+ IF NOT (OLD.status = 'draft' AND NEW.status = 'active') THEN RETURN NEW; END IF;
  SELECT * INTO s FROM trustwork.price_sale_terms WHERE price_version_id = NEW.id AND sale_kind = o.kind;
  IF NOT FOUND THEN RAISE EXCEPTION 'sale terms are required' USING ERRCODE = '23514', HINT = 'billing.sale_terms_missing'; END IF;
  SELECT * INTO x FROM trustwork.price_sale_activation WHERE price_version_id = NEW.id;
@@ -90,7 +125,7 @@ BEGIN
  IF x.approval_id IS NULL OR a.id IS NULL OR a.status <> 'consumed' OR a.consumed_ref IS DISTINCT FROM NEW.id OR a.action <> 'commerce.activate_price_version'
    OR a.scope_kind <> 'hub' OR a.hub_id IS DISTINCT FROM o.hub_id OR a.requested_by IS DISTINCT FROM NEW.activated_by OR a.approved_by = NEW.activated_by
    OR x.activated_by IS DISTINCT FROM NEW.activated_by OR NEW.activated_by IS DISTINCT FROM trustwork.current_person_id()
-   OR a.action_digest <> trustwork.billing_sale_digest(NEW, o, s) THEN
+   OR a.action_digest <> trustwork.billing_sale_activation_digest(trustwork.billing_sale_digest(NEW, o, s), x.supersedes_version_id) THEN
   RAISE EXCEPTION 'exact consumed price approval required' USING ERRCODE = '42501', HINT = 'admin.approval_mismatch';
  END IF;
  RETURN NEW;
@@ -138,26 +173,58 @@ BEGIN
  RETURN trustwork.billing_sale_version(p, o, s);
 END $$;
 
-CREATE FUNCTION trustwork.billing_sale_price_activate(p_ctx jsonb, p_hub uuid, p_id uuid, p_digest text, p_approval uuid, p_supersede boolean) RETURNS jsonb
+CREATE FUNCTION trustwork.billing_sale_price_activate(p_ctx jsonb, p_hub uuid, p_id uuid, p_digest text, p_approval uuid, p_supersedes uuid) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE a trustwork.admin_actor; o trustwork.offer%ROWTYPE; p trustwork.price_version%ROWTYPE; s trustwork.price_sale_terms%ROWTYPE; before_p jsonb;
+ old_p trustwork.price_version%ROWTYPE; before_old jsonb; old_end text; new_end text;
 BEGIN
  a := trustwork.admin_authorize(p_ctx, ARRAY['admin.commerce.price.activate'], NULL, p_hub);
  SELECT v.* INTO p FROM trustwork.price_version v JOIN trustwork.offer f ON f.id = v.offer_id JOIN trustwork.price_sale_terms t ON t.price_version_id = v.id WHERE v.id = p_id AND f.hub_id = p_hub;
  IF NOT FOUND THEN RAISE EXCEPTION 'price unavailable' USING ERRCODE = 'P0002', HINT = 'admin.not_found'; END IF;
- SELECT * INTO o FROM trustwork.offer WHERE id = p.offer_id FOR UPDATE;
+ -- One lock order with billing_sale_price_draft: the advisory lock first, then the offer row. The code never changes,
+ -- so this unlocked read only supplies the lock key.
+ SELECT * INTO o FROM trustwork.offer WHERE id = p.offer_id;
  PERFORM pg_advisory_xact_lock(hashtext('trustwork.billing.sale'), hashtext(p_hub::text || ':' || o.code));
+ SELECT * INTO o FROM trustwork.offer WHERE id = p.offer_id FOR UPDATE;
  SELECT * INTO p FROM trustwork.price_version WHERE id = p_id FOR UPDATE;
  SELECT * INTO s FROM trustwork.price_sale_terms WHERE price_version_id = p_id;
  IF a.person_id = p.drafted_by THEN RAISE EXCEPTION 'drafter cannot activate' USING ERRCODE = '42501', HINT = 'admin.self_approval'; END IF;
  IF p_digest IS DISTINCT FROM trustwork.billing_sale_digest(p, o, s) THEN RAISE EXCEPTION 'changed digest' USING ERRCODE = '42501', HINT = 'admin.approval_mismatch'; END IF;
  IF p.status <> 'draft' OR o.status = 'retired' OR (SELECT lifecycle FROM trustwork.hub WHERE id = p_hub) = 'closed' THEN
   RAISE EXCEPTION 'price unavailable' USING ERRCODE = '23514', HINT = 'billing.unavailable'; END IF;
- PERFORM trustwork.admin_consume_approval(p_approval,'commerce.activate_price_version','hub',NULL,p_hub,p_digest,p.id);
- INSERT INTO trustwork.price_sale_activation(price_version_id, approval_id, activated_by) VALUES (p.id, p_approval, a.person_id);
- IF p_supersede THEN
-  UPDATE trustwork.price_version SET effective_to = p.effective_from WHERE offer_id = p.offer_id AND status = 'active' AND id <> p.id
-    AND effective_from < p.effective_from AND (effective_to IS NULL OR effective_to > p.effective_from);
+ -- Different offers activate in parallel, so one subject needs its own lock, always taken after the offer's.
+ IF s.sale_kind <> 'credit_pack' THEN
+  PERFORM pg_advisory_xact_lock(hashtext('trustwork.billing.sale_subject'), hashtext(p_hub::text || ':' || s.meter || ':' || coalesce(s.model_id, s.capability_id)));
+ END IF;
+ IF p_supersedes IS NOT NULL THEN
+  SELECT * INTO old_p FROM trustwork.price_version WHERE id = p_supersedes AND offer_id = p.offer_id FOR UPDATE;
+  IF NOT FOUND OR old_p.status <> 'active' OR old_p.effective_from >= p.effective_from OR (old_p.effective_to IS NOT NULL AND old_p.effective_to <= p.effective_from) THEN
+   RAISE EXCEPTION 'that version cannot be superseded' USING ERRCODE = '23514', HINT = 'billing.supersede_invalid';
+  END IF;
+  -- A short version must not end a longer one: the offer would have no price afterwards, and nothing could restore it.
+  IF p.effective_to IS NOT NULL AND (old_p.effective_to IS NULL OR old_p.effective_to > p.effective_to) THEN
+   RAISE EXCEPTION 'the old version runs beyond the new one' USING ERRCODE = '23514', HINT = 'billing.supersede_leaves_gap';
+  END IF;
+ END IF;
+ PERFORM trustwork.admin_consume_approval(p_approval,'commerce.activate_price_version','hub',NULL,p_hub,trustwork.billing_sale_activation_digest(p_digest, p_supersedes),p.id);
+ INSERT INTO trustwork.price_sale_activation(price_version_id, approval_id, activated_by, supersedes_version_id) VALUES (p.id, p_approval, a.person_id, p_supersedes);
+ IF p_supersedes IS NOT NULL THEN
+  INSERT INTO trustwork.price_sale_supersession(price_version_id, superseded_by, signed_end, ends_at, approval_id) VALUES (old_p.id, p.id, old_p.effective_to, p.effective_from, p_approval);
+  old_end := coalesce(to_char(old_p.effective_to AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'), 'none');
+  new_end := to_char(p.effective_from AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"');
+  before_old := trustwork.billing_sale_audit(old_p) || jsonb_build_object('effective_end', old_end);
+  UPDATE trustwork.price_version SET status='superseded' WHERE id=old_p.id RETURNING * INTO old_p;
+  PERFORM trustwork.admin_record(a, p_ctx || jsonb_build_object('reasonText', left(format('Superseded by %s; end %s to %s', p.id, old_end, new_end), 500)), NULL, p_hub,
+    'billing.sale_price_superseded','price_version',old_p.id,before_old,trustwork.billing_sale_audit(old_p) || jsonb_build_object('effective_end', new_end),NULL,p_approval);
+ END IF;
+ -- Two offers must not price one model or capability on one meter at the same time: which would apply is undefined.
+ IF s.sale_kind <> 'credit_pack' AND EXISTS (SELECT 1 FROM trustwork.price_sale_terms t JOIN trustwork.price_version v ON v.id = t.price_version_id JOIN trustwork.offer f ON f.id = v.offer_id
+   LEFT JOIN trustwork.price_sale_supersession y ON y.price_version_id = v.id
+   WHERE f.hub_id = p_hub AND f.id <> o.id AND f.status <> 'retired' AND t.sale_kind = s.sale_kind AND t.meter = s.meter
+     AND t.model_id IS NOT DISTINCT FROM s.model_id AND t.capability_id IS NOT DISTINCT FROM s.capability_id
+     AND (v.status = 'active' OR (v.status = 'superseded' AND y.price_version_id IS NOT NULL))
+     AND tstzrange(v.effective_from, coalesce(y.ends_at, v.effective_to), '[)') && tstzrange(p.effective_from, p.effective_to, '[)')) THEN
+  RAISE EXCEPTION 'another offer prices this subject in that interval' USING ERRCODE = '23P01', HINT = 'billing.version_overlap';
  END IF;
  before_p := trustwork.billing_sale_audit(p);
  UPDATE trustwork.price_version SET status='active', activated_by=a.person_id WHERE id=p.id RETURNING * INTO p;
@@ -166,22 +233,34 @@ BEGIN
  RETURN trustwork.billing_sale_version(p, o, s);
 END $$;
 
+-- A superseded version stays published until its derived end, so the offer never loses its price between activation and start.
 CREATE FUNCTION trustwork.billing_sale_price_list(p_hub uuid, p_kind text) RETURNS jsonb
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
- SELECT coalesce(jsonb_agg(trustwork.billing_sale_public(p, o, s) ORDER BY o.code, p.effective_from, p.id),'[]'::jsonb)
+ SELECT coalesce(jsonb_agg(trustwork.billing_sale_public(p, o, s, x) ORDER BY o.code, p.effective_from, p.id),'[]'::jsonb)
  FROM trustwork.price_version p JOIN trustwork.offer o ON o.id = p.offer_id JOIN trustwork.price_sale_terms s ON s.price_version_id = p.id JOIN trustwork.hub h ON h.id = o.hub_id
- WHERE o.hub_id = p_hub AND o.kind = p_kind AND o.status = 'active' AND p.status = 'active' AND h.lifecycle <> 'closed'
-   AND (p.effective_to IS NULL OR p.effective_to > statement_timestamp())
+ LEFT JOIN trustwork.price_sale_supersession x ON x.price_version_id = p.id
+ WHERE o.hub_id = p_hub AND o.kind = p_kind AND o.status = 'active' AND h.lifecycle <> 'closed'
+   AND (p.status = 'active' OR (p.status = 'superseded' AND x.price_version_id IS NOT NULL))
+   AND (coalesce(x.ends_at, p.effective_to) IS NULL OR coalesce(x.ends_at, p.effective_to) > statement_timestamp())
 $$;
--- Console reads for HUBC-009: every version with its lifecycle, at the staff member's own hub.
+-- Console reads for HUBC-009: every version with its lifecycle, at the staff member's own hub. A draft lists the versions
+-- it may supersede, each with the exact digest a second person would approve.
 CREATE FUNCTION trustwork.billing_sale_price_staff_list(p_ctx jsonb, p_hub uuid) RETURNS jsonb
 LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
 DECLARE result jsonb;
 BEGIN
  PERFORM trustwork.admin_authorize(p_ctx, ARRAY['admin.commerce.price.draft','admin.commerce.price.activate'], NULL, p_hub);
  SELECT coalesce(jsonb_agg(trustwork.billing_sale_version(p, o, s) || jsonb_build_object('status', p.status, 'draftedBy', p.drafted_by, 'activatedBy', p.activated_by,
-   'activatedAt', to_char(p.activated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')) ORDER BY o.code, p.version DESC),'[]'::jsonb) INTO result
- FROM trustwork.price_version p JOIN trustwork.offer o ON o.id = p.offer_id JOIN trustwork.price_sale_terms s ON s.price_version_id = p.id WHERE o.hub_id = p_hub;
+   'activatedAt', to_char(p.activated_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+   'supersededBy', x.superseded_by, 'supersededAt', to_char(x.superseded_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+   'effectiveEnd', to_char(coalesce(x.ends_at, p.effective_to) AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+   'supersedable', CASE WHEN p.status <> 'draft' THEN '[]'::jsonb ELSE (SELECT coalesce(jsonb_agg(jsonb_build_object('versionId', c.id,
+       'activationDigest', trustwork.billing_sale_activation_digest(trustwork.billing_sale_digest(p, o, s), c.id)) ORDER BY c.version),'[]'::jsonb)
+     FROM trustwork.price_version c WHERE c.offer_id = p.offer_id AND c.status = 'active' AND c.effective_from < p.effective_from
+       AND (c.effective_to IS NULL OR c.effective_to > p.effective_from) AND (p.effective_to IS NULL OR (c.effective_to IS NOT NULL AND c.effective_to <= p.effective_to))) END)
+   ORDER BY o.code, p.version DESC),'[]'::jsonb) INTO result
+ FROM trustwork.price_version p JOIN trustwork.offer o ON o.id = p.offer_id JOIN trustwork.price_sale_terms s ON s.price_version_id = p.id
+ LEFT JOIN trustwork.price_sale_supersession x ON x.price_version_id = p.id WHERE o.hub_id = p_hub;
  RETURN result;
 END $$;
 CREATE FUNCTION trustwork.billing_fee_staff_list(p_ctx jsonb, p_hub uuid) RETURNS jsonb
@@ -199,8 +278,11 @@ ALTER TABLE trustwork.price_sale_terms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trustwork.price_sale_terms FORCE ROW LEVEL SECURITY;
 ALTER TABLE trustwork.price_sale_activation ENABLE ROW LEVEL SECURITY;
 ALTER TABLE trustwork.price_sale_activation FORCE ROW LEVEL SECURITY;
+ALTER TABLE trustwork.price_sale_supersession ENABLE ROW LEVEL SECURITY;
+ALTER TABLE trustwork.price_sale_supersession FORCE ROW LEVEL SECURITY;
 CREATE POLICY maintenance_all ON trustwork.price_sale_terms TO trustwork_owner USING (trustwork.maintenance_on()) WITH CHECK (trustwork.maintenance_on());
 CREATE POLICY maintenance_all ON trustwork.price_sale_activation TO trustwork_owner USING (trustwork.maintenance_on()) WITH CHECK (trustwork.maintenance_on());
+CREATE POLICY maintenance_all ON trustwork.price_sale_supersession TO trustwork_owner USING (trustwork.maintenance_on()) WITH CHECK (trustwork.maintenance_on());
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA trustwork FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION trustwork.billing_sale_price_draft(jsonb,uuid,jsonb), trustwork.billing_sale_price_activate(jsonb,uuid,uuid,text,uuid,boolean),
+GRANT EXECUTE ON FUNCTION trustwork.billing_sale_price_draft(jsonb,uuid,jsonb), trustwork.billing_sale_price_activate(jsonb,uuid,uuid,text,uuid,uuid),
  trustwork.billing_sale_price_list(uuid,text), trustwork.billing_sale_price_staff_list(jsonb,uuid), trustwork.billing_fee_staff_list(jsonb,uuid) TO trustwork_app;
