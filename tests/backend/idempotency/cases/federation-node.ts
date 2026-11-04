@@ -8,7 +8,6 @@ import { addLogins, enrolNow, signIn } from '../../../admin/helpers.js';
 import { principalFor } from '../../../data/helpers/seed.js';
 import { staffAssignments, type CommandContext } from '../../../../packages/data/src/repositories/admin.js';
 import { sessionElevations } from '../../../../packages/data/src/repositories/identity.js';
-import { hubs } from '../../../../packages/data/src/repositories/hubs.js';
 import { kernelReference, kernelSync } from '../../../../packages/data/src/repositories/kernel.js';
 import { federationPeers, peeringRecords } from '../../../../packages/data/src/repositories/federation-node.js';
 import { defaultDataLicences, type NodeManifest } from '../../../../packages/contracts/src/federation.js';
@@ -64,8 +63,13 @@ export default {
     const audited = (action: string) => () => count(h, "SELECT 1 FROM trustwork.admin_audit_event WHERE action = $1 AND outcome = 'applied'", [action]);
     const base = '/v1/admin/federation';
 
-    // The hub the peering records belong to, and the key-encryption key of this test process.
-    const hub = await as(h, steward, (trx, ctx) => hubs.create(trx, ctx, { slug: 'synthetic-fed-crash-hub', name: { en: 'Synthetic federation crash hub' }, defaultLocale: 'en', locales: ['en'], timeZone: 'America/Los_Angeles', currency: 'USD', countryPack: null, territories: [{ level: 'place', code: 'US-CA:san-diego' }] }));
+    // The launched hub the peering records belong to (inserted as maintenance, like the hubs case's launched fixture), and the key-encryption key of this test process.
+    const hub = await withMaintenance(admin, async (trx) => {
+      const row = await trx.insertInto('hub').values({ slug: 'synthetic-fed-crash-hub', lifecycle: 'public' }).returning('id').executeTakeFirstOrThrow();
+      await trx.insertInto('hub_profile').values({ hub_id: row.id, node_id: founder.node, name: { en: 'Synthetic federation crash hub' }, default_locale: 'en', locales: ['en'], time_zone: 'America/Los_Angeles', currency: 'USD', created_by: steward }).execute();
+      await trx.insertInto('hub_territory').values({ hub_id: row.id, level: 'place', code: 'US-CA:san-diego', place_key: 'san-diego' }).execute();
+      return { hub_id: row.id };
+    });
     const previousKek = process.env.TRUSTWORK_KEK;
     process.env.TRUSTWORK_KEK = randomBytes(32).toString('hex');
     try {

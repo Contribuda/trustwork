@@ -543,6 +543,23 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET tr
 $$;
 
 -- 8. Node-run commands (the node's own process, no identity) -------------------------------------------------------------
+-- The hubs the manifest publishes and the only hubs a peer may address: launched hubs (soft_launch, public, suspended,
+-- closing) by slug (the manifest's hub id), with their territories, languages and country pack. A draft or preparing hub
+-- is not published on the unauthenticated URL and a handshake or request naming it is refused like an unknown hub
+-- (owner default under ADR 025, 2026-11-04). A public fact of the deployment; readable without a principal.
+CREATE FUNCTION trustwork.federation_published_lifecycles() RETURNS text[]
+LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT ARRAY['soft_launch', 'public', 'suspended', 'closing']::text[]
+$$;
+CREATE FUNCTION trustwork.federation_manifest_hubs() RETURNS TABLE (hub_id uuid, slug text, territories text[], locales text[], pack_code text, pack_version text)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+  SELECT h.id, h.slug, coalesce((SELECT array_agg(t.code ORDER BY t.code) FROM trustwork.hub_territory t WHERE t.hub_id = h.id), ARRAY[]::text[]), p.locales, h.pack_code, h.pack_version
+  FROM trustwork.hub h JOIN trustwork.hub_profile p ON p.hub_id = h.id WHERE h.lifecycle = ANY (trustwork.federation_published_lifecycles()) ORDER BY h.slug
+$$;
+CREATE FUNCTION trustwork.federation_hub_by_slug(p_slug text) RETURNS uuid
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
+  SELECT h.id FROM trustwork.hub h JOIN trustwork.hub_profile p ON p.hub_id = h.id WHERE h.slug = p_slug AND h.lifecycle = ANY (trustwork.federation_published_lifecycles())
+$$;
 -- The sealed material of one key (default: the current key). Only the runtime role may call this; the plaintext never
 -- exists outside the memory of the process that opens it.
 CREATE FUNCTION trustwork.federation_node_signing_material(p_key_id text DEFAULT NULL)
@@ -654,7 +671,7 @@ BEGIN
   IF NOT FOUND OR v_peer.admission_state <> 'admitted' THEN
     RAISE EXCEPTION 'the peer is not admitted' USING ERRCODE = 'insufficient_privilege', HINT = 'federation.peer_restricted';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM trustwork.hub h JOIN trustwork.hub_profile p ON p.hub_id = h.id WHERE h.id = p_local_hub AND h.lifecycle <> 'closed') THEN
+  IF NOT EXISTS (SELECT 1 FROM trustwork.federation_manifest_hubs() m WHERE m.hub_id = p_local_hub) THEN
     RAISE EXCEPTION 'no such hub' USING ERRCODE = 'no_data_found', HINT = 'federation.unknown_hub';
   END IF;
   SELECT * INTO v_row FROM trustwork.peering_record WHERE node_id = v_node AND local_hub_id = p_local_hub AND peer_node = p_peer AND peer_hub_id = p_peer_hub AND state <> 'ended' FOR UPDATE;
@@ -822,17 +839,6 @@ CREATE FUNCTION trustwork.federation_record_get(p_record uuid) RETURNS SETOF tru
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
   SELECT * FROM trustwork.peering_record WHERE id = p_record
 $$;
--- The hubs the manifest publishes: every hub of the node with a profile that is not closed, by slug (the manifest's hub
--- id), with its territories, languages and country pack. A public fact of the deployment; readable without a principal.
-CREATE FUNCTION trustwork.federation_manifest_hubs() RETURNS TABLE (hub_id uuid, slug text, territories text[], locales text[], pack_code text, pack_version text)
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
-  SELECT h.id, h.slug, coalesce((SELECT array_agg(t.code ORDER BY t.code) FROM trustwork.hub_territory t WHERE t.hub_id = h.id), ARRAY[]::text[]), p.locales, h.pack_code, h.pack_version
-  FROM trustwork.hub h JOIN trustwork.hub_profile p ON p.hub_id = h.id WHERE h.lifecycle <> 'closed' ORDER BY h.slug
-$$;
-CREATE FUNCTION trustwork.federation_hub_by_slug(p_slug text) RETURNS uuid
-LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
-  SELECT h.id FROM trustwork.hub h JOIN trustwork.hub_profile p ON p.hub_id = h.id WHERE h.slug = p_slug AND h.lifecycle <> 'closed'
-$$;
 CREATE FUNCTION trustwork.federation_peers_due(p_now timestamptz, p_limit integer DEFAULT 100) RETURNS SETOF text
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET trustwork.maintenance = 'on' AS $$
   SELECT peer_node FROM trustwork.federation_peer WHERE node_id = (SELECT id FROM trustwork.admin_node LIMIT 1) AND refresh_due_at <= p_now
@@ -966,6 +972,10 @@ DECLARE
   v_id uuid := trustwork.new_uuid();
 BEGIN
   PERFORM trustwork.hubs_require_hub(p_local_hub);
+  -- An unlaunched hub is refused exactly like an unknown one, before any permission is resolved, so nothing leaks about it.
+  IF NOT EXISTS (SELECT 1 FROM trustwork.federation_manifest_hubs() m WHERE m.hub_id = p_local_hub) THEN
+    RAISE EXCEPTION 'no such hub' USING ERRCODE = 'no_data_found', HINT = 'admin.not_found';
+  END IF;
   v_actor := trustwork.admin_authorize(p_ctx, ARRAY['admin.federation.peer.edit'], NULL, p_local_hub);
   SELECT * INTO v_identity FROM trustwork.node_identity WHERE node_id = v_node;
   IF NOT FOUND THEN
@@ -1275,6 +1285,7 @@ GRANT EXECUTE ON FUNCTION
   -- invoker helpers: vocabularies and the digests a console shows a second person (pure functions of their inputs)
   trustwork.federation_levels(), trustwork.federation_second_approver_levels(), trustwork.federation_level_rank(text), trustwork.federation_lower_level(text, text),
   trustwork.federation_data_classes(), trustwork.federation_admission_services(), trustwork.federation_is_address(text), trustwork.federation_host_ok(text),
-  trustwork.federation_json_addresses(jsonb), trustwork.federation_peering_digest(uuid, text, text, text), trustwork.federation_rotation_digest(uuid, text, timestamptz)
+  trustwork.federation_json_addresses(jsonb), trustwork.federation_peering_digest(uuid, text, text, text), trustwork.federation_rotation_digest(uuid, text, timestamptz),
+  trustwork.federation_published_lifecycles()
 TO trustwork_app;
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA trustwork FROM PUBLIC;
