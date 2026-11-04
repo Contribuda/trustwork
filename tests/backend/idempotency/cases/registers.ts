@@ -29,13 +29,16 @@ export default {
     const hubId = '00000000-0000-4000-8000-00000000c910';
     const seeded = await withMaintenance(admin, async (trx) => {
       await trx.insertInto('hub').values({ id: hubId, slug: `synthetic-registers-${randomBytes(2).toString('hex')}`, lifecycle: 'public' }).execute();
-      await trx.insertInto('staff_role_definition_version').values({ role: 'data-steward', version: VERSION, scopes: ['hub'], permissions: PERMISSIONS, grant_max_hours: 72, sod_mode: 'reduced' })
-        .onConflict((oc) => oc.doNothing()).execute();
+      // The hub is in full mode, so the second person acts through a different role, with the same permissions here.
+      for (const role of ['data-steward', 'editor-in-chief'] as const) {
+        await trx.insertInto('staff_role_definition_version').values({ role, version: VERSION, scopes: ['hub'], permissions: PERMISSIONS, grant_max_hours: 72, sod_mode: 'reduced' })
+          .onConflict((oc) => oc.doNothing()).execute();
+      }
       const founder = await trx.selectFrom('staff_role_assignment').select('person_id').where('setup_bootstrap', '=', true).where('role', '=', 'platform-owner').executeTakeFirstOrThrow();
       const person = async (name: string) => (await trx.insertInto('person').values({ display_name: name }).returning('id').executeTakeFirstOrThrow()).id;
       const out = { a: await person('Synthetic Crash Registers Steward A'), b: await person('Synthetic Crash Registers Steward B') };
-      for (const id of [out.a, out.b]) {
-        await trx.insertInto('staff_role_assignment').values({ person_id: id, role: 'data-steward', scope_kind: 'hub', hub_id: hubId, definition_version: VERSION, granted_by: founder.person_id, reason: 'Synthetic crash test' }).execute();
+      for (const [id, role] of [[out.a, 'data-steward'], [out.b, 'editor-in-chief']] as const) {
+        await trx.insertInto('staff_role_assignment').values({ person_id: id, role, scope_kind: 'hub', hub_id: hubId, definition_version: VERSION, granted_by: founder.person_id, reason: 'Synthetic crash test' }).execute();
       }
       const source = async (name: string) => (await trx.insertInto('source').values({
         hub_id: hubId, kind: 'register_open_data', name, url: 'https://register.synthetic-crash.invalid/data', reader_kind: 'official_register', purposes: ['company_directory'],
@@ -53,7 +56,7 @@ export default {
     await addLogins(h, Object.entries(people).map(([k, id]) => [id, email(k)]));
     const clients = {} as Record<'a' | 'b', Client>;
     for (const key of ['a', 'b'] as const) {
-      h.staff.set(people[key], ['data-steward']);
+      h.staff.set(people[key], [key === 'a' ? 'data-steward' : 'editor-in-chief']);
       clients[key] = h.client();
       await signIn(clients[key], email(key));
       const secret = await enrolNow(h, clients[key]);

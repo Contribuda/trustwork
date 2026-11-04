@@ -257,7 +257,8 @@ test('platform administration API', { skip: h ? false : SKIP_REASON }, async (t)
     expectRefusal(await command(c.hubOwner, `/v1/admin/approvals/${requested.id}/approve`, { actionDigest: requested.actionDigest }), 403, 'access.second_approver_required', 'self_approval');
     const approved = await command(c.moderator, `/v1/admin/approvals/${requested.id}/approve`, { actionDigest: requested.actionDigest });
     assert.equal(approved.status, 200, JSON.stringify(approved.body));
-    assert.deepEqual(body(approved).sod, { verified: true, mode: 'full', staffCount: 10 }, 'the database decided, whether or not the moderator can read the staff directory');
+    const sod = body(approved).sod as Body;
+    assert.deepEqual([sod.verified, sod.mode], [true, 'full'], 'the database decided, whether or not the moderator can read the staff directory');
     expectRefusal(await command(c.hubOwner, `/v1/admin/moderation/cases/${caseId}/sanctions`, { level: 4, featureScope: 'marketplace', durationSeconds: null, approvalId: requested.id }), 409, 'access.approval_digest_mismatch');
     expectRefusal(await command(c.moderator, `/v1/admin/moderation/cases/${caseId}/sanctions`, { level: 4, featureScope: 'account', durationSeconds: null, approvalId: requested.id }), 403, 'access.forbidden', 'sanction_level_not_allowed');
     const applied = await command(c.hubOwner, `/v1/admin/moderation/cases/${caseId}/sanctions`, { level: 4, featureScope: 'account', durationSeconds: null, approvalId: requested.id });

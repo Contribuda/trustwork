@@ -188,11 +188,6 @@ export class PlatformAdminService {
     });
   }
 
-  /**
-   * The full-mode check of a second-person decision outside the staff actions, evaluated on the staff directory the
-   * approver may read. Without `admin.staff.read` at the scope the directory is not visible and only the database rules
-   * apply (different person, permission at the scope, digest, expiry); the response says so (`verified: false`).
-   */
   /* ---------- Staff ---------- */
 
   definitions(state: RequestState) {

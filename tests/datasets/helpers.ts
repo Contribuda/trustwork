@@ -19,15 +19,18 @@ export async function datasetsWorld(admin: DataPool, runtime: DataPool) {
   const w = await buildAdminWorld(admin);
   const a = actors(admin, runtime, w);
   await withMaintenance(admin, async (trx) => {
-    await staffRoleDefinitions.release(trx, { version: 1, role: 'data-steward', scopes: ['hub'],
-      permissions: ['admin.sources.read', 'admin.sources.manage', 'admin.datasets.read', 'admin.datasets.edit', 'admin.datasets.activate', 'admin.links.decide'],
-      caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+    // The hub is in full mode, so the second person of a dataset acts through a different role, with the same permissions here.
+    for (const role of ['data-steward', 'editor-in-chief'] as const) {
+      await staffRoleDefinitions.release(trx, { version: 1, role, scopes: ['hub'],
+        permissions: ['admin.sources.read', 'admin.sources.manage', 'admin.datasets.read', 'admin.datasets.edit', 'admin.datasets.activate', 'admin.links.decide'],
+        caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+    }
     await staffRoleDefinitions.release(trx, { version: 1, role: 'trust-reviewer', scopes: ['hub'], permissions: ['admin.links.decide'],
       caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
   });
   const hub = { kind: 'hub', hubId: w.hubId } as const;
   await a.assign({ personId: w.people.hubOwner, role: 'data-steward', scope: hub });
-  await a.assign({ personId: w.people.lead2, role: 'data-steward', scope: hub });
+  await a.assign({ personId: w.people.lead2, role: 'editor-in-chief', scope: hub });
   await a.assign({ personId: w.people.agent, role: 'trust-reviewer', scope: hub });
   await a.assign({ personId: w.people.otherAgent, role: 'data-steward', scope: { kind: 'hub', hubId: w.otherHubId } });
   const cmd = async <T>(person: string, fn: (trx: Transaction, ctx: CommandContext) => Promise<T>): Promise<T> => {

@@ -11,7 +11,8 @@ import { actors, buildAdminWorld } from '../data/admin/helpers.js';
  * identifier is synthetic; register links point to the reserved `.invalid` domain. Role definitions are test
  * definitions over the real console vocabulary, not a released capability map.
  *
- * - hubOwner, lead2: `data-steward` at the hub (sources, links and live-mode approvals; second person for each other)
+ * - hubOwner: `data-steward` and lead2: `editor-in-chief` at the hub, with the same permissions (sources, links and
+ *   live-mode approvals): the hub is in full mode, where the second person acts through a different role
  * - agent: `trust-reviewer` at the hub (reads facts through a claims permission, changes nothing)
  * - otherAgent: `data-steward` at the other hub (every registers permission, but elsewhere)
  * - employee: administrator of the world's company; outsider: no rights at all
@@ -20,15 +21,17 @@ export async function registersWorld(admin: DataPool, runtime: DataPool) {
   const w = await buildAdminWorld(admin);
   const a = actors(admin, runtime, w);
   await withMaintenance(admin, async (trx) => {
-    await staffRoleDefinitions.release(trx, { version: 1, role: 'data-steward', scopes: ['hub'],
-      permissions: ['admin.sources.read', 'admin.sources.manage', 'admin.sources.takedown', 'admin.sources.dedupe.decide', 'admin.providers.toggle'],
-      caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+    for (const role of ['data-steward', 'editor-in-chief'] as const) {
+      await staffRoleDefinitions.release(trx, { version: 1, role, scopes: ['hub'],
+        permissions: ['admin.sources.read', 'admin.sources.manage', 'admin.sources.takedown', 'admin.sources.dedupe.decide', 'admin.providers.toggle'],
+        caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
+    }
     await staffRoleDefinitions.release(trx, { version: 1, role: 'trust-reviewer', scopes: ['hub'], permissions: ['admin.claims.read', 'admin.claims.decide'],
       caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null });
   });
   const hub = { kind: 'hub', hubId: w.hubId } as const;
   await a.assign({ personId: w.people.hubOwner, role: 'data-steward', scope: hub });
-  await a.assign({ personId: w.people.lead2, role: 'data-steward', scope: hub });
+  await a.assign({ personId: w.people.lead2, role: 'editor-in-chief', scope: hub });
   await a.assign({ personId: w.people.agent, role: 'trust-reviewer', scope: hub });
   await a.assign({ personId: w.people.otherAgent, role: 'data-steward', scope: { kind: 'hub', hubId: w.otherHubId } });
   const cmd = async <T>(person: string, fn: (trx: Transaction, ctx: CommandContext) => Promise<T>): Promise<T> => {

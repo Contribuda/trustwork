@@ -24,13 +24,16 @@ export default {
     const hubId = '00000000-0000-4000-8000-00000000c903';
     const seeded = await withMaintenance(admin, async (trx) => {
       await trx.insertInto('hub').values({ id: hubId, slug: `synthetic-verify-${randomBytes(2).toString('hex')}`, lifecycle: 'public' }).execute();
-      await trx.insertInto('staff_role_definition_version').values({ role: 'trust-reviewer', version: VERSION, scopes: ['hub'], permissions: PERMISSIONS, grant_max_hours: 72, sod_mode: 'reduced' })
-        .onConflict((oc) => oc.doNothing()).execute();
+      // The hub is in full mode, so the second person acts through a different role, with the same permissions here.
+      for (const role of ['trust-reviewer', 'editor-in-chief'] as const) {
+        await trx.insertInto('staff_role_definition_version').values({ role, version: VERSION, scopes: ['hub'], permissions: PERMISSIONS, grant_max_hours: 72, sod_mode: 'reduced' })
+          .onConflict((oc) => oc.doNothing()).execute();
+      }
       const founder = await trx.selectFrom('staff_role_assignment').select('person_id').where('setup_bootstrap', '=', true).where('role', '=', 'platform-owner').executeTakeFirstOrThrow();
       const person = async (name: string) => (await trx.insertInto('person').values({ display_name: name }).returning('id').executeTakeFirstOrThrow()).id;
       const out = { a: await person('Synthetic Crash Verification Steward A'), b: await person('Synthetic Crash Verification Steward B'), owner: await person('Synthetic Crash Company Administrator') };
-      for (const id of [out.a, out.b]) {
-        await trx.insertInto('staff_role_assignment').values({ person_id: id, role: 'trust-reviewer', scope_kind: 'hub', hub_id: hubId, definition_version: VERSION, granted_by: founder.person_id, reason: 'Synthetic crash test' }).execute();
+      for (const [id, role] of [[out.a, 'trust-reviewer'], [out.b, 'editor-in-chief']] as const) {
+        await trx.insertInto('staff_role_assignment').values({ person_id: id, role, scope_kind: 'hub', hub_id: hubId, definition_version: VERSION, granted_by: founder.person_id, reason: 'Synthetic crash test' }).execute();
       }
       const companyId = (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Verification Builders', claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id;
       await trx.insertInto('membership').values({ person_id: out.owner, company_id: companyId, role: 'administrator', permissions: ['company.members.manage'], status: 'active', valid_from: new Date('2026-10-01T09:00:00Z') }).execute();
@@ -43,7 +46,7 @@ export default {
     await addLogins(h, Object.entries(people).map(([k, id]) => [id, email(k)]));
     const clients = {} as Record<'a' | 'b', Client>;
     for (const key of ['a', 'b'] as const) {
-      h.staff.set(people[key], ['trust-reviewer']);
+      h.staff.set(people[key], [key === 'a' ? 'trust-reviewer' : 'editor-in-chief']);
       clients[key] = h.client();
       await signIn(clients[key], email(key));
       const secret = await enrolNow(h, clients[key]);

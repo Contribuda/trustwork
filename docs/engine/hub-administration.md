@@ -48,7 +48,7 @@ Roles are scoped to one hub. A person keeps one identity and may also be an ordi
 | Ops engineer | Jobs, providers, index generations, kill switches, incidents |
 | Auditor | Read-only audit browsing and export |
 
-**Two people** are required (the second with a different role) for: assigning sensitive roles, activating a price version, executing an erasure, sanction level 4, enabling a non-fake provider of any kind (payment, verification, e-signature, e-invoicing, model, messaging), activating a legal document version, changing the data-residency setting, and raising a peering agreement to `deal-routing` or `identity` level. With fewer than five staff the hub runs in a reduced separation-of-duties mode where only actor ≠ approver is enforced.
+**Two people** are required (the second with a different role once the scope is in full separation-of-duties mode, decided by the database when the approval is given and again when it is used) for: assigning sensitive roles, activating a price version, executing an erasure, sanction level 4, enabling a non-fake provider of any kind (payment, verification, e-signature, e-invoicing, model, messaging), activating a legal document version, changing the data-residency setting, and raising a peering agreement to `deal-routing` or `identity` level. With fewer than five staff the hub runs in a reduced separation-of-duties mode where only actor ≠ approver is enforced.
 
 ## Console map
 

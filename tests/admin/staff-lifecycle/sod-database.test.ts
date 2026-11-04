@@ -148,9 +148,15 @@ test('the database decides the different-role rule (ADM-004)', { skip: db ? fals
     // A second person who acts through another role is approved and the approval is used.
     await owner((trx) => staffRoleDefinitions.release(trx, { version: 4, role: 'support-lead', scopes: ['hub'], permissions: ['admin.moderation.decide', 'admin.moderation.read'],
       caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null }));
-    await as(p.owner, async (trx) => staffAssignments.assign(trx, await elevate(p.owner), { personId: p.agent, role: 'support-lead', scope: hub, definitionVersion: 4 }));
+    const secondRole = await as(p.owner, async (trx) => staffAssignments.assign(trx, await elevate(p.owner), { personId: p.agent, role: 'support-lead', scope: hub, definitionVersion: 4 }));
     assert.equal((await approve(p.agent, ordinary.id, actionDigest)).status, 'approved');
     assert.equal((await as(p.moderator, (trx) => approvals.consume(trx, { approvalId: ordinary.id, action: 'moderation.apply_sanction_l4', scope: hub, actionDigest, ref: crypto.randomUUID() }))).status, 'consumed');
+    // The rule holds until the approval is used: a second person who has lost that role proves nothing any more.
+    const later = digest();
+    const unused = await ask(p.moderator, 'moderation.apply_sanction_l4', hub, later);
+    await approve(p.agent, unused.id, later);
+    await as(p.owner, async (trx) => staffAssignments.revoke(trx, await elevate(p.owner), secondRole.id));
+    await rejects(as(p.moderator, (trx) => approvals.consume(trx, { approvalId: unused.id, action: 'moderation.apply_sanction_l4', scope: hub, actionDigest: later, ref: crypto.randomUUID() })), '42501', 'admin.same_role');
   });
 
   await t.test('concurrency: a same-role approver never wins the race against a different-role approver', async () => {
