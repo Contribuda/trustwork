@@ -252,6 +252,12 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   // every route runs in one PrincipalService.runAs transaction (the DATA-002 command, its audit row, port calls and
   // outbox intents included) and returns its result unchanged. A denied attempt's audit row is written in its own
   // transaction after the refusal, which completes the record as an error result.
+  // Console navigation (ADM-005): saved views, notification settings and flag stages.
+  'admin.console.flag_stage': IN_TRANSACTION,
+  'admin.console.notifications_set': IN_TRANSACTION,
+  'admin.console.view_create': IN_TRANSACTION,
+  'admin.console.view_remove': IN_TRANSACTION,
+  'admin.console.view_update': IN_TRANSACTION,
   'admin.staff.assign': IN_TRANSACTION,
   'admin.staff.revoke': IN_TRANSACTION,
   // ADM-004 staff invitations: each command and its receipt commit together.

@@ -114,7 +114,7 @@ export class AppModule {
         TasksModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.tasks), capabilities, ...(communications.env ? {env: communications.env} : {}), ...(taskFees ? { fees: taskFees } : {}) }),
         ExecutionModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.execution), capabilities }), TrustModule.forRoot(ctx, identity), ReputationModule.forRoot(ctx, identity, { capabilities }),
         // CNT-001 applies moderation holds to publications and comments; other targets still reach ADM-001's recording fake.
-        PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()) }),
+        PlatformAdminModule.forRoot(ctx, identity, { moderationTargets: new ContentModerationTargets(new RecordingModerationTargets()), env: communications.env }),
         // CONS-001: agent checks go to the AST-001 mandate store (module key `consultation`).
         ConsultationsModule.forRoot(ctx, identity, { mandates: store.port(['consultation']), capabilities, ...(consultationCommission ? { commission: consultationCommission } : {}) }, communications.env),
         ContentModule.forRoot(ctx, identity, { imageStore: files.store }),

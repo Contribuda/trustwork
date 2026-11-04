@@ -188,7 +188,20 @@ export async function crashAdminRoutes(h: Harness, exactlyOnce: ExactlyOnce): Pr
     () => count(admin, 'SELECT 1 FROM trustwork.sanction WHERE lifted_at IS NOT NULL'));
 
   // Feature flags.
-  await run('admin.flag.set', c.owner, '/v1/admin/flags', { scope: hub, key: 'ui.crash_toggle', value: true, description: 'Synthetic crash flag', declaredEffect: 'ui', expiresAt: flagExpiry },
-    () => count(admin, 'SELECT 1 FROM trustwork.feature_flag'));
+  const flag = (await run('admin.flag.set', c.owner, '/v1/admin/flags', { scope: hub, key: 'ui.crash_toggle', value: true, description: 'Synthetic crash flag', declaredEffect: 'ui', expiresAt: flagExpiry },
+    () => count(admin, 'SELECT 1 FROM trustwork.feature_flag'))).body as { flag: { id: string } };
+
+  // Console navigation (ADM-005): flag stage, saved views and notification settings.
+  await run('admin.console.flag_stage', c.owner, `/v1/admin/console/flags/${flag.flag.id}/stage`, { stage: 'share', sharePercent: 5, expectedRevision: 1 },
+    () => count(admin, "SELECT 1 FROM trustwork.feature_flag_rollout WHERE stage = 'share'"));
+  const viewBody = { name: 'Synthetic crash view', configuration: { filters: { state: ['open'] }, columns: ['id'], sort: null }, teamRole: null, isDefault: false };
+  const view = (await run('admin.console.view_create', c.lead, '/v1/admin/console/views', { scope: hub, surface: 'support:cases', ...viewBody },
+    () => count(admin, 'SELECT 1 FROM trustwork.console_saved_view'))).body as { view: { id: string } };
+  await run('admin.console.view_update', c.lead, `/v1/admin/console/views/${view.view.id}`, { ...viewBody, name: 'Synthetic crash view renamed', expectedRevision: 1 },
+    () => count(admin, "SELECT 1 FROM trustwork.console_saved_view WHERE name = 'Synthetic crash view renamed'"));
+  await run('admin.console.view_remove', c.lead, `/v1/admin/console/views/${view.view.id}/remove`, { expectedRevision: 2 },
+    () => count(admin, 'SELECT 1 FROM trustwork.console_saved_view WHERE removed_at IS NOT NULL'));
+  await run('admin.console.notifications_set', c.lead, '/v1/admin/console/notifications', { scope: hub, expectedRevision: 0, emailCategories: ['approvals'], quietHours: null },
+    () => count(admin, 'SELECT 1 FROM trustwork.console_notification_setting'));
   return { world, actors: a };
 }

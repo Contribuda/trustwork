@@ -57,9 +57,22 @@ test('no module imports platform-admin; only the composition root mounts it', ()
       assert.ok(LIFECYCLE_TARGETS.some((re) => re.test(target)), `${relative(ROOT, file)} imports ${target}`);
     }
   }
+  // ADM-005's console services likewise.
+  const consoleServices = 'apps/api/src/modules/platform-admin/console-services/';
+  const CONSOLE_TARGETS = [
+    /^apps\/api\/src\/modules\/platform-admin\/[^/]+\.js$/, /^apps\/api\/src\/modules\/platform-admin\/console-services\/[^/]+\.js$/,
+    /^apps\/api\/src\/modules\/identity\//, /^apps\/api\/src\/(common|deps)\//,
+    /^packages\/data\/src\/(repositories|schema)\/console-services\.js$/, /^packages\/contracts\/src\/console-services\.js$/,
+  ];
+  for (const file of sources(join(ROOT, consoleServices))) {
+    for (const match of readFileSync(file, 'utf8').matchAll(/from\s+['"](\.\.?\/[^'"]+)['"]/g)) {
+      const target = relative(ROOT, join(dirname(file), match[1] as string));
+      assert.ok(CONSOLE_TARGETS.some((re) => re.test(target)), `${relative(ROOT, file)} imports ${target}`);
+    }
+  }
   const own = sources(join(ROOT, 'apps/api/src/modules/platform-admin')).filter((file) => {
     const rel = relative(ROOT, file);
-    return !rel.startsWith('apps/api/src/modules/platform-admin/privacy/') && !rel.startsWith(lifecycle);
+    return !rel.startsWith('apps/api/src/modules/platform-admin/privacy/') && !rel.startsWith(lifecycle) && !rel.startsWith(consoleServices);
   });
   for (const file of own) {
     for (const match of readFileSync(file, 'utf8').matchAll(/from\s+['"](\.\.\/[^'"]+)['"]/g)) {
