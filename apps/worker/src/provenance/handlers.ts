@@ -53,7 +53,17 @@ export function registerProvenanceImages(registry: HandlerRegistry, runtime: Pro
     run: async (context: JobContext<Payload>) => {
       const id = context.payload.imageId;
       const fail = (failure: string) => inTransaction(pool, (trx) => provenanceWorker.imageFail(trx, id, failure));
+      const key = `provenance/${id}`;
+      const discard = async () => {
+        try {
+          await store.delete(key, context.signal);
+        } catch (error) {
+          storageFailure(error);
+        }
+      };
       const target = await inTransaction(pool, (trx) => provenanceWorker.imageTarget(trx, id));
+      // A retry after a refused completion: the store was unreachable when the labelled bytes were to go.
+      if (target?.status === 'failed') return void await discard();
       if (!target || target.status !== 'pending') return;
       if (target.storage_key === null || target.asset_id === null) return void await fail('source_unavailable');
       let source: Uint8Array | null;
@@ -77,14 +87,18 @@ export function registerProvenanceImages(registry: HandlerRegistry, runtime: Pro
         if (error instanceof ImageCarrierError) return void await fail(error.reason);
         throw error;
       }
-      const key = `provenance/${id}`;
       try {
         await store.put(key, carried.image, target.media_type, context.signal);
       } catch (error) {
         storageFailure(error);
       }
       const sha256 = createHash('sha256').update(carried.image).digest('hex');
-      await inTransaction(pool, (trx) => provenanceWorker.imageComplete(trx, id, { key, sha256, bytes: carried.image.byteLength, credentials: carried.credentials }));
+      const completed = await inTransaction(pool, (trx) => provenanceWorker.imageComplete(trx, id, { key, sha256, bytes: carried.image.byteLength, credentials: carried.credentials }));
+      if (completed) return;
+      // Refused because the source was deleted meanwhile: its labelled copy must not outlive it. A repeat of a job that
+      // already carried the image also lands here, and those bytes are the published file.
+      const outcome = await inTransaction(pool, (trx) => provenanceWorker.imageTarget(trx, id));
+      if (outcome?.status === 'failed') await discard();
     },
   });
 }
