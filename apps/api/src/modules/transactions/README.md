@@ -22,6 +22,10 @@ sent quote version (current RFQ version) → buyer accepts terms (accepted_by_bu
 | `POST /v1/agreements/:id/private` | Each side, its own half | Buyer: approval references and notes; seller: fulfilment plan and notes. `expectedRevision` is the view's `privateRevision` |
 | `POST /v1/orders/:id/changes`, `POST /v1/orders/:id/changes/:changeId` | Either party proposes; the counterparty accepts or rejects; the proposer withdraws | A change names a newer sent version of the same quote. Acceptance supersedes the agreement with a new one (`supersedes_id`), moves the order to it (`changed`), waives the old obligations and derives new ones; a higher total accepted (or proposed) by the buyer reserves the difference |
 
+## Awards
+
+An award (PRC-004, [sourcing](../sourcing/README.md)) executes through these same commands, in its own transaction: `acceptTermsIn` and `placeOrderIn` are `acceptTerms` and `placeOrder` without their request transaction. `agreement.award_decision_id` names the award. A direct acceptance keeps one live agreement per RFQ (`agreement_one_live_direct_per_rfq`); an award holds one per quote (`agreement_one_live_per_award_quote`). A company with an active `award` route accepts only through an approved award (`403 access.forbidden`, `details.reason = award_required`). An order change keeps the agreement in its award.
+
 ## Electronic records
 
 Acceptance by either party is an electronic record. When the hub requires it (`ElectronicRecordsPolicySource`, default: required with the generic disclosure `trustwork.electronic-records.v1`), the request carries `{ consented: true, disclosureKey }` for the current disclosure and the acceptance event records the disclosure and its basis. `electronicRecordsFromPack('US')` cites the US country pack's ESIGN (15 U.S.C. 7001) and UETA facts (`US:eSignature/esign-act`, `US:eSignature/ueta`). The disclosure wording itself is a hub legal text for counsel (HUB-005).

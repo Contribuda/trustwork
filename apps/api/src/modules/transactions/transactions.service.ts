@@ -189,43 +189,51 @@ export class TransactionsService extends DealService {
    * quotes) cannot both commit; a quote that answers an earlier RFQ version is refused as stale.
    */
   async acceptTerms(input: In<typeof AcceptTermsRequestSchema>, key: string, state: RequestState): Promise<BuyerAgreementView> {
-    return this.run(state, async (trx, p) => {
-      const qv = UUID.test(input.quoteVersion.id) ? await quoteVersions.get(trx, input.quoteVersion.id) : undefined;
-      const quote = qv ? await quotes.get(trx, qv.quote_id) : undefined;
-      const sellerReads = quote ? this.actsFor(p, partyOfColumns(quote.seller_person_id, quote.seller_company_id)) : false;
-      const loaded = this.requireBuyer(p, await this.loadRfq(trx, input.rfqId, true), 'accept', sellerReads);
-      const rfq = loaded.row;
-      if (!qv || !quote || quote.rfq_id !== rfq.id) throw new ApiError('access.not_found');
-      if (quote.revision !== input.expectedRevision) throw new ApiError('validation.revision_conflict');
-      if (await agreements.liveForRfq(trx, rfq.id)) throw new ApiError('validation.revision_conflict', 'this RFQ already has a live agreement', { reason: 'agreement_exists' });
-      const payload = qv.payload as QuoteVersionPayload;
-      const actor = await this.actor(p, input.actor, 'place_order', { kind: 'quote', id: quote.id }, payload.totals.gross);
-      const consent = this.consent(input.electronicRecords);
-      if (rfq.current_version_id === null) throw new ApiError('commercial.rfq_version_mismatch', CHECK_CODES['commercial.rfq_version_mismatch']);
-      const current = await rfqVersions.get(trx, rfq.current_version_id);
-      if (!current) throw new ApiError('access.not_found');
-      const currentContract = rfqVersionContract(current);
-      const check = checkAcceptance({ quoteVersion: quoteVersionContract(qv), quoteRef: input.quoteVersion, currentRfqVersion: currentContract, now: this.now() });
-      if (check !== 'ok') throw new ApiError(check, CHECK_CODES[check], { reason: check.slice('commercial.'.length) });
-      const rfqRef = { id: current.id, version: current.version, digest: digestOf(current.digest as string) };
-      if (!sameRef(input.rfqVersion, rfqRef)) throw new ApiError('commercial.rfq_version_mismatch', CHECK_CODES['commercial.rfq_version_mismatch'], { reason: 'rfq_version_mismatch', currentRfqVersionId: current.id });
-      // SANC-004: the buyer (and the person accepting) and the seller must be transactable before the terms bind.
-      await this.requireTransactable(trx, partyOf(rfq), partyOfColumns(quote.seller_person_id, quote.seller_company_id), actor, 'terms_accept');
-      const quoteRef = { id: qv.id, version: qv.version, digest: digestOf(qv.digest as string) };
-      const digest = computeAgreementDigest(quoteRef, rfqRef, 'rfq_quote');
-      const buyer = columnsOf(partyOf(rfq));
-      const seller = { person: quote.seller_person_id, company: quote.seller_company_id };
-      const row = await agreements.insert(trx, {
-        buyer_person_id: buyer.person, buyer_company_id: buyer.company, seller_person_id: seller.person, seller_company_id: seller.company, rfq_id: rfq.id, quote_id: quote.id,
-        quote_version_id: qv.id, rfq_version_id: current.id, offer_version: qv.version, offer_digest: qv.digest as string, request_version: current.version, request_digest: current.digest as string,
-        accepted_terms_digest: digest.value, status: 'accepted_by_buyer', supersedes_id: null, created_by_person_id: p.personId,
-      });
-      await agreementBuyerPrivate.insert(trx, { agreement_id: row.id, owner_person_id: buyer.person, owner_company_id: buyer.company, transaction_budget_id: null, approval_refs: [], notes: null, updated_by_person_id: p.personId });
-      const event = await this.recordEvent(trx, p, row, 'buyer_accepts_terms', partyOf(rfq), actor, key, { consent });
-      await this.audit(trx, p, state, 'agreement.accepted_by_buyer', 'agreement', row.id, { rfqId: rfq.id, quoteId: quote.id, versionId: qv.id, digest: digest.value, eventId: event.id, via: actor.via, mandateId: actor.mandateId, electronicRecords: consent.disclosureKey });
-      await this.event(trx, 'agreement', row.id, row.revision, 'agreement.accepted_by_buyer', { agreementId: row.id, rfqId: rfq.id, quoteId: quote.id, versionId: qv.id, eventKind: 'buyer_accepts_terms', termsKind: 'rfq_quote', via: actor.via });
-      return this.view(trx, row, 'buyer') as Promise<BuyerAgreementView>;
+    return this.run(state, (trx, p) => this.acceptTermsIn(trx, p, input, key, state));
+  }
+
+  /**
+   * `acceptTerms` inside the caller's transaction, for a use case that binds several commands in one commit (PRC-004: an
+   * award executes every selected quote or none). `awardDecisionId` names the approved award: it may hold one live
+   * agreement per quote, and the database checks the award (`agreement_award_guard`).
+   */
+  async acceptTermsIn(trx: Transaction, p: Principal, input: In<typeof AcceptTermsRequestSchema>, key: string, state: RequestState, awardDecisionId: string | null = null): Promise<BuyerAgreementView> {
+    const qv = UUID.test(input.quoteVersion.id) ? await quoteVersions.get(trx, input.quoteVersion.id) : undefined;
+    const quote = qv ? await quotes.get(trx, qv.quote_id) : undefined;
+    const sellerReads = quote ? this.actsFor(p, partyOfColumns(quote.seller_person_id, quote.seller_company_id)) : false;
+    const loaded = this.requireBuyer(p, await this.loadRfq(trx, input.rfqId, true), 'accept', sellerReads);
+    const rfq = loaded.row;
+    if (!qv || !quote || quote.rfq_id !== rfq.id) throw new ApiError('access.not_found');
+    if (quote.revision !== input.expectedRevision) throw new ApiError('validation.revision_conflict');
+    const live = awardDecisionId ? await agreements.liveBlockingAward(trx, { rfqId: rfq.id, awardDecisionId, quoteId: quote.id }) : await agreements.liveForRfq(trx, rfq.id);
+    if (live) throw new ApiError('validation.revision_conflict', 'this RFQ already has a live agreement', { reason: 'agreement_exists' });
+    const payload = qv.payload as QuoteVersionPayload;
+    const actor = await this.actor(p, input.actor, 'place_order', { kind: 'quote', id: quote.id }, payload.totals.gross);
+    const consent = this.consent(input.electronicRecords);
+    if (rfq.current_version_id === null) throw new ApiError('commercial.rfq_version_mismatch', CHECK_CODES['commercial.rfq_version_mismatch']);
+    const current = await rfqVersions.get(trx, rfq.current_version_id);
+    if (!current) throw new ApiError('access.not_found');
+    const currentContract = rfqVersionContract(current);
+    const check = checkAcceptance({ quoteVersion: quoteVersionContract(qv), quoteRef: input.quoteVersion, currentRfqVersion: currentContract, now: this.now() });
+    if (check !== 'ok') throw new ApiError(check, CHECK_CODES[check], { reason: check.slice('commercial.'.length) });
+    const rfqRef = { id: current.id, version: current.version, digest: digestOf(current.digest as string) };
+    if (!sameRef(input.rfqVersion, rfqRef)) throw new ApiError('commercial.rfq_version_mismatch', CHECK_CODES['commercial.rfq_version_mismatch'], { reason: 'rfq_version_mismatch', currentRfqVersionId: current.id });
+    // SANC-004: the buyer (and the person accepting) and the seller must be transactable before the terms bind.
+    await this.requireTransactable(trx, partyOf(rfq), partyOfColumns(quote.seller_person_id, quote.seller_company_id), actor, 'terms_accept');
+    const quoteRef = { id: qv.id, version: qv.version, digest: digestOf(qv.digest as string) };
+    const digest = computeAgreementDigest(quoteRef, rfqRef, 'rfq_quote');
+    const buyer = columnsOf(partyOf(rfq));
+    const seller = { person: quote.seller_person_id, company: quote.seller_company_id };
+    const row = await agreements.insert(trx, {
+      buyer_person_id: buyer.person, buyer_company_id: buyer.company, seller_person_id: seller.person, seller_company_id: seller.company, rfq_id: rfq.id, quote_id: quote.id,
+      quote_version_id: qv.id, rfq_version_id: current.id, offer_version: qv.version, offer_digest: qv.digest as string, request_version: current.version, request_digest: current.digest as string,
+      accepted_terms_digest: digest.value, status: 'accepted_by_buyer', supersedes_id: null, created_by_person_id: p.personId, award_decision_id: awardDecisionId,
     });
+    await agreementBuyerPrivate.insert(trx, { agreement_id: row.id, owner_person_id: buyer.person, owner_company_id: buyer.company, transaction_budget_id: null, approval_refs: [], notes: null, updated_by_person_id: p.personId });
+    const event = await this.recordEvent(trx, p, row, 'buyer_accepts_terms', partyOf(rfq), actor, key, { consent });
+    await this.audit(trx, p, state, 'agreement.accepted_by_buyer', 'agreement', row.id, { rfqId: rfq.id, quoteId: quote.id, versionId: qv.id, digest: digest.value, eventId: event.id, via: actor.via, mandateId: actor.mandateId, electronicRecords: consent.disclosureKey });
+    await this.event(trx, 'agreement', row.id, row.revision, 'agreement.accepted_by_buyer', { agreementId: row.id, rfqId: rfq.id, quoteId: quote.id, versionId: qv.id, eventKind: 'buyer_accepts_terms', termsKind: 'rfq_quote', via: actor.via });
+    return this.view(trx, row, 'buyer') as Promise<BuyerAgreementView>;
   }
 
   /* ---------- Buyer: orders ---------- */
@@ -236,45 +244,48 @@ export class TransactionsService extends DealService {
    * charge in this slice. The order is an instruction; no money moves (ADR 010 decision 20).
    */
   async placeOrder(agreementId: string, input: In<typeof PlaceOrderRequestSchema>, key: string, state: RequestState): Promise<BuyerAgreementView> {
-    return this.run(state, async (trx, p) => {
-      const read = await this.agreementOf(trx, agreementId);
-      const { rfq } = await this.requireSide(trx, p, read, 'buyer');
-      this.requireBuyer(p, rfq, 'commit_order', true);
-      const row = await agreements.lock(trx, read.id);
-      if (!row) throw new ApiError('access.not_found');
-      if (row.revision !== input.expectedRevision) throw new ApiError('validation.revision_conflict');
-      if (row.status !== 'accepted_by_buyer') throw new ApiError('validation.schema', `an order is placed on terms the buyer accepted, not on a ${row.status} agreement`, { reason: 'invalid_transition' });
-      const terms = await this.verifiedTerms(trx, row);
-      if (!sameRef(input.quoteVersion, terms.quoteRef) || !sameRef(input.rfqVersion, terms.rfqRef)) throw new ApiError('commercial.digest_mismatch', CHECK_CODES['commercial.digest_mismatch'], { reason: 'digest_mismatch' });
-      const rfqRow = rfq?.row;
-      if (!rfqRow || (input.context.kind === 'rfq' ? input.context.id !== rfqRow.id : input.context.id !== rfqRow.project_id)) throw new ApiError('validation.schema', 'the order context is the RFQ or its project', { reason: 'context_mismatch' });
-      if (input.platformBudgetId !== null) throw new ApiError('validation.schema', 'no platform charge occurs for an order in this hub', { reason: 'no_platform_charge' });
-      if (await orders.liveForAgreement(trx, row.id)) throw new ApiError('validation.revision_conflict', 'the agreement already has an order', { reason: 'order_exists' });
-      const gross: Money = (terms.quoteVersion.payload as QuoteVersionPayload).totals.gross;
-      const actor = await this.actor(p, input.actor, 'place_order', { kind: 'agreement', id: row.id }, gross);
-      if (!UUID.test(input.transactionBudgetId)) throw new ApiError('commercial.authority_missing', 'a transaction budget is needed', { reason: 'budget_unknown' });
-      const amount = BigInt(gross.minorUnits);
-      if (amount < 0n) throw new ApiError('validation.schema', 'a negative total is not ordered', { reason: 'negative_total' });
-      // SANC-004: before the order and its reservation, both parties and the person ordering must be transactable.
-      await this.requireTransactable(trx, this.buyer(row), this.seller(row), actor, 'order_place');
-      const reservation = amount === 0n ? null : await reservations.reserve(trx, {
-        budgetId: input.transactionBudgetId, kind: 'transaction', amountMinor: gross.minorUnits, currency: gross.currency, actionIntentId: row.id, correlationKey: `order:${row.id}:${key}`,
-        projectId: rfqRow.project_id, ttlSeconds: RESERVATION_TTL_SECONDS,
-      });
-      const order = await orders.insert(trx, {
-        agreement_id: row.id, accepted_terms_digest: row.accepted_terms_digest, context_kind: input.context.kind, context_id: input.context.id, external_reference: input.externalReference,
-        amount_minor: gross.minorUnits, currency: gross.currency, transaction_budget_id: input.transactionBudgetId, reservation_id: reservation?.id ?? null, placed_by_person_id: p.personId,
-        placed_via: actor.via, placed_mandate_id: actor.mandateId,
-      });
-      if (!(await agreementBuyerPrivate.update(trx, row.id, null, { transaction_budget_id: input.transactionBudgetId, updated_by_person_id: p.personId }))) {
-        const buyer = columnsOf(this.buyer(row));
-        await agreementBuyerPrivate.insert(trx, { agreement_id: row.id, owner_person_id: buyer.person, owner_company_id: buyer.company, transaction_budget_id: input.transactionBudgetId, approval_refs: [], notes: null, updated_by_person_id: p.personId });
-      }
-      // Audit names the authority (budget and reservation ids, digest), never a budget limit or balance.
-      await this.audit(trx, p, state, 'order.placed', 'order', order.id, { agreementId: row.id, digest: row.accepted_terms_digest, budgetId: input.transactionBudgetId, reservationId: reservation?.id ?? null, via: actor.via, mandateId: actor.mandateId });
-      await this.event(trx, 'order', order.id, order.revision, 'order.placed', { orderId: order.id, agreementId: row.id, status: 'placed', via: actor.via });
-      return this.view(trx, row, 'buyer') as Promise<BuyerAgreementView>;
+    return this.run(state, (trx, p) => this.placeOrderIn(trx, p, agreementId, input, key, state));
+  }
+
+  /** `placeOrder` inside the caller's transaction (PRC-004: see `acceptTermsIn`). */
+  async placeOrderIn(trx: Transaction, p: Principal, agreementId: string, input: In<typeof PlaceOrderRequestSchema>, key: string, state: RequestState): Promise<BuyerAgreementView> {
+    const read = await this.agreementOf(trx, agreementId);
+    const { rfq } = await this.requireSide(trx, p, read, 'buyer');
+    this.requireBuyer(p, rfq, 'commit_order', true);
+    const row = await agreements.lock(trx, read.id);
+    if (!row) throw new ApiError('access.not_found');
+    if (row.revision !== input.expectedRevision) throw new ApiError('validation.revision_conflict');
+    if (row.status !== 'accepted_by_buyer') throw new ApiError('validation.schema', `an order is placed on terms the buyer accepted, not on a ${row.status} agreement`, { reason: 'invalid_transition' });
+    const terms = await this.verifiedTerms(trx, row);
+    if (!sameRef(input.quoteVersion, terms.quoteRef) || !sameRef(input.rfqVersion, terms.rfqRef)) throw new ApiError('commercial.digest_mismatch', CHECK_CODES['commercial.digest_mismatch'], { reason: 'digest_mismatch' });
+    const rfqRow = rfq?.row;
+    if (!rfqRow || (input.context.kind === 'rfq' ? input.context.id !== rfqRow.id : input.context.id !== rfqRow.project_id)) throw new ApiError('validation.schema', 'the order context is the RFQ or its project', { reason: 'context_mismatch' });
+    if (input.platformBudgetId !== null) throw new ApiError('validation.schema', 'no platform charge occurs for an order in this hub', { reason: 'no_platform_charge' });
+    if (await orders.liveForAgreement(trx, row.id)) throw new ApiError('validation.revision_conflict', 'the agreement already has an order', { reason: 'order_exists' });
+    const gross: Money = (terms.quoteVersion.payload as QuoteVersionPayload).totals.gross;
+    const actor = await this.actor(p, input.actor, 'place_order', { kind: 'agreement', id: row.id }, gross);
+    if (!UUID.test(input.transactionBudgetId)) throw new ApiError('commercial.authority_missing', 'a transaction budget is needed', { reason: 'budget_unknown' });
+    const amount = BigInt(gross.minorUnits);
+    if (amount < 0n) throw new ApiError('validation.schema', 'a negative total is not ordered', { reason: 'negative_total' });
+    // SANC-004: before the order and its reservation, both parties and the person ordering must be transactable.
+    await this.requireTransactable(trx, this.buyer(row), this.seller(row), actor, 'order_place');
+    const reservation = amount === 0n ? null : await reservations.reserve(trx, {
+      budgetId: input.transactionBudgetId, kind: 'transaction', amountMinor: gross.minorUnits, currency: gross.currency, actionIntentId: row.id, correlationKey: `order:${row.id}:${key}`,
+      projectId: rfqRow.project_id, ttlSeconds: RESERVATION_TTL_SECONDS,
     });
+    const order = await orders.insert(trx, {
+      agreement_id: row.id, accepted_terms_digest: row.accepted_terms_digest, context_kind: input.context.kind, context_id: input.context.id, external_reference: input.externalReference,
+      amount_minor: gross.minorUnits, currency: gross.currency, transaction_budget_id: input.transactionBudgetId, reservation_id: reservation?.id ?? null, placed_by_person_id: p.personId,
+      placed_via: actor.via, placed_mandate_id: actor.mandateId,
+    });
+    if (!(await agreementBuyerPrivate.update(trx, row.id, null, { transaction_budget_id: input.transactionBudgetId, updated_by_person_id: p.personId }))) {
+      const buyer = columnsOf(this.buyer(row));
+      await agreementBuyerPrivate.insert(trx, { agreement_id: row.id, owner_person_id: buyer.person, owner_company_id: buyer.company, transaction_budget_id: input.transactionBudgetId, approval_refs: [], notes: null, updated_by_person_id: p.personId });
+    }
+    // Audit names the authority (budget and reservation ids, digest), never a budget limit or balance.
+    await this.audit(trx, p, state, 'order.placed', 'order', order.id, { agreementId: row.id, digest: row.accepted_terms_digest, budgetId: input.transactionBudgetId, reservationId: reservation?.id ?? null, via: actor.via, mandateId: actor.mandateId });
+    await this.event(trx, 'order', order.id, order.revision, 'order.placed', { orderId: order.id, agreementId: row.id, status: 'placed', via: actor.via });
+    return this.view(trx, row, 'buyer') as Promise<BuyerAgreementView>;
   }
 
   /* ---------- Seller: accept or decline ---------- */

@@ -8126,7 +8126,7 @@
       "id": "PRC-004",
       "title": "Sourcing events: bid levelling, award decisions and outcome notices",
       "area": "commerce-backend",
-      "status": "open",
+      "status": "in_review",
       "dependsOn": [
         "PRC-001",
         "PRC-003",

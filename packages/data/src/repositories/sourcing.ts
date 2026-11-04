@@ -1,6 +1,6 @@
 import { sql } from 'kysely';
 import type { Transaction } from '../pool.js';
-import type { BidLevelSheetRow, BidLevelSheetVersionRow, SourcingEligibilityRuleSetRow } from '../schema/sourcing.js';
+import type { AwardDecisionRow, BidLevelSheetRow, BidLevelSheetVersionRow, BidOutcomeNoticeRow, SourcingEligibilityRuleSetRow } from '../schema/sourcing.js';
 
 /**
  * Sourcing repository (PRC-004, migration packages/data/migrations/sourcing). Every write is one owner-run `sourcing_*`
@@ -53,6 +53,55 @@ export const levelSheets = {
   async freeze(trx: Transaction, input: { versionId: string; digest: string; expectedRevision: number }): Promise<BidLevelSheetVersionRow> {
     const { rows } = await sql<BidLevelSheetVersionRow>`SELECT * FROM trustwork.sourcing_freeze_sheet(${input.versionId}::uuid, ${input.digest}::text, ${input.expectedRevision}::integer)`.execute(trx);
     return one(rows);
+  },
+};
+
+export const awardDecisions = {
+  get(trx: Transaction, id: string): Promise<AwardDecisionRow | undefined> {
+    return trx.selectFrom('award_decision').selectAll().where('id', '=', id).executeTakeFirst();
+  },
+  forRfq(trx: Transaction, rfqId: string): Promise<AwardDecisionRow[]> {
+    return trx.selectFrom('award_decision').selectAll().where('rfq_id', '=', rfqId).orderBy('created_at').orderBy('id').execute();
+  },
+  /** The award in approval on this RFQ, if any. */
+  inApproval(trx: Transaction, rfqId: string): Promise<AwardDecisionRow | undefined> {
+    return trx.selectFrom('award_decision').selectAll().where('rfq_id', '=', rfqId).where('status', '=', 'in_approval').executeTakeFirst();
+  },
+  async propose(trx: Transaction, input: { rfqId: string; sheetVersionId: string; selection: unknown; reasons: unknown; digest: string; via: 'person' | 'agent'; mandateId: string | null }): Promise<AwardDecisionRow> {
+    const { rows } = await sql<AwardDecisionRow>`SELECT * FROM trustwork.sourcing_propose_award(${input.rfqId}::uuid, ${input.sheetVersionId}::uuid, ${json(input.selection)}::jsonb, ${json(input.reasons)}::jsonb, ${input.digest}::text, ${input.via}::text, ${input.mandateId}::text)`.execute(trx);
+    return one(rows);
+  },
+  async enterApproval(trx: Transaction, awardId: string, requestId: string): Promise<AwardDecisionRow> {
+    const { rows } = await sql<AwardDecisionRow>`SELECT * FROM trustwork.sourcing_award_enter_approval(${awardId}::uuid, ${requestId}::uuid)`.execute(trx);
+    return one(rows);
+  },
+  async beginExecution(trx: Transaction, awardId: string, expectedRevision: number): Promise<AwardDecisionRow> {
+    const { rows } = await sql<AwardDecisionRow>`SELECT * FROM trustwork.sourcing_begin_execution(${awardId}::uuid, ${expectedRevision}::integer)`.execute(trx);
+    return one(rows);
+  },
+  async completeExecution(trx: Transaction, awardId: string, agreementIds: readonly string[]): Promise<AwardDecisionRow> {
+    const { rows } = await sql<AwardDecisionRow>`SELECT * FROM trustwork.sourcing_complete_execution(${awardId}::uuid, ${[...agreementIds]}::uuid[])`.execute(trx);
+    return one(rows);
+  },
+  async cancel(trx: Transaction, awardId: string, reason: string, expectedRevision: number, sessionId: string | null): Promise<AwardDecisionRow> {
+    const { rows } = await sql<AwardDecisionRow>`SELECT * FROM trustwork.sourcing_cancel_award(${awardId}::uuid, ${reason}::text, ${expectedRevision}::integer, ${sessionId}::uuid)`.execute(trx);
+    return one(rows);
+  },
+};
+
+export const outcomeNotices = {
+  async send(trx: Transaction, input: { rfqId: string; awardId: string | null; optedIn: boolean; feedback: Record<string, { band: string | null; reason: string | null }>; expectedRevision: number }): Promise<BidOutcomeNoticeRow[]> {
+    const { rows } = await sql<BidOutcomeNoticeRow>`SELECT * FROM trustwork.sourcing_send_notices(${input.rfqId}::uuid, ${input.awardId}::uuid, ${input.optedIn}::boolean, ${json(input.feedback)}::jsonb, ${input.expectedRevision}::integer)`.execute(trx);
+    return rows;
+  },
+  forRfq(trx: Transaction, rfqId: string): Promise<BidOutcomeNoticeRow[]> {
+    return trx.selectFrom('bid_outcome_notice').selectAll().where('rfq_id', '=', rfqId).orderBy('sent_at').orderBy('id').execute();
+  },
+  /** Notices addressed to the principal or the company it acts for, newest first. */
+  forRecipient(trx: Transaction, scope: { personId: string; companyId: string | null }): Promise<BidOutcomeNoticeRow[]> {
+    return trx.selectFrom('bid_outcome_notice').selectAll()
+      .where((eb) => eb.or([eb('recipient_person_id', '=', scope.personId), ...(scope.companyId ? [eb('recipient_company_id', '=', scope.companyId)] : [])]))
+      .orderBy('sent_at', 'desc').orderBy('id', 'desc').execute();
   },
 };
 

@@ -34,6 +34,7 @@ test('conditions are structured and fail closed on unknown or foreign amounts', 
   assert.equal(conditionHolds({ kind: 'project_in', projectIds: [project] }, { facts: facts(), amount: null }), false);
   assert.equal(conditionHolds({ kind: 'category_in', categories: ['material.concrete'] }, { facts: facts({ categories: ['material.concrete', 'material.rebar'] }), amount: null }), true);
   assert.equal(conditionHolds({ kind: 'supplier_status_in', statuses: ['prospect'] }, { facts: facts({ supplierStatus: 'approved' }), amount: null }), false);
+  assert.equal(conditionHolds({ kind: 'supplier_status_in', statuses: ['prospect'] }, { facts: facts(), amount: null }), true, 'unknown status: the step applies');
   assert.equal(conditionHolds({ kind: 'risk_signal_present' }, { facts: facts({ riskSignalPresent: true }), amount: null }), true);
   assert.equal(conditionHolds({ kind: 'documents_incomplete' }, { facts: facts(), amount: null }), false);
   assert.throws(() => ApprovalSubjectFactsSchema.parse({ note: 'approve before Friday' }), 'free text never enters the facts');

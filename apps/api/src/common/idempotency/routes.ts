@@ -349,7 +349,11 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'sources.sponsored_policy_set': IN_TRANSACTION,
   // PRC-004: sourcing events. Every route runs in one PrincipalService.runAs transaction (the owner-run command and its
   // audit row) and returns its result unchanged.
+  'sourcing.award_cancel': IN_TRANSACTION,
+  'sourcing.award_execute': IN_TRANSACTION,
+  'sourcing.award_propose': IN_TRANSACTION,
   'sourcing.eligibility_save': IN_TRANSACTION,
+  'sourcing.outcome_notify': IN_TRANSACTION,
   'sourcing.sheet_draft': IN_TRANSACTION,
   'sourcing.sheet_freeze': IN_TRANSACTION,
   'sourcing.sheet_save': IN_TRANSACTION,

@@ -180,6 +180,8 @@ export interface AgreementTable {
   supersedes_id: string | null;
   superseded_by: string | null;
   closed_reason: string | null;
+  /** PRC-004: the award this agreement executes; null for a direct acceptance. */
+  award_decision_id: ColumnType<string | null, string | null | undefined, never>;
   created_by_person_id: string;
   revision: Generated<number>;
   created_at: GeneratedTimestamp;
@@ -371,7 +373,7 @@ export const TABLE_COLUMNS: TableColumns<TransactionsDatabase> = {
   agreement: columns('agreement', [
     'id', 'terms_kind', 'buyer_person_id', 'buyer_company_id', 'seller_person_id', 'seller_company_id', 'rfq_id', 'quote_id', 'quote_version_id', 'rfq_version_id', 'offer_ref_id',
     'request_ref_id', 'offer_version', 'offer_digest', 'request_version', 'request_digest', 'accepted_terms_digest', 'status', 'supersedes_id', 'superseded_by', 'closed_reason',
-    'created_by_person_id', 'revision', 'created_at', 'updated_at',
+    'award_decision_id', 'created_by_person_id', 'revision', 'created_at', 'updated_at',
   ]),
   agreement_buyer_private: columns('agreement_buyer_private', [
     'agreement_id', 'owner_person_id', 'owner_company_id', 'transaction_budget_id', 'approval_refs', 'notes', 'updated_by_person_id', 'revision', 'created_at', 'updated_at',

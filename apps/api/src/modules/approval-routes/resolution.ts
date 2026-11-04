@@ -45,7 +45,7 @@ export function conditionHolds(condition: ApprovalCondition, subject: Resolution
     case 'cost_code_in':
       return facts.costCodeIds.some((c) => condition.costCodeIds.includes(c));
     case 'supplier_status_in':
-      return facts.supplierStatus !== null && condition.statuses.includes(facts.supplierStatus);
+      return facts.supplierStatus === null || condition.statuses.includes(facts.supplierStatus);
     case 'risk_signal_present':
       return facts.riskSignalPresent;
     case 'documents_incomplete':
