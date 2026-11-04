@@ -24,11 +24,11 @@ const Hub = z.strictObject({ hubId: z.uuid() });
 export class ScreeningConsoleController {
   constructor(@Inject(PrincipalService) private readonly principals: PrincipalService) {}
   private read<T>(state: RequestState, fn: (trx: Transaction) => Promise<T>, card = false) {
-    return this.principals.runAs(state, async (trx, principal) => {
+    return this.principals.runAs(state, async (trx) => {
       if (!await jurisdictionStaff.canRead(trx)) throw new ApiError('access.not_found');
       // The participant card's compliance panel is the compliance officer's (console design, section 4.1): an auditor
-      // reads the cases, not a named person's card, and gets the same answer as any other staff member.
-      if (card && !principal.staff.includes('compliance-officer')) throw new ApiError('access.not_found');
+      // gets the same answer as any other staff member, whatever other role they hold in a hub.
+      if (card && !await screeningStaff.panelReader(trx)) throw new ApiError('access.not_found');
       return fn(trx);
     });
   }

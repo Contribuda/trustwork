@@ -128,6 +128,7 @@ test('database: no function, view or policy outside the screening module reads a
     "SELECT tablename, policyname FROM pg_policies WHERE schemaname = 'trustwork' AND tablename NOT LIKE 'screening\\_%' AND (coalesce(qual, '') ~ $1 OR coalesce(with_check, '') ~ $1)", [pattern]);
   assert.deepEqual(policies.rows, [], 'no other table opens or narrows on screening data');
   const reads = await db.admin.query<{ tablename: string; policyname: string; qual: string }>("SELECT tablename, policyname, qual FROM pg_policies WHERE schemaname = 'trustwork' AND tablename = ANY ($1) AND cmd = 'SELECT'", [TABLES]);
-  for (const row of reads.rows) assert.equal(row.qual, 'jurisdiction_staff_reader()', `${row.tablename}: only compliance staff and auditors read`);
+  // Both predicates start from jurisdiction_staff_reader() and remove the subjects the reader is conflicted with.
+  for (const row of reads.rows) assert.match(row.qual, /^screening_(subject_readable\(subject_person_id, subject_company_id\)|match_readable\(match_id\))$/, `${row.tablename}: only independent compliance staff and auditors read`);
   assert.equal(reads.rows.length, TABLES.length);
 });

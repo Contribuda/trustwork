@@ -119,6 +119,7 @@ test('node auditor can read the cases and projections, not the participant card,
   // The card's compliance panel is the compliance officer's alone: the auditor's answer never depends on the subject.
   for (const id of [w.seed.people.petr, foreignPerson]) expectError(await w.second.get(`/v1/admin/screening/subjects/lookup/person/${id}`), 404, 'access.not_found');
   expectError(await w.second.get(`/v1/admin/screening/subjects/lookup/company/${w.seed.companies.unrelated}`), 404, 'access.not_found');
+  expectError(await w.second.get('/v1/admin/screening/queue'), 404, 'access.not_found');
   expectError(await w.second.post('/v1/admin/screening/list-proposals', {hubId:w.hubId,sourceId:randomUUID(),cadenceSeconds:86400,warnAfterSeconds:259200,staleAfterSeconds:604800,reason:'Synthetic auditor write refused',evidence:'source_review'}),403,'access.forbidden');
   expectError(await w.second.post('/v1/admin/screening/rescreen-runs', { reason: 'Synthetic auditor cannot write' }), 403, 'access.forbidden');
 });

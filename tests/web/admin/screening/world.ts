@@ -14,8 +14,8 @@ import { syncKernel } from '../../../hubs/helpers.js';
 import { baselineIds } from '../../../screening-lists/helpers.js';
 
 /** Real PostgreSQL and role resolver; only people and list input are synthetic. No provider is called. */
-export async function screeningWorld(label: string, publicOrigin = 'https://trustwork.test', options: { auditorSecond?: boolean; gate?: JurisdictionGate } = {}) {
-  const h = await startHarness(label, { jurisdictionGate: options.gate ?? fakeGate(restrictedPlaces(['CU'])), staffRoles: assignmentStaffRoles({ hubId: null }), env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: publicOrigin, API_INSECURE_COOKIES: publicOrigin.startsWith('http:') ? '1' : '', API_TRUSTED_PROXY_HOPS: '1', AUTH_RATE_LIMIT_PER_MINUTE: '10000', AUTH_PROVIDER_MODE: 'fake', API_LOG_LEVEL: 'error' } });
+export async function screeningWorld(label: string, publicOrigin = 'https://trustwork.test', options: { auditorSecond?: boolean; gate?: JurisdictionGate; servedHubId?: string } = {}) {
+  const h = await startHarness(label, { jurisdictionGate: options.gate ?? fakeGate(restrictedPlaces(['CU'])), staffRoles: assignmentStaffRoles({ hubId: options.servedHubId ?? null }), env: { API_HOST: '127.0.0.1', API_PORT: '0', PUBLIC_ORIGIN: publicOrigin, API_INSECURE_COOKIES: publicOrigin.startsWith('http:') ? '1' : '', API_TRUSTED_PROXY_HOPS: '1', AUTH_RATE_LIMIT_PER_MINUTE: '10000', AUTH_PROVIDER_MODE: 'fake', API_LOG_LEVEL: 'error' } });
   if (!h) throw new Error('SANC-006 requires PostgreSQL');
   const workers = await workerLogin(h);
   try {
@@ -47,7 +47,7 @@ export async function screeningWorld(label: string, publicOrigin = 'https://trus
     if (assigned.status !== 201) throw new Error(`Synthetic moderator assignment failed: ${assigned.status} ${JSON.stringify(assigned.body)}`);
     const otherFactor = await enrol(h, otherStaff); await elevate(h, otherStaff, otherFactor.secret);
     const hubId = await withMaintenance(h.db.admin, async (trx) => {
-      const hub = await trx.insertInto('hub').values({ slug: 'synthetic-screening', lifecycle: 'draft', pack_code: null, pack_version: null }).returning('id').executeTakeFirstOrThrow();
+      const hub = await trx.insertInto('hub').values({ ...(options.servedHubId ? { id: options.servedHubId } : {}), slug: 'synthetic-screening', lifecycle: 'draft', pack_code: null, pack_version: null }).returning('id').executeTakeFirstOrThrow();
       await trx.insertInto('hub_profile').values({ hub_id: hub.id, node_id: node.id, name: { en: 'Synthetic screening hub' }, default_locale: 'en', locales: ['en'], time_zone: 'America/Los_Angeles', currency: 'USD', brand_overlay: null, created_by: seed.people.anna }).execute();
       await trx.insertInto('hub_territory').values({ hub_id: hub.id, level: 'country', code: 'US', place_key: null }).execute();
       return hub.id;
