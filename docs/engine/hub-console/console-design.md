@@ -473,7 +473,7 @@ The diff viewer shows changed fields only by default with "Show unchanged"; valu
 
 ### 6.2 Feature flags with staged rollout
 
-Flags (ADM-001: owner, scope, expiry up to 400 days; never access, never ranking) gain **rollout stages**: Off → Staff only → A share of sessions (deterministic buckets of 1, 5, 25 or 50 percent, chosen per hub; no targeting by person attributes beyond hub, language and participant type) → On. Turning a flag off is immediate and single-person; widening a stage needs a reason; every flag shows its expiry and its declared scope, and the registry refuses flags whose scope touches authorization, projections, egress or ranking. Expired flags are listed for removal from code.
+Flags (ADM-001: owner, scope, expiry up to 400 days; never access, never ranking) gain **rollout stages**: Off → Staff only → A share of people (deterministic buckets of 1, 5, 25 or 50 percent, by person so that signing in again cannot reach a share, chosen per hub; no targeting by person attributes beyond hub, language and participant type) → On. Turning a flag off is immediate and single-person; widening a stage needs a reason; every flag shows its expiry and its declared scope, and the registry refuses flags whose scope touches authorization, projections, egress or ranking. Expired flags are listed for removal from code.
 
 ### 6.3 Incident, kill switch and step-up
 

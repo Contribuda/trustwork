@@ -42,6 +42,7 @@ All mutations: CSRF header, `Idempotency-Key`, and a console command body (`cont
 | `POST /v1/admin/moderation/cases/:id/sanctions` | `admin.moderation.decide` | Sanction ladder: moderators levels 1-2 (bounded durations), other roles level 3, level 4 only with a consumed `moderation.apply_sanction_l4` approval of exactly that sanction (a second person); enforcement through `SanctionEnforcementPort` |
 | `POST /v1/admin/moderation/sanctions/:id/lift`, `POST /v1/admin/moderation/appeals/:id/decide` | `admin.moderation.appeal.decide` (or `admin.trust.appeals.decide`), never the original decider | Lift; decide an appeal (overturning a sanction lifts it; overturning a removal restores the content) |
 | `GET/POST /v1/admin/flags` | staff; `admin.flags.edit` to set | Feature flags with owner, scope and expiry (at most 400 days); never access, never ranking |
+| `/v1/admin/console/*`, `GET /v1/flags/active` | see [console-services](console-services/README.md) | ADM-005: object lookup, work list, saved views, notification settings, flag stages |
 | `POST /v1/moderation/reports`, `GET /v1/moderation/me`, `POST /v1/moderation/appeals` | any signed-in person | Report content against a clause; see cases, sanctions and appeals about oneself or one's employer (no staff identities); appeal a sanction or a moderation decision |
 
 ## Facade ports (`ports.ts`)
