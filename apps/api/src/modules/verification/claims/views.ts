@@ -26,15 +26,12 @@ export const toDispute = (r: ClaimDisputeRow) => ({
 export const toHandover = (r: CompanyHandoverRow) => ({
   ...toOwnHandover(r), claimId: r.claim_id, personId: r.person_id, membershipId: r.membership_id, decidedBy: r.decided_by, revokedBy: r.revoked_by, revokeReason: r.revoke_reason,
 });
-export const toVerification = (r: CompanyVerificationRow) => ({
-  id: r.id, hubId: r.hub_id, companyId: r.company_id, handoverId: r.handover_id, level: r.level, recipeId: r.recipe_id, categories: r.categories, state: r.state, decidedBy: r.decided_by, decidedAt: iso(r.decided_at),
+/** A holder's own verification, read through the console: as for a claim, not who decided it. */
+export const toOwnVerification = (r: CompanyVerificationRow) => ({
+  id: r.id, hubId: r.hub_id, companyId: r.company_id, handoverId: r.handover_id, level: r.level, recipeId: r.recipe_id, categories: r.categories, state: r.state, decidedAt: iso(r.decided_at),
   validUntil: iso(r.valid_until), renewedFrom: r.renewed_from, revokedAt: iso(r.revoked_at), revocationReasonCode: r.revocation_reason_code,
 });
-/** A holder's own verification, read through the console: as for a claim, not who decided it. */
-export const toOwnVerification = (r: CompanyVerificationRow) => {
-  const { decidedBy: _decidedBy, ...rest } = toVerification(r);
-  return rest;
-};
+export const toVerification = (r: CompanyVerificationRow) => ({ ...toOwnVerification(r), decidedBy: r.decided_by });
 /** The whole public projection of a badge: level, categories and dates. */
 export const toBadge = (r: PublicBadge) => ({ level: r.level, categories: r.categories, decidedAt: iso(r.decided_at), validUntil: iso(r.valid_until) });
 export const toSettings = (hubId: string, r: ClaimsSettingsRow | undefined) => ({
