@@ -38,6 +38,7 @@ test('SANC-007 current independent appeal routing with immutable history', { ski
       await assert.rejects(pool.query('INSERT INTO trustwork.screening_appeal_routing_current (appeal_id, version) VALUES ($1, 2)', [(await view())!.appealId]), { code: '42501' });
     }
     await rejects(as(subject.id, (trx) => currentAppealAssignment(trx, matchId)), '42501', 'admin.forbidden');
+    await rejects(as(w.people.auditor, (trx) => currentAppealAssignment(trx, matchId)), '42501', 'admin.forbidden');
   });
   await t.test('concurrent versions admit one change; history and original evidence stay append-only', async () => {
     const results = await Promise.allSettled([route(null), route(candidate)]);
@@ -58,6 +59,7 @@ test('SANC-007 current independent appeal routing with immutable history', { ski
     await assign(candidate);
     const conflict = await as(candidate, (trx) => conflicts.declare(trx, { kind: 'person', id: subject.id }, 'Synthetic conflict'));
     assert.deepEqual([(await view())!.status, (await view())!.reviewerId], ['unavailable', null]);
+    assert.equal(await as(candidate, (trx) => currentAppealAssignment(trx, matchId)), null, 'the conflicted officer reads the routing of a match with no assignment');
     await rejects(assign(candidate), '42501', 'admin.forbidden');
     await rejects(as(candidate, (trx) => screeningStaff.decideAppeal(trx, candidateCtx, { matchId, decision: 'uphold', reason: 'Synthetic', evidence: 'other' })), '42501', 'admin.conflict_of_interest');
     assert.equal((await assign(actor)).reviewerId, actor);
