@@ -16,3 +16,9 @@ export const NON_PURCHASABLE_CAPABILITIES: ReadonlySet<string> = new Set([
   'reputation_builder.answer_confirmation_request', 'reputation_builder.declare_relation',
   'reputation_builder.submit_appeal', 'reputation_builder.appeal_limitation',
 ]);
+
+/**
+ * Actions no plan or payment may decide. An introduction is matching, and payment never changes matching, so these are
+ * checked as the free plan for everyone: hub policy, kill switches, mandates and protection limits still apply in full.
+ */
+export const PLAN_BLIND_ACTIONS: ReadonlySet<string> = new Set(['introduce']);

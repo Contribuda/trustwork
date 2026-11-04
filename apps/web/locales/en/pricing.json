@@ -202,6 +202,18 @@
         "termsLanguage": "These terms are not published in this language. They are shown in a language the hub published.",
         "none": "This hub runs no referral programme."
       },
+      "meteredUnit": "Price for {count} × {unit}",
+      "meteredRounding": "Usage is added up exactly and rounded up once per calendar month.",
+      "units": {
+        "thousand_tokens": "thousand tokens",
+        "action": "action",
+        "deliverable": "deliverable",
+        "api_call": "API call"
+      },
+      "direction": {
+        "input": "Input tokens",
+        "output": "Output tokens"
+      },
       "perUnits": "Per {units} × {meter}",
       "creditValue": "Credits included: {amount}",
       "creditValidDays": "Credits are valid for {count} days from purchase",

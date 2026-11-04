@@ -64,5 +64,10 @@
     "empty": "Hələ iş yoxdur",
     "log": "Əməliyyat jurnalı",
     "outcomeUnknownExplain": "Xarici sistem cavab vermədi. Nəticəni tutuşdururuq; əməliyyat avtomatik təkrarlanmır."
+  },
+  "assistant": {
+    "overlay": {
+      "quotaReached": "Agentiniz daxil edilmiş kvotaya çatıb dayandı. Davam etmək üçün platforma büdcəsini göstərin və ya növbəti dövrü gözləyin."
+    }
   }
 }

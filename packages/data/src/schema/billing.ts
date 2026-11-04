@@ -12,7 +12,7 @@ import { columnsOf, type GeneratedTimestamp, type GeneratedUuid, type TableColum
 export type MinorUnits = ColumnType<string, string | bigint, string | bigint>;
 export type BudgetKindColumn = 'transaction' | 'platform';
 export type VersionStatus = 'draft' | 'active' | 'superseded' | 'cancelled';
-export type OfferKind = 'plan' | 'deliverable' | 'credit_pack' | 'marketplace_fee' | 'verification_fee' | 'agent_module' | 'model' | 'capability';
+export type OfferKind = 'plan' | 'deliverable' | 'credit_pack' | 'marketplace_fee' | 'verification_fee' | 'agent_module' | 'model' | 'capability' | 'agent_metered';
 export type MeterCode = 'model_tokens' | 'agent_actions' | 'checks' | 'document_pages' | 'deliverables' | 'translation_characters' | 'retrieval_queries' | 'external_calls';
 export type ProviderClass = 'local' | 'in_country' | 'hosted_external';
 export type ReservationStateColumn = 'reserved' | 'settled' | 'released' | 'expired';
@@ -86,6 +86,7 @@ export interface UsageRecordTable {
   id: GeneratedUuid; principal_person_id: string | null; principal_company_id: string | null; billing_account_id: string; module_key: string; capability_id: string | null;
   run_id: string; run_step_id: string; attempt_id: string; connection_id: string | null; meter: MeterCode; provider_class: ProviderClass | null; units: MinorUnits;
   within_included_quota: boolean; meter_rate_version_id: string | null; reservation_id: string | null; recorded_at: GeneratedTimestamp;
+  price_version_id: string | null;
 }
 export interface CreditGrantTable {
   id: GeneratedUuid; billing_account_id: string; amount_minor: MinorUnits; currency: string; reason_code: string; issued_by: string; cap_check: Json; case_id: string | null;
@@ -146,6 +147,6 @@ export const TABLE_COLUMNS: TableColumns<BillingDatabase> = {
   budget: columns('budget', ['id', 'kind', 'owner_person_id', 'owner_company_id', 'project_id', 'employee_person_id', 'period_from', 'period_to', 'limit_minor', 'currency', 'status', 'granted_by', 'closed_at', 'closed_by', 'revision', 'created_at', 'updated_at']),
   reservation: columns('reservation', ['effect_pending', 'id', 'budget_id', 'action_intent_id', 'project_id', 'amount_minor', 'currency', 'state', 'settled_minor', 'refunded_minor', 'reserved_by', 'reserved_at', 'expires_at', 'closed_at', 'evidence_ref', 'effect_correlation_key', 'revision', 'created_at', 'updated_at']),
   ledger_entry: columns('ledger_entry', ['id', 'batch_id', 'entry_kind', 'account_kind', 'account_id', 'owner_person_id', 'owner_company_id', 'amount_minor', 'currency', 'reservation_id', 'payment_id', 'credit_grant_id', 'correcting_entry_of', 'reason', 'occurred_at']),
-  usage_record: columns('usage_record', ['id', 'principal_person_id', 'principal_company_id', 'billing_account_id', 'module_key', 'capability_id', 'run_id', 'run_step_id', 'attempt_id', 'connection_id', 'meter', 'provider_class', 'units', 'within_included_quota', 'meter_rate_version_id', 'reservation_id', 'recorded_at']),
+  usage_record: columns('usage_record', ['id', 'principal_person_id', 'principal_company_id', 'billing_account_id', 'module_key', 'capability_id', 'run_id', 'run_step_id', 'attempt_id', 'connection_id', 'meter', 'provider_class', 'units', 'within_included_quota', 'meter_rate_version_id', 'reservation_id', 'recorded_at', 'price_version_id']),
   credit_grant: columns('credit_grant', ['id', 'billing_account_id', 'amount_minor', 'currency', 'reason_code', 'issued_by', 'cap_check', 'case_id', 'valid_until', 'expiry_disclosure_key', 'created_at']),
 };

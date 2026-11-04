@@ -202,6 +202,18 @@
         "termsLanguage": "Bu şərtlər bu dildə dərc edilməyib. Hub tərəfindən dərc edilmiş dildə göstərilir.",
         "none": "Bu hubda tövsiyə proqramı yoxdur."
       },
+      "meteredUnit": "{count} × {unit} üçün qiymət",
+      "meteredRounding": "İstifadə dəqiq toplanır və hər təqvim ayında bir dəfə yuxarı yuvarlaqlaşdırılır.",
+      "units": {
+        "thousand_tokens": "min token",
+        "action": "əməliyyat",
+        "deliverable": "hazır nəticə",
+        "api_call": "API çağırışı"
+      },
+      "direction": {
+        "input": "Giriş tokenləri",
+        "output": "Çıxış tokenləri"
+      },
       "perUnits": "{units} × {meter} üçün",
       "creditValue": "Daxil olan kreditlər: {amount}",
       "creditValidDays": "Kreditlər alındığı gündən {count} gün qüvvədədir",

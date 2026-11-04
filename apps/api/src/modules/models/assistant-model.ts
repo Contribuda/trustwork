@@ -54,7 +54,7 @@ export class GatewayAssistantModel implements ModelPort {
       if (!result) throw new ApiError('validation.idempotency_in_progress', 'model outcome unresolved');
       return result;
     } catch (error) {
-      if (error instanceof ModelRefusal) return unavailable();
+      if (error instanceof ModelRefusal) return error.reason === 'quota_reached' ? { ...unavailable(), messageKey: 'assistant.overlay.quotaReached' } : unavailable();
       throw error;
     }
   }

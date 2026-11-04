@@ -15,6 +15,8 @@ import { RegistersModule } from './modules/registers/registers.module.js';
 import { DatasetsModule } from './modules/datasets/datasets.module.js';
 import { PlansModule } from './modules/plans/plans.module.js';
 import { FeesModule } from './modules/billing/fees/fees.module.js';
+import { AgentMeteringModule } from './modules/billing/agent-metering/metering.module.js';
+import { AgentPlanEntitlements } from './modules/billing/agent-metering/entitlements.js';
 import { CatalogueModule } from './modules/catalogue/catalogue.module.js';
 import { ProcurementModule } from './modules/procurement/procurement.module.js';
 import { ApprovalRoutesModule } from './modules/approval-routes/approval-routes.module.js';
@@ -81,7 +83,7 @@ export class AppModule {
     if (!ctx || !identity) return { module: AppModule, controllers: [HealthController], providers: [{ provide: API_CONFIG, useValue: config }], imports: [] };
     const store = assistantMandateStore(ctx);
     // AGT-003: one shared authority check for the interface, the agent runtime and (when it lands) MCP.
-    const capabilities = agentModulesAuthority({ extensions: new DatabaseExtensions() });
+    const capabilities = agentModulesAuthority({ extensions: new DatabaseExtensions(), entitlements: new AgentPlanEntitlements() });
     return {
       module: AppModule,
       controllers: [HealthController],
@@ -124,6 +126,7 @@ export class AppModule {
         FeesModule.forRoot(ctx, identity, communications.env),
         // FED-001: node identity, the signed manifest, handshakes and peering records (KEK from the createApp environment).
         FederationNodeModule.forRoot(ctx, identity, { ...(communications.env ? { env: communications.env } : {}), ...federation }),
+        AgentMeteringModule.forRoot(ctx, identity, communications.env), // AGT-004
         HubsModule.forRoot(ctx, identity),
         // HUB-004: the setup wizard backend (told the gate mode, the blob store for the install check and the environment).
         HubsSetupModule.forRoot(ctx, identity, { gateMode: jurisdictionGateMode, objectStore: files.store, ...(communications.env ? { env: communications.env } : {}) }),

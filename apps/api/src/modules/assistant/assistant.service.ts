@@ -13,6 +13,8 @@ import type { RequestState } from '../../common/request.js';
 import type { AppContext } from '../identity/context.js';
 import type { PrincipalService } from '../identity/principal.service.js';
 import { agentRuntimeGate, CapabilityAuthority } from '../agent-modules/authority.js';
+import { actionQuotaStop } from '../../../../../packages/data/src/repositories/agent-usage.js';
+import type { MandateAskReason } from '../../../../../packages/contracts/src/agent-catalog.js';
 import { findServingHub, servingHub } from '../agent-modules/serving-hub.js';
 import { mapDatabaseError } from '../procurement/common.js';
 import {
@@ -42,6 +44,8 @@ const HINTS: Record<string, { code: ErrorCode; reason: string }> = {
   'mandate.not_principal': { code: 'access.forbidden', reason: 'not_principal' },
   'mandate.authority_basis': { code: 'access.forbidden', reason: 'authority_basis' },
   'mandate.budget_authority': { code: 'commercial.authority_missing', reason: 'budget_authority' },
+  // AGT-004: the job stopped at its quota. The decision stays waiting; nothing was reserved or dispatched.
+  'billing.quota_reached': { code: 'commercial.budget_insufficient', reason: 'quota_reached' },
   'mandate.final': { code: 'validation.schema', reason: 'mandate_final' },
   'mandate.invalid': { code: 'validation.schema', reason: 'mandate_invalid' },
   'mandate.immutable': { code: 'validation.schema', reason: 'mandate_immutable' },
@@ -557,20 +561,23 @@ export class AssistantService {
       if (refused) return deny(refused);
       effect = { ...call.effect, extensionVersion: { id: extension.versionId, manifestDigest: extension.manifestDigest } };
     }
+    // AGT-004: without room in the quota and a way to pay, the job stops and asks instead of running into debt.
+    const projectId = call.projectId ?? (context.kind === 'project' ? context.id : null);
+    const stopped = outcome.effect === 'allow' ? await actionQuotaStop(trx, provenance.hub_id, outcome.moduleKey, call.capabilityId, row.id, projectId) : null;
     const recorded = await actionIntents.record(trx, {
       runId, mandateId: row.id, mandateRevision: row.revision, capabilityId: call.capabilityId, moduleKey: outcome.moduleKey, action: call.action, context: outcome.context,
       resolvedFromSelector: outcome.resolvedFromSelector, amount: call.amount,
       digest: actionDigest({ mandate: { id: row.id, revision: row.revision }, capabilityId: call.capabilityId, action: call.action, context: outcome.context, amount: call.amount, effect }),
-      effect, decision: outcome.effect, askReasons: outcome.effect === 'ask' ? outcome.reasons : [],
+      effect, decision: stopped ? 'ask' : outcome.effect, askReasons: stopped ? ['quota_reached'] : outcome.effect === 'ask' ? outcome.reasons : [],
     });
     const intentId = recorded.intentId!;
     if (recorded.state === 'authorized') {
-      await actionIntents.queue(trx, intentId, this.runtime.reservationTtlSeconds, call.projectId ?? (context.kind === 'project' ? context.id : null));
+      await actionIntents.queue(trx, intentId, this.runtime.reservationTtlSeconds, projectId);
       await runSteps.append(trx, { run_id: runId, kind: 'decision', tool: call.capabilityId, output_ref: { intentId }, state: 'allowed' });
       await this.audit(trx, p, null, 'assistant.action_queued', 'action_intent', intentId, { capabilityId: call.capabilityId, mandateId: row.id, revision: row.revision, via: 'agent' });
       return { state: 'queued', intentId, reasons: [] };
     }
-    const reasons = outcome.effect === 'ask' ? outcome.reasons : [];
+    const reasons: MandateAskReason[] = stopped ? ['quota_reached'] : outcome.effect === 'ask' ? outcome.reasons : [];
     await runSteps.append(trx, { run_id: runId, kind: 'decision', tool: call.capabilityId, output_ref: { intentId, reasons }, state: 'asked' });
     return { state: 'proposed', intentId, reasons };
   }

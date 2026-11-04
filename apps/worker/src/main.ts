@@ -3,6 +3,7 @@ import type { DataPool } from '@trustwork/data';
 import { ENGINE_EXTENSION_ADAPTERS, extensionEffects, extensionEngineTickTask, extensionRuntime, registerExtensionSafetyRuns, type ExtensionRuntime } from './agent-extensions/index.js';
 import { agentOccurrencesTask, registerAgentOccurrences } from './agent-modules/index.js';
 import { assistantSweepTask, fakeEffectProviders, registerAssistant, type AssistantRuntime } from './assistant/index.js';
+import { agentMeteringSweepTask } from './billing/agent-metering.js';
 import { workerConfigFromEnv } from './config.js';
 import { consultationRemindersTask, registerConsultationReminders, ReminderChannelFake, type ReminderRuntime } from './consultations/reminders.js';
 import { contentPublishDueTask, registerContent } from './content/index.js';
@@ -104,7 +105,7 @@ async function main(): Promise<void> {
   const registry = buildRegistry({ extensions, payments, consultations, contentRenderer: process.env.CONTENT_PDF_RENDERER === 'local', pool, metrics, log, mail, mailTransport, files, assistant, screeningLists, screening, rescreen });
   const worker = new Worker({
     pool, registry, config, log, metrics,
-    tasks: (deps) => [agentOccurrencesTask(pool), extensionEngineTickTask(extensions), paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
+    tasks: (deps) => [agentOccurrencesTask(pool), extensionEngineTickTask(extensions), agentMeteringSweepTask({ pool, log }), paymentReconcileTask(payments), expireLeasesTask(deps), sweepTask(deps), partitionsTask(deps),
       pipelineScheduleTask({ pool, log }), pipelineRunTask({ pool, log, steps: pipelineSteps, workerId: config.workerId }), pipelineMaintenanceTask({ pool, log }),
       contentPublishDueTask({ pool }), verificationRecheckTask({ pool, log }), claimsExpiryTask({ pool, log }), registersRefreshTask({ pool, log }), registersExpiryTask({ pool, log }), datasetsSweepTask({ pool, log }),
       ...(assistant ? [assistantSweepTask(assistant)] : []),
