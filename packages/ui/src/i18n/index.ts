@@ -1,5 +1,5 @@
 import { getLocaleStore } from '@trustwork/i18n-runtime';
-import type { Messages } from '@trustwork/i18n-runtime/types';
+import type { DateShapeFormat, LocaleFormats, Messages } from '@trustwork/i18n-runtime/types';
 import en from '../../locales/en.json' with { type: 'json' };
 
 /**
@@ -120,7 +120,94 @@ function pluralRules(): Intl.PluralRules {
   return rules;
 }
 
+/**
+ * The shapes of date a client component may write. The server sends each of them for the page's language
+ * (`./formats`), so that a browser without that language writes what the server writes.
+ */
+export const DATE_SHAPES = {
+  long: { day: 'numeric', month: 'long', year: 'numeric' },
+  short: { day: '2-digit', month: '2-digit', year: 'numeric' },
+  day: { day: 'numeric' },
+  monthShort: { month: 'short' },
+  monthYear: { month: 'long', year: 'numeric' },
+  weekdayShort: { weekday: 'short' },
+  dateTime: { dateStyle: 'medium', timeStyle: 'short' },
+} as const satisfies Record<string, Intl.DateTimeFormatOptions>;
+export type DateShape = keyof typeof DATE_SHAPES;
+
+/** Written by the server into `LocaleFormats.sample`: compared with the browser's own answer. */
+export const FORMAT_SAMPLE = Date.UTC(2001, 1, 3, 4, 5);
+export const formatSample = (tag: string): string => new Intl.DateTimeFormat(tag, { ...DATE_SHAPES.long, timeZone: 'UTC' }).format(FORMAT_SAMPLE);
+
+const agreement = new Map<string, boolean>();
+
+/**
+ * The page's formats, when this runtime's `Intl` cannot write the page's language. Chromium has no data at all for
+ * Georgian and Armenian and only a stub for Azerbaijani and Uzbek ("2026 M11 3"); nothing fails, so the only way to
+ * tell is to compare. The server always agrees with itself, so this is null there.
+ */
+function missingFormats(): LocaleFormats | null {
+  const formats = getLocaleStore().formats;
+  if (!formats) return null;
+  const key = `${formats.tag}|${formats.sample}`;
+  let agrees = agreement.get(key);
+  if (agrees === undefined) {
+    agrees = formatSample(formats.tag) === formats.sample;
+    agreement.set(key, agrees);
+  }
+  return agrees ? null : formats;
+}
+
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const fieldFormats = new Map<string, Intl.DateTimeFormat>();
+
+/** The calendar fields of an instant in a time zone; English is the one language every runtime has. */
+function dateFields(date: Date, timeZone: string | undefined): Record<string, string> {
+  const key = timeZone ?? '';
+  let format = fieldFormats.get(key);
+  if (!format) {
+    format = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'numeric', day: 'numeric', weekday: 'short', hour: 'numeric', minute: 'numeric', hourCycle: 'h23', ...(timeZone ? { timeZone } : {}) });
+    fieldFormats.set(key, format);
+  }
+  return Object.fromEntries(format.formatToParts(date).map((part) => [part.type, part.value]));
+}
+
+const pad = (value: number): string => String(value).padStart(2, '0');
+
+/** Writes an instant from a shape the server sent. Exported for the test that compares it with `Intl` in every language. */
+export function writeDate(shape: DateShapeFormat, date: Date, timeZone?: string): string {
+  const fields = dateFields(date, timeZone);
+  const hour = Number(fields.hour);
+  const twelve = shape.dayPeriods ? hour % 12 || 12 : hour;
+  const values: Record<string, string> = {
+    day: shape.padDay ? pad(Number(fields.day)) : String(Number(fields.day)),
+    month: shape.months?.[Number(fields.month) - 1] ?? '',
+    year: String(fields.year),
+    weekday: shape.weekdays?.[WEEKDAYS.indexOf(String(fields.weekday))] ?? '',
+    hour: shape.padHour ? pad(twelve) : String(twelve),
+    minute: pad(Number(fields.minute)),
+    dayPeriod: shape.dayPeriods?.[hour < 12 ? 0 : 1] ?? '',
+  };
+  return shape.parts.map((part) => (typeof part === 'string' ? part : values[part[0]])).join('');
+}
+
+/** A date in one of the shapes, in the page's language in every runtime. Client components use this, never `Intl` directly. */
+export function formatDateShape(date: Date, shape: DateShape, timeZone?: string): string {
+  const table = missingFormats()?.dates[shape];
+  if (table) return writeDate(table, date, timeZone);
+  return new Intl.DateTimeFormat(intlTag(), { ...DATE_SHAPES[shape], ...(timeZone ? { timeZone } : {}) }).format(date);
+}
+
+/** Writes a number with the separators the server sent. Exported for the same test. */
+export function writeNumber(formats: LocaleFormats, value: number): string {
+  const grouping = formats.groupsFourDigits || Math.abs(value) >= 10000;
+  return new Intl.NumberFormat('en-US', { useGrouping: grouping }).formatToParts(value)
+    .map((part) => (part.type === 'group' ? formats.group : part.type === 'decimal' ? formats.decimal : part.value)).join('');
+}
+
 export function formatNumber(value: number): string {
+  const missing = missingFormats();
+  if (missing) return writeNumber(missing, value);
   const tag = intlTag();
   let format = numberFormatCache.get(tag);
   if (!format) {
@@ -248,11 +335,10 @@ export function formatDate(value: Date | string, style: 'long' | 'short' = 'long
   const date = typeof value === 'string' ? new Date(isDateOnly ? `${value}T00:00:00Z` : value) : value;
   const zone = isDateOnly ? { timeZone: 'UTC' } : {};
   const tag = intlTag();
-  if (style === 'short') return new Intl.DateTimeFormat(tag, { day: '2-digit', month: '2-digit', year: 'numeric', ...zone }).format(date);
-  if (tag === 'ru' || tag.startsWith('ru-')) {
+  if (style === 'long' && (tag === 'ru' || tag.startsWith('ru-'))) {
     const parts = new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric', ...zone }).formatToParts(date);
     const pick = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
     return `${pick('day')} ${pick('month')} ${pick('year')}`;
   }
-  return new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric', ...zone }).format(date);
+  return formatDateShape(date, style, zone.timeZone);
 }

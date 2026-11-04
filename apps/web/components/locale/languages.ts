@@ -8,7 +8,7 @@ import type { SwitcherLanguage } from './LocaleSwitcher';
 
 const LOCALE_NAMES: Record<string, string> = { en: 'English', ru: 'Русский', 'uz-Latn': 'Oʻzbekcha', ka: 'ქართული', hy: 'Հայերեն', 'az-Latn': 'Azərbaycanca' };
 /** A language's own name; a language added as data only (INTL-004) gets its name from `Intl`. */
-function localeName(tag: string): string {
+export function localeName(tag: string): string {
   const known = LOCALE_NAMES[tag];
   if (known) return known;
   try {

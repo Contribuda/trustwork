@@ -7,7 +7,7 @@ import { newIdempotencyKey, postJson } from '@/app/_lib/api-client';
 import './provenance-editor.css';
 
 /** Form visibility is convenience only. Every command independently checks its first-party session and object authority. */
-export function ProvenanceEditor({ publicationId }: { publicationId: string }) {
+export function ProvenanceEditor({ publicationId, languages }: { publicationId: string; languages: { tag: string; name: string }[] }) {
   const [view,setView] = useState<ProvenanceWorkspace | null>(null);
   const [draft,setDraft] = useState<ProvenanceWorkspace['draft'] | null>(null);
   const [kind,setKind] = useState<ProvenanceDeclaration['kind']>('none');
@@ -53,7 +53,7 @@ export function ProvenanceEditor({ publicationId }: { publicationId: string }) {
       <p>{t('content.pdfVersion',{version:formatNumber(view.binding.version),language:draft.language})}</p>
       <label>{t('publicationProvenance.heading')}<input value={draft.title} onChange={e=>setDraft({...draft,title:e.target.value})}/></label>
       <label htmlFor="provenance-body">{t('publicationProvenance.body')}</label><textarea id="provenance-body" rows={10} value={draft.body} onChange={e=>setDraft({...draft,body:e.target.value})}/>
-      <label htmlFor="provenance-language">{t('publicationProvenance.language')}</label><select id="provenance-language" value={draft.language} onChange={e=>setDraft({...draft,language:e.target.value})}>{['en','es','ru','uz-Latn','ka','hy','az-Latn'].map(language=><option key={language} value={language}>{new Intl.DisplayNames([language],{type:'language'}).of(language)}</option>)}</select>
+      <label htmlFor="provenance-language">{t('publicationProvenance.language')}</label><select id="provenance-language" value={draft.language} onChange={e=>setDraft({...draft,language:e.target.value})}>{languages.map(language=><option key={language.tag} value={language.tag}>{language.name}</option>)}</select>
       <label>{t('publicationProvenance.reason')}<input value={reason} onChange={e=>setReason(e.target.value)} maxLength={500}/></label>
       <label>{t('publicationProvenance.correctionNote')}<input value={note} onChange={e=>setNote(e.target.value)} maxLength={500}/></label>
       <div className="prov-actions">
