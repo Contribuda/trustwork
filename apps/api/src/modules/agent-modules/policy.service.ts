@@ -223,7 +223,7 @@ export class AgentPolicyService {
       if (!before || before.hub_id !== hubId) throw new ApiError('access.not_found', 'access.not_found');
       if (body.approvalId === null) {
         if (before.state !== 'engaged') throw new ApiError('validation.revision_conflict', 'validation.revision_conflict', { reason: 'invalid_transition' });
-        const request = await approvals.request(trx, cmd, { action: 'kill_switch.release', scope: { kind: 'hub', hubId }, actionDigest: adminDigests.killSwitchRelease(killSwitchId, body.incidentNote) });
+        const request = await approvals.request(trx, cmd, { action: 'kill_switch.release', scope: { kind: 'hub', hubId }, actionDigest: adminDigests.killSwitchRelease(killSwitchId, body.incidentNote), subject: adminDigests.killSwitchReleaseInput(killSwitchId, body.incidentNote) });
         return { result: await this.result(trx, cmd, 'pending_second_person', killSwitchId, before.revision, request.id, request.id), killSwitch: killSwitchView(before) };
       }
       const row = await agentKillSwitches.release(trx, cmd, killSwitchId, body.approvalId, body.incidentNote);

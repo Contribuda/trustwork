@@ -50,8 +50,8 @@ test('providers: connections, secrets, egress, routes, caps, kill switches and c
     const material = await a.cmd(personId, (trx, ctx) => providerConnections.testMaterial(trx, ctx, id));
     return a.cmd(personId, (trx, ctx) => providerConnections.recordTest(trx, ctx, id, { configDigest: material.config_digest, outcome, latencyMs: 12, modelsListed: 3, cost: null, probeDigest: PROBE, secretRefId: material.secret_ref_id }));
   };
-  const approveDigest = async (requester: string, approver: string, action: string, hubId: string, digest: string): Promise<string> => {
-    const request = await a.cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId }, actionDigest: digest }));
+  const approveDigest = async (requester: string, approver: string, action: string, hubId: string, digest: string, subject?: Record<string, unknown>): Promise<string> => {
+    const request = await a.cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId }, actionDigest: digest, ...(subject ? { subject } : {}) }));
     await a.cmd(approver, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     return request.id;
   };
@@ -300,7 +300,8 @@ test('providers: connections, secrets, egress, routes, caps, kill switches and c
     // Release: a second person and an incident note.
     await rejects(a.cmd(p.owner, (trx, ctx) => providerKills.release(trx, ctx, hubA, kill.id, null, 'Synthetic incident note')), '42501');
     const note = 'Synthetic incident reviewed';
-    const releaseApproval = await approveDigest(p.owner, p.officer, 'kill_switch.release', hubA, computeDigest(providerKillReleaseDigestInput({ killSwitchId: kill.id, incidentNote: note })).value);
+    const releaseInput = providerKillReleaseDigestInput({ killSwitchId: kill.id, incidentNote: note });
+    const releaseApproval = await approveDigest(p.owner, p.officer, 'kill_switch.release', hubA, computeDigest(releaseInput).value, releaseInput);
     await rejects(a.cmd(p.owner, (trx, ctx) => providerKills.release(trx, ctx, hubA, kill.id, releaseApproval, 'A different note')), '23514', 'admin.approval_mismatch');
     await a.cmd(p.owner, (trx, ctx) => providerKills.release(trx, ctx, hubA, kill.id, releaseApproval, note));
     assert.equal((await call(hubA, { dataClasses: ['person_private'] }) as { allowed: boolean }).allowed, true);
@@ -312,7 +313,8 @@ test('providers: connections, secrets, egress, routes, caps, kill switches and c
     await rejects(a.cmd(p.owner, (trx, ctx) => providerKills.engage(trx, ctx, hubA, { kind: 'route', job: 'agent_drafting', scope: { kind: 'module', moduleKey: 'negotiator' } })), '23514', 'providers.kill_engaged');
     const rNote = 'Synthetic route incident';
     await rejects(a.cmd(p.owner, (trx, ctx) => providerKills.release(trx, ctx, hubA, routeKill.id, null, rNote)), '42501', 'admin.approval_required');
-    const rApproval = await approveDigest(p.owner, p.officer, 'kill_switch.release', hubA, computeDigest(providerKillReleaseDigestInput({ killSwitchId: routeKill.id, incidentNote: rNote })).value);
+    const rInput = providerKillReleaseDigestInput({ killSwitchId: routeKill.id, incidentNote: rNote });
+    const rApproval = await approveDigest(p.owner, p.officer, 'kill_switch.release', hubA, computeDigest(rInput).value, rInput);
     await a.cmd(p.owner, (trx, ctx) => providerKills.release(trx, ctx, hubA, routeKill.id, rApproval, rNote));
     assert.equal((await call(hubA, { moduleKey: 'negotiator' }) as { allowed: boolean }).allowed, true);
     await rejects(a.cmd(p.moderator, (trx, ctx) => providerKills.engage(trx, ctx, hubA, { kind: 'connection', connectionId: vendor.id })), '42501', 'admin.forbidden');

@@ -69,7 +69,10 @@ test('AGT-004 plans, entitlements, credits and payment neutrality', { skip: h ? 
   });
 
   await t.test('activation publishes the plan and its capacity on the price page', async () => {
-    const r = await w.clients.officer.post(`${url}/plans/${drafted.id}/activate`, { reason, digest: drafted.digest, approvalId: await w.approve(drafted.digest) });
+    const approvalId = await w.approve(drafted.digest);
+    const readers = (await h.db.admin.query<{ m: string[] }>('SELECT trustwork.admin_change_readers(a) AS m FROM trustwork.second_person_approval a WHERE a.id = $1', [approvalId])).rows[0]!.m;
+    assert.deepEqual(readers, ['admin.commerce.plan.activate'], 'a plan is read by the plan permission');
+    const r = await w.clients.officer.post(`${url}/plans/${drafted.id}/activate`, { reason, digest: drafted.digest, approvalId });
     assert.equal(r.status, 200, JSON.stringify(r.body));
     const row = (await pricing()).prices.find((x) => x.planVersion?.id === drafted.id);
     assert.equal(row?.amountMinor, '1000');

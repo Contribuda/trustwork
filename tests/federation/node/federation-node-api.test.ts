@@ -21,6 +21,7 @@ import { codeNow } from '../../backend/second-factor/helpers.js';
 import { addLogins, enrolNow, expectRefusal, PASSWORD, signIn } from '../../admin/helpers.js';
 import { attestationSummary, CITY, cityKeyChain, manifest as fixtureManifest, NODE_SIGNERS, publicKeyB64, restricted, RFC8032, signerFor } from '../protocol/fixtures.js';
 import { asManifest, austinPeer, buildWorld, FakePeerTransport, forgedSigner, HUB_SLUG, insertHub, OUR_HOST, PEER_HOST, PEER_HUB, peerHandshake, RESTRICTED_ADDRESS, SERVED_ADDRESS, setPeerManifest, type Key } from './helpers.js';
+import { assertCardBinds } from '../../admin/approval-change-helpers.js';
 
 // Weight 2: two apps' pools and concurrent handshakes share the file's slot.
 const h = await startHarness('federation_node_api');
@@ -403,6 +404,9 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     const approvalId = pending.result.approvalRequestId as string;
     const digest = computeDigest(peeringLevelDigestInput({ localHubId: w.hubId, peerNode: PEER_HOST, peerHubId: PEER_HUB, level: 'deal_routing' })).value;
     expectRefusal(await command('owner', `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: digest }), 403, 'access.second_approver_required');
+    const shown = (await clients.officer.get(`/v1/admin/approvals/${approvalId}`)).body as { approval: { change: { fields: Array<{ field: string; after: { value?: string } }> } } };
+    assert.equal(shown.approval.change.fields.find((f) => f.field === 'level')?.after.value, 'deal_routing', 'the second person reads the level the digest binds');
+    await assertCardBinds(h.db.admin, approvalId);
     ok(await command('officer', `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: digest }));
     // The approval binds the level: syndicate under a deal_routing approval is refused.
     expectRefusal(await command('owner', `${ADMIN}/peerings`, { ...body, level: 'syndicate', approvalId }), 409, 'access.approval_digest_mismatch');

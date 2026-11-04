@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
+import { computeDigest } from '@trustwork/contracts';
 import { withMaintenance, type DataPool } from '@trustwork/data';
 import { adminDigests, approvals, staffAssignments, staffRoleDefinitions } from '../../../packages/data/src/repositories/admin.js';
 import { actors, DEFINITIONS, KEYS, type HubWorld } from '../helpers.js';
@@ -25,9 +26,10 @@ export async function sharedAuthorityFixture(admin: DataPool, runtime: DataPool)
   const base = actors(admin, runtime, world);
   const assign: typeof base.assign = input => base.cmd(world.people.founder, (trx, ctx) => staffAssignments.assign(trx, ctx, { ...input, definitionVersion: version }));
   const assignSensitive: typeof base.assignSensitive = async input => {
-    const digest = adminDigests.assignment({ breakglass: false, ...input, definitionVersion: version });
+    const digestInput = adminDigests.assignmentInput({ breakglass: false, ...input, definitionVersion: version });
+    const digest = computeDigest(digestInput).value;
     const ctx = await base.elevate(world.people.founder);
-    const request = await base.as(world.people.founder, trx => approvals.request(trx, ctx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest }));
+    const request = await base.as(world.people.founder, trx => approvals.request(trx, ctx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest, subject: digestInput }));
     await base.cmd(world.people.founder2, (trx, command) => approvals.decide(trx, command, request.id, 'approve', digest));
     return base.as(world.people.founder, trx => staffAssignments.assign(trx, { ...ctx, requestId: randomUUID() }, { ...input, definitionVersion: version, approvalId: request.id }));
   };

@@ -10,7 +10,7 @@ import { loadAccessInventory } from './access/inventory.js';
 
 // DATA-002 (packages/data/migrations/admin): staff commands and policy helpers executable by the runtime role, and
 // SECURITY DEFINER trigger functions (gap-free audit sequence, audit and access-log consistency) nobody may call.
-const ADMIN_DEFINERS = ['admin_add_case_note', 'admin_add_requester_note', 'admin_apply_sanction', 'admin_assign_role', 'admin_cancel_maintenance', 'admin_case_evidence',
+const ADMIN_DEFINERS = ['admin_add_case_note', 'admin_add_requester_note', 'admin_apply_sanction', 'admin_approval_change', 'admin_audit_reasons_readable', 'admin_assign_role', 'admin_bind_approval_subject', 'admin_cancel_maintenance', 'admin_change_subject_readable', 'admin_case_evidence',
   'admin_case_grant_covers', 'admin_consume_approval', 'admin_decide_appeal', 'admin_decide_approval', 'admin_decide_case_grant', 'admin_decide_moderation_case', 'admin_declare_conflict',
   'admin_end_conflict', 'admin_engage_kill_switch', 'admin_file_appeal', 'admin_has_any_permission', 'admin_has_permission', 'admin_lift_sanction',
   'admin_may_audit', 'admin_may_log_access', 'admin_open_incident', 'admin_open_moderation_case', 'admin_open_own_support_case', 'admin_open_support_case', 'admin_release_kill_switch',
@@ -76,7 +76,7 @@ test('identity and access persistence under the restricted runtime role', { skip
     const secondFactor = ['recovery_code', 'second_factor', 'second_factor_challenge', 'second_factor_reset', 'session_elevation']; // BE-004
     const tasks = ['task_assignment', 'task_execution_record', 'task_invitation', 'task_offer', 'task_offer_private', 'task_request', 'task_request_private', 'task_request_version', 'task_review']; // TASK-001
     const admin = ['access_log_entry', 'admin_audit_event', 'admin_node', 'admin_sequence', 'appeal', 'case_access_grant', 'feature_flag', 'incident', 'kill_switch', 'maintenance_window', 'moderation_case',
-      'moderation_report', 'sanction', 'second_person_approval', 'staff_conflict_declaration', 'staff_role_assignment', 'staff_role_definition_version', 'support_case', 'support_case_note']; // DATA-002
+      'moderation_report', 'sanction', 'second_person_approval', 'second_person_approval_subject', 'staff_conflict_declaration', 'staff_role_assignment', 'staff_role_definition_version', 'support_case', 'support_case_note']; // DATA-002
     const execution = ['execution_claim', 'execution_confirmation', 'execution_defect', 'execution_dispute', 'execution_evidence', 'performance_observation', 'reputation_snapshot', 'review', 'review_response']; // EXE-001
     const jurisdiction = ['jurisdiction_hold', 'jurisdiction_refusal_count']; // SANC-001
     const assistant = ['action_attempt', 'action_intent', 'action_outcome', 'approval', 'assistant_note', 'conversation_turn', 'mandate', 'mandate_context', 'mandate_proposal', 'mandate_revision',

@@ -34,8 +34,8 @@ test('actual KEYS owning writers serialize with original-operation fake callback
     }
     assert.fail('expected an actual owning writer waiting on the callback fence');
   };
-  const approve=async(action:string,digest:string)=>{
-    const row=await w.a.cmd(w.personId,(trx,ctx)=>approvals.request(trx,ctx,{action,scope:{kind:'hub',hubId:w.hubId},actionDigest:digest}));
+  const approve=async(action:string,digest:string,subject?:Record<string,unknown>)=>{
+    const row=await w.a.cmd(w.personId,(trx,ctx)=>approvals.request(trx,ctx,{action,scope:{kind:'hub',hubId:w.hubId},actionDigest:digest,...(subject?{subject}:{})}));
     await w.a.cmd(w.world.people.officer,(trx,ctx)=>approvals.decide(trx,ctx,row.id,'approve',digest));return row.id;
   };
   await t.test('raw app/worker roles cannot invoke internal callback ports or unfenced owning implementations',async()=>{
@@ -79,7 +79,7 @@ test('actual KEYS owning writers serialize with original-operation fake callback
         }
         if(kind==='residency')await activateResidency(w.a,w.personId,w.world.people.officer,w.hubId,['US']);
         if(changedRoute)await w.a.cmd(w.personId,async(trx,ctx)=>modelRoutes.disable(trx,ctx,changedRoute!,(await modelRoutes.get(trx,changedRoute!))!.revision));
-        if(killId){const note='Synthetic callback matrix recovery';const approval=await approve('kill_switch.release',computeDigest(providerKillReleaseDigestInput({killSwitchId:killId,incidentNote:note})).value);
+        if(killId){const note='Synthetic callback matrix recovery';const input=providerKillReleaseDigestInput({killSwitchId:killId,incidentNote:note});const approval=await approve('kill_switch.release',computeDigest(input).value,input);
           await w.a.cmd(w.personId,(trx,ctx)=>providerKills.release(trx,ctx,w.hubId,killId!,approval,note));}
       };
       let invocation:ReturnType<ModelGateway['call']>|undefined,revoker:Promise<void>|undefined;

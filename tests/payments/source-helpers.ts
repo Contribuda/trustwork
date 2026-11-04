@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { computeDigest } from '@trustwork/contracts';
 import { createHash, generateKeyPairSync, randomBytes, sign } from 'node:crypto';
 import { createPool, withMaintenance, withPrincipal } from '@trustwork/data';
 import { Client, type Harness, type Response } from '../backend/helpers/app.js';
@@ -23,6 +24,7 @@ import { defaultWorkerConfig } from '../../apps/worker/src/config.js';
 import { Metrics } from '../../apps/worker/src/metrics.js';
 import { OutboxRelay } from '../../apps/worker/src/relay.js';
 import { JobRunner } from '../../apps/worker/src/runner.js';
+import { assertCardBinds } from '../admin/approval-change-helpers.js';
 
 /** Synthetic signed issuers use installation-only registration; no final source projection is inserted by a test. */
 export async function sourceWorld(h: Harness, slug?: string) {
@@ -40,9 +42,10 @@ export async function sourceWorld(h: Harness, slug?: string) {
     const input = { personId: w.people[key], role, scope: { kind: 'hub' as const, hubId: hub.hubId }, definitionVersion: 30 };
     // Non-sensitive synthetic definitions have no sensitive permissions or conflicts; use the owning assignment command.
     const { adminDigests } = await import('../../packages/data/src/repositories/admin.js');
-    const digest = adminDigests.assignment({ ...input, breakglass: false });
+    const digestInput = adminDigests.assignmentInput({ ...input, breakglass: false });
+    const digest = computeDigest(digestInput).value;
     const ctx = await a.elevate(w.people.founder);
-    const request = await a.as(w.people.founder, (trx) => approvals.request(trx, ctx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest }));
+    const request = await a.as(w.people.founder, (trx) => approvals.request(trx, ctx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest, subject: digestInput }));
     await a.cmd(w.people.founder2, (trx, c) => approvals.decide(trx, c, request.id, 'approve', digest));
     await a.as(w.people.founder, (trx) => staffAssignments.assign(trx, ctx, { ...input, approvalId: request.id }));
   }
@@ -52,6 +55,16 @@ export async function sourceWorld(h: Harness, slug?: string) {
   await a.cmd(w.people.officer, (trx, ctx) => hubConfig.activate(trx, ctx, jurisdiction.id, null, approval));
   const approveDigest = async (proposer: string, reviewer: string, action: 'payments.register_source_adapter' | 'payments.accept_participant_binding' | 'payments.activate_account_binding', digest: string) => {
     const request = await a.cmd(proposer, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId: hub.hubId }, actionDigest: digest }));
+    const shown = (await a.as(reviewer, (trx) => approvals.changes(trx, [request.id]))).get(request.id) as { bound: boolean; fields: Array<{ field: string }> };
+    assert.ok(shown.bound && shown.fields.some((f) => f.field === (action === 'payments.register_source_adapter' ? 'payload.fact' : 'personId')), `the second person reads what ${action} binds`);
+    await assertCardBinds(h.db.admin, request.id);
+    // Readers of staff and of the audit do not read a participant's binding: action, scope and digest only.
+    if (action !== 'payments.register_source_adapter') {
+      for (const reader of [w.people.founder, w.people.founder2]) {
+        const seen = (await a.as(reader, (trx) => approvals.changes(trx, [request.id]))).get(request.id) as { visible: boolean; fields: unknown[] } | null;
+        assert.deepEqual([seen?.visible, seen?.fields], [false, []]);
+      }
+    }
     await a.cmd(reviewer, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     return request.id;
   };

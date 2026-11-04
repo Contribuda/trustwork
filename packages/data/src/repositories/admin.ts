@@ -50,12 +50,16 @@ async function one<T>(query: RawBuilder<T>, trx: Transaction, what: string): Pro
 }
 
 export const adminDigests = {
-  /** staff.assign_sensitive_role or staff.grant_breakglass: the assignment exactly as `admin_assign_role` will make it. */
-  assignment(input: { breakglass: boolean; personId: string; role: StaffRole; scope: StaffScope; definitionVersion: number; incidentId?: string | null; validForSeconds?: number | null }): string {
-    return computeDigest({
+  /** The digest input of an assignment, exactly as `admin_assign_role` will make it. */
+  assignmentInput(input: { breakglass: boolean; personId: string; role: StaffRole; scope: StaffScope; definitionVersion: number; incidentId?: string | null; validForSeconds?: number | null }) {
+    return {
       action: input.breakglass ? 'staff.grant_breakglass' : 'staff.assign_sensitive_role', personId: input.personId, role: input.role, scope: scopeJson(input.scope),
       definitionVersion: input.definitionVersion, breakglass: input.breakglass, incidentId: input.incidentId ?? null, validForSeconds: input.validForSeconds ?? null,
-    }).value;
+    };
+  },
+  /** staff.assign_sensitive_role or staff.grant_breakglass. */
+  assignment(input: { breakglass: boolean; personId: string; role: StaffRole; scope: StaffScope; definitionVersion: number; incidentId?: string | null; validForSeconds?: number | null }): string {
+    return computeDigest(adminDigests.assignmentInput(input)).value;
   },
   /** The request digest of a case access grant (what the approver restates). */
   caseGrant(input: { supportCaseId: string; objectType: string; objectIds: string[]; projectionClass: ProjectionClass; purpose: string; expiresInSeconds: number; legalExceptionRef?: string | null }): string {
@@ -64,16 +68,22 @@ export const adminDigests = {
       excludedFieldClasses: ['credentials', 'negotiation_private', 'payment_refs'], purpose: input.purpose, expiresInSeconds: input.expiresInSeconds, legalExceptionRef: input.legalExceptionRef ?? null,
     }).value;
   },
-  /** moderation.apply_sanction_l4. */
-  sanction(input: { moderationCaseId: string; subject: PartyRef; level: number; featureScope: string; durationSeconds: number | null }): string {
-    return computeDigest({
+  sanctionInput(input: { moderationCaseId: string; subject: PartyRef; level: number; featureScope: string; durationSeconds: number | null }) {
+    return {
       action: 'moderation.apply_sanction_l4', moderationCaseId: input.moderationCaseId, subject: { kind: input.subject.kind, id: input.subject.id }, level: input.level,
       featureScope: input.featureScope, durationSeconds: input.durationSeconds,
-    }).value;
+    };
+  },
+  /** moderation.apply_sanction_l4. */
+  sanction(input: { moderationCaseId: string; subject: PartyRef; level: number; featureScope: string; durationSeconds: number | null }): string {
+    return computeDigest(adminDigests.sanctionInput(input)).value;
+  },
+  killSwitchReleaseInput(killSwitchId: string, incidentNote: string) {
+    return { action: 'kill_switch.release', killSwitchId, incidentNote };
   },
   /** kill_switch.release. */
   killSwitchRelease(killSwitchId: string, incidentNote: string): string {
-    return computeDigest({ action: 'kill_switch.release', killSwitchId, incidentNote }).value;
+    return computeDigest(adminDigests.killSwitchReleaseInput(killSwitchId, incidentNote)).value;
   },
 };
 
@@ -135,9 +145,33 @@ export const staffAssignments = {
 };
 
 export const approvals = {
-  async request(trx: Transaction, ctx: CommandContext, input: { action: string; scope: StaffScope; actionDigest: string }): Promise<SecondPersonApprovalRow> {
-    return one(sql<SecondPersonApprovalRow>`SELECT * FROM trustwork.admin_request_approval(${ctxJson(ctx)}::jsonb, ${input.action}, ${input.scope.kind}, ${node(input.scope)}::uuid,
+  /**
+   * `subject` is what the digest was computed from; the database refuses one that does not hash to it. It is how the
+   * second person later reads a change no row holds yet (a role for a person, a sanction, a transition).
+   */
+  async request(trx: Transaction, ctx: CommandContext, input: { action: string; scope: StaffScope; actionDigest: string; subject?: unknown }): Promise<SecondPersonApprovalRow> {
+    const row = await one(sql<SecondPersonApprovalRow>`SELECT * FROM trustwork.admin_request_approval(${ctxJson(ctx)}::jsonb, ${input.action}, ${input.scope.kind}, ${node(input.scope)}::uuid,
       ${hub(input.scope)}::uuid, ${input.actionDigest})`, trx, 'admin_request_approval');
+    if (input.subject !== undefined) await sql`SELECT trustwork.admin_bind_approval_subject(${row.id}::uuid, ${JSON.stringify(input.subject)}::jsonb)`.execute(trx);
+    return row;
+  },
+  /** The structured change each approval binds, for the approvals the caller may read (`admin_approval_change`). */
+  async changes(trx: Transaction, approvalIds: readonly string[], elevationId: string | null = null): Promise<Map<string, unknown>> {
+    if (!approvalIds.length) return new Map();
+    const { rows } = await sql<{ id: string; change: unknown }>`SELECT a.id, trustwork.admin_approval_change(a.id, ${elevationId}::uuid) AS change FROM unnest(${[...approvalIds]}::uuid[]) AS a(id)`.execute(trx);
+    return new Map(rows.map((r) => [r.id, r.change]));
+  },
+  /** The approvals whose detail, reason included, the caller reads: those of a domain they hold the read permission of. */
+  async readable(trx: Transaction, approvalIds: readonly string[]): Promise<Set<string>> {
+    if (!approvalIds.length) return new Set();
+    const { rows } = await sql<{ id: string }>`SELECT a.id FROM unnest(${[...approvalIds]}::uuid[]) AS a(id) WHERE trustwork.admin_change_subject_readable(a.id)`.execute(trx);
+    return new Set(rows.map((r) => r.id));
+  },
+  /** The audit rows whose reason the caller reads: those of a change they read, and rows of no second-person change. */
+  async auditReasons(trx: Transaction, eventIds: readonly string[]): Promise<Set<string>> {
+    if (!eventIds.length) return new Set();
+    const { rows } = await sql<{ id: string }>`SELECT id FROM trustwork.admin_audit_reasons_readable(${[...eventIds]}::uuid[]) AS id`.execute(trx);
+    return new Set(rows.map((r) => r.id));
   },
   /** The second person restates the digest they reviewed; an approval lasts at most 72 hours. */
   async decide(trx: Transaction, ctx: CommandContext, approvalId: string, decision: 'approve' | 'decline', actionDigest: string, validForSeconds = 72 * 3600): Promise<SecondPersonApprovalRow> {

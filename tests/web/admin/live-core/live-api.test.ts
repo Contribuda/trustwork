@@ -135,6 +135,8 @@ test('console live core against the API', { skip: h ? false : SKIP_REASON }, asy
     assert.ok(listed, 'the owner sees the pending request');
     assert.equal(listed.actionDigest.value, v.activation.actionDigest);
     assert.equal(listed.requestedBy, w.people.officer);
+    assert.equal(listed.bound, true);
+    assert.deepEqual(listed.changes.find((c) => c.field === 'hostingCountry'), { field: 'hostingCountry', before: { kind: 'none' }, after: { kind: 'text', value: 'US', lang: 'und' } }, 'the country the digest binds, from the version itself');
 
     const decide = (digest: string) => ({ command: 'approvals.decide' as const, hubSlug: 'synthetic-live-core', setupToken: null, reason: 'Synthetic residency check', expectedRevision: null, fields: { requestId, decision: 'approve', digest } });
     const own = await portOf('officer').command(live, decide(v.activation.actionDigest));

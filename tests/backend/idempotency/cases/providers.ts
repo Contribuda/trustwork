@@ -112,9 +112,10 @@ export default {
     const kill = body<{ killSwitch: { id: string } }>(await run('providers.kill_engage', clients.ops, `${base}/kill-switches`, { target: { kind: 'route', job: 'summarisation', scope: { kind: 'job' } } },
       () => count(h, 'SELECT 1 FROM trustwork.provider_route_kill_switch WHERE hub_id = $1', [hubId])));
     const note = 'Synthetic crash incident note';
-    const digest = computeDigest(providerKillReleaseDigestInput({ killSwitchId: kill.killSwitch.id, incidentNote: note })).value;
+    const releaseInput = providerKillReleaseDigestInput({ killSwitchId: kill.killSwitch.id, incidentNote: note });
+    const digest = computeDigest(releaseInput).value;
     const opsCtx = await ctxOf(h, people.ops);
-    const request = await withPrincipal(h.pool, await principalFor(admin, people.ops), (trx) => approvals.request(trx, opsCtx, { action: 'kill_switch.release', scope: { kind: 'hub', hubId }, actionDigest: digest }));
+    const request = await withPrincipal(h.pool, await principalFor(admin, people.ops), (trx) => approvals.request(trx, opsCtx, { action: 'kill_switch.release', scope: { kind: 'hub', hubId }, actionDigest: digest, subject: releaseInput }));
     await as(h, people.steward, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     await run('providers.kill_release', clients.ops, `${base}/kill-switches/${kill.killSwitch.id}/release`, { approvalId: request.id, incidentNote: note },
       () => count(h, "SELECT 1 FROM trustwork.provider_route_kill_switch WHERE hub_id = $1 AND state = 'released'", [hubId]));

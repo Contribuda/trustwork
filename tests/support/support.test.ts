@@ -8,6 +8,10 @@ import { PASSWORD, signIn, enrolNow } from '../admin/helpers.js';
 import { SupportAccountCardSchema } from '../../apps/api/src/modules/support/views.js';
 import { AccessExplanationSchema } from '../../apps/api/src/modules/support/explainer.js';
 import { backdate, buildSupportWorld, command, count, emailOf, expectRefusal, participation, query, type SupportWorld } from './helpers.js';
+import { assertCardBinds } from '../admin/approval-change-helpers.js';
+import { withPrincipal } from '@trustwork/data';
+import { approvals as approvalRepo } from '../../packages/data/src/repositories/admin.js';
+import { principalFor } from '../data/helpers/seed.js';
 
 const h = await startHarness('support_api');
 
@@ -272,6 +276,16 @@ test('support workspace API', { skip: h ? false : SKIP_REASON }, async (t) => {
     expectRefusal(await command(c.agent, `${S}/actions/${rebindId}/activate`), 403, 'access.approval_required');
     expectRefusal(await command(c.agent, `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: digest }), 403, 'access.second_approver_required', 'self_approval');
     expectRefusal(await command(c.lead, `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: 'f'.repeat(64) }), 409, 'access.approval_digest_mismatch');
+    const change = ((await c.lead.get(`/v1/admin/approvals/${approvalId}`)).body as { approval: { change: { fields: Array<{ field: string; after: { value?: string } }> } } }).approval.change;
+    assert.equal(change.fields.find((f) => f.field === 'newAddress')?.after.value, 'su***@example.invalid', 'the second person reads the address masked');
+    assert.ok(!JSON.stringify(change).includes(NEW_EMAIL), 'never in clear');
+    assert.ok(change.fields.some((f) => f.field === 'subjectPersonId'));
+    await assertCardBinds(h.db.admin, approvalId);
+    // A staff reader and an audit reader who do not work support: action, scope and digest only.
+    for (const reader of [w.world.people.admin, w.world.people.auditor]) {
+      const seen = (await withPrincipal(h.pool, await principalFor(h.db.admin, reader), (trx) => approvalRepo.changes(trx, [approvalId]))).get(approvalId) as { visible: boolean; fields: unknown[] };
+      assert.deepEqual([seen.visible, seen.fields], [false, []]);
+    }
     // Concurrency: two leads approve at once; exactly one decision wins.
     const approvals = await Promise.all([c.lead, c.lead2].map((client) => command(client, `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: digest })));
     // ADM-001 answers the loser with a revision conflict, or "not found" once the decided request is no longer in its queue.

@@ -9,6 +9,7 @@ import { SKIP_REASON } from '../data/helpers/postgres.js';
 import { rejects } from '../data/admin/helpers.js';
 import { provisionWorkerDatabase, tx } from '../worker/helpers/worker-db.js';
 import { datasetInput, datasetsWorld, record } from './helpers.js';
+import { assertCardBinds } from '../admin/approval-change-helpers.js';
 
 const env = await provisionWorkerDatabase('datasets_db');
 const DAY = 86_400_000;
@@ -76,6 +77,9 @@ test('MINE-001 datasets on PostgreSQL', { skip: env ? false : SKIP_REASON }, asy
     await rejects(cmd(second, (trx, ctx) => datasets.activate(trx, ctx, licences.id, licences.revision, null)), '42501', 'admin.approval_required');
     const d = await as(second, (trx) => datasets.activationDigest(trx, licences.id, licences.revision));
     const request = await cmd(second, (trx, ctx) => approvals.request(trx, ctx, { action: 'pipelines.activate_personal_data_dataset', scope: world.hub, actionDigest: d }));
+    const shown = (await as(steward, (trx) => approvals.changes(trx, [request.id]))).get(request.id) as { bound: boolean; fields: Array<{ field: string }> };
+    assert.ok(shown.bound && shown.fields.some((f) => f.field === 'personal_categories'), 'the second person reads the dataset the digest binds');
+    await assertCardBinds(env.db.admin, request.id);
     await cmd(steward, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', d));
     const live = await cmd(second, (trx, ctx) => datasets.activate(trx, ctx, licences.id, licences.revision, request.id));
     assert.equal(live.approval_id, request.id);

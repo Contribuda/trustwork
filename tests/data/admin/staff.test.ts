@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { computeDigest } from '@trustwork/contracts';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -189,8 +190,9 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
 
     // Sensitive: hub-owner for hubOwner. Without approval, with a mismatching approval, and properly.
     await rejects(as(p.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { personId: p.hubOwner, role: 'hub-owner', scope: hubScope, definitionVersion: 1 })), '42501', 'admin.approval_required');
-    const digest = adminDigests.assignment({ breakglass: false, personId: p.hubOwner, role: 'hub-owner', scope: hubScope, definitionVersion: 1 });
-    const request = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest }));
+    const digestInput = adminDigests.assignmentInput({ breakglass: false, personId: p.hubOwner, role: 'hub-owner', scope: hubScope, definitionVersion: 1 });
+    const digest = computeDigest(digestInput).value;
+    const request = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest, subject: digestInput }));
     await as(p.admin, (trx) => approvals.decide(trx, adminCtx, request.id, 'approve', digest));
     await rejects(as(p.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { personId: p.hubOwner, role: 'hub-owner', scope: hubScope, definitionVersion: 1, validForSeconds: 3600, approvalId: request.id })), '23514', 'admin.approval_mismatch');
     const hubOwner = await as(p.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { personId: p.hubOwner, role: 'hub-owner', scope: hubScope, definitionVersion: 1, approvalId: request.id }));
@@ -199,8 +201,9 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
     await rejects(as(p.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { personId: p.hubOwner, role: 'hub-owner', scope: hubScope, definitionVersion: 1, approvalId: request.id })), '23514', 'admin.approval_consumed');
 
     // The holder can never be the second approver of their own sensitive role.
-    const selfDigest = adminDigests.assignment({ breakglass: false, personId: p.admin, role: 'staff-admin', scope: hubScope, definitionVersion: 1 });
-    const selfReq = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: selfDigest }));
+    const selfDigestInput = adminDigests.assignmentInput({ breakglass: false, personId: p.admin, role: 'staff-admin', scope: hubScope, definitionVersion: 1 });
+    const selfDigest = computeDigest(selfDigestInput).value;
+    const selfReq = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: selfDigest, subject: selfDigestInput }));
     await as(p.admin, (trx) => approvals.decide(trx, adminCtx, selfReq.id, 'approve', selfDigest));
     await rejects(as(p.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { personId: p.admin, role: 'staff-admin', scope: hubScope, definitionVersion: 1, approvalId: selfReq.id })), '42501', 'admin.self_approval');
 
@@ -218,8 +221,9 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
   });
 
   await t.test('second-person approvals: self-approval refused, the digest is restated, the approver holds an executing permission, only the requester executes', async () => {
-    const digest = adminDigests.assignment({ breakglass: false, personId: p.ops, role: 'staff-admin', scope: hubScope, definitionVersion: 1 });
-    const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest }));
+    const digestInput = adminDigests.assignmentInput({ breakglass: false, personId: p.ops, role: 'staff-admin', scope: hubScope, definitionVersion: 1 });
+    const digest = computeDigest(digestInput).value;
+    const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest, subject: digestInput }));
     assert.equal(req.status, 'pending');
     assert.ok(req.request_expires_at.getTime() - req.requested_at.getTime() === 7 * 86_400_000);
     await rejects(as(p.owner, (trx) => approvals.decide(trx, ownerCtx, req.id, 'approve', digest)), '42501', 'admin.self_approval');
@@ -237,18 +241,18 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
     await as(p.owner, (trx) => approvals.withdraw(trx, req.id));
     await rejects(as(p.owner, (trx) => approvals.consume(trx, { approvalId: req.id, action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest, ref: p.ops })), '23514', 'admin.approval_not_approved');
     // A declined request is never executable; an unknown action is refused.
-    const declined = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest }));
+    const declined = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest, subject: digestInput }));
     await as(p.admin, (trx) => approvals.decide(trx, adminCtx, declined.id, 'decline', digest));
     await rejects(as(p.owner, (trx) => approvals.consume(trx, { approvalId: declined.id, action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest, ref: p.ops })), '23514', 'admin.approval_not_approved');
-    await rejects(as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.do_anything', scope: hubScope, actionDigest: digest })), '23514', 'admin.unknown_action');
+    await rejects(as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.do_anything', scope: hubScope, actionDigest: digest, subject: digestInput })), '23514', 'admin.unknown_action');
     // A requester without an executing permission cannot ask (support agents do not assign staff).
     const agentCtx = await elevate(p.agent);
-    await rejects(as(p.agent, (trx) => approvals.request(trx, agentCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest })), '42501', 'admin.forbidden');
+    await rejects(as(p.agent, (trx) => approvals.request(trx, agentCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest, subject: digestInput })), '42501', 'admin.forbidden');
     // Even the owner path cannot approve one's own request, rewrite a request or delete an approval.
     await rejects(owner((trx) => trx.updateTable('second_person_approval').set({ status: 'approved', approved_by: p.owner, approved_at: new Date(), expires_at: new Date(Date.now() + 3_600_000) }).where('id', '=', declined.id).execute()), '23514');
     await rejects(owner((trx) => trx.updateTable('second_person_approval').set({ action_digest: 'a'.repeat(64) }).where('id', '=', declined.id).execute()), '23000', 'admin.immutable');
     await rejects(owner((trx) => trx.deleteFrom('second_person_approval').where('id', '=', declined.id).execute()), '23000', 'audit.append_only');
-    const pending = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest }));
+    const pending = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest, subject: digestInput }));
     const forced = await owner((trx) => trx.updateTable('second_person_approval').set({ status: 'approved', approved_by: p.admin, approved_at: new Date(), expires_at: new Date(Date.now() + 500 * 3_600_000) })
       .where('id', '=', pending.id).returningAll().executeTakeFirstOrThrow());
     assert.ok(forced.expires_at!.getTime() - forced.approved_at!.getTime() <= 72 * 3_600_000, 'the database caps every approval at 72 hours');
@@ -257,8 +261,9 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
   await t.test('concurrency: two approvers racing on one request, and two executions racing on one approval: exactly one wins each time', async () => {
     const hubOwnerCtx = await elevate(p.hubOwner);
     for (let round = 0; round < 5; round++) {
-      const digest = adminDigests.assignment({ breakglass: false, personId: p.ops, role: 'compliance-officer', scope: hubScope, definitionVersion: round + 1 });
-      const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest }));
+      const digestInput = adminDigests.assignmentInput({ breakglass: false, personId: p.ops, role: 'compliance-officer', scope: hubScope, definitionVersion: round + 1 });
+      const digest = computeDigest(digestInput).value;
+      const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hubScope, actionDigest: digest, subject: digestInput }));
       const results = await Promise.allSettled([
         as(p.admin, (trx) => approvals.decide(trx, adminCtx, req.id, 'approve', digest)),
         as(p.hubOwner, (trx) => approvals.decide(trx, hubOwnerCtx, req.id, round % 2 ? 'decline' : 'approve', digest)),
@@ -269,8 +274,9 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
       const stored = await as(p.owner, (trx) => approvals.get(trx, req.id));
       assert.ok(stored && ['approved', 'declined'].includes(stored.status));
     }
-    const digest = 'c'.repeat(64);
-    const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.switch_sod_mode', scope: hubScope, actionDigest: digest }));
+    const digestInput = { action: 'staff.switch_sod_mode', synthetic: 'concurrent consumption' };
+    const digest = computeDigest(digestInput).value;
+    const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.switch_sod_mode', scope: hubScope, actionDigest: digest, subject: digestInput }));
     await as(p.admin, (trx) => approvals.decide(trx, adminCtx, req.id, 'approve', digest));
     const executions = await Promise.allSettled([1, 2, 3, 4].map(() => as(p.owner, (trx) => approvals.consume(trx, { approvalId: req.id, action: 'staff.switch_sod_mode', scope: hubScope, actionDigest: digest, ref: req.id }))));
     assert.equal(executions.filter((r) => r.status === 'fulfilled').length, 1, 'an approval is consumed exactly once');
@@ -278,8 +284,9 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
   });
 
   await t.test('expiry: an expired approval cannot be executed, by the command or by the owner path', async () => {
-    const digest = 'd'.repeat(64);
-    const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.switch_sod_mode', scope: hubScope, actionDigest: digest }));
+    const digestInput = { action: 'staff.switch_sod_mode', synthetic: 'expiry' };
+    const digest = computeDigest(digestInput).value;
+    const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.switch_sod_mode', scope: hubScope, actionDigest: digest, subject: digestInput }));
     const approved = await as(p.admin, (trx) => approvals.decide(trx, adminCtx, req.id, 'approve', digest, 1));
     await untilDatabaseTimePasses(db.admin, approved.expires_at as Date);
     await rejects(as(p.owner, (trx) => approvals.consume(trx, { approvalId: req.id, action: 'staff.switch_sod_mode', scope: hubScope, actionDigest: digest, ref: req.id })), '23514', 'admin.approval_expired');
@@ -296,8 +303,9 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
     await rejects(as(p.owner, (trx) => staffAssignments.assign(trx, ownerCtx, input)), '42501', 'admin.approval_required');
     await rejects(owner((trx) => trx.insertInto('staff_role_assignment').values({ person_id: p.ops, role: 'auditor', scope_kind: 'hub', hub_id: w.hubId, definition_version: 1, granted_by: p.owner, reason: 'x',
       breakglass: true, incident_id: incidentId, valid_until: new Date(Date.now() + 13 * 3_600_000) }).execute()), '23514', 'admin.breakglass_too_long');
-    const digest = adminDigests.assignment(input);
-    const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.grant_breakglass', scope: hubScope, actionDigest: digest }));
+    const digestInput = adminDigests.assignmentInput(input);
+    const digest = computeDigest(digestInput).value;
+    const req = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.grant_breakglass', scope: hubScope, actionDigest: digest, subject: digestInput }));
     await as(p.admin, (trx) => approvals.decide(trx, adminCtx, req.id, 'approve', digest));
     const glass = await as(p.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { ...input, approvalId: req.id }));
     assert.equal(glass.breakglass, true);
@@ -315,8 +323,9 @@ test('administration persistence: staff roles, approvals, break-glass and the ap
     await rejects(as(p.ops, (trx) => featureFlags.set(trx, opsCtx, { scope: hubScope, key: 'synthetic.banner', value: true, description: 'Synthetic flag', declaredEffect: 'ui', expiresAt: new Date(Date.now() + 86_400_000) })), '42501', 'admin.forbidden');
     // A resolved incident no longer supports break-glass.
     await as(p.owner, (trx) => incidents.update(trx, ownerCtx, incidentId, { status: 'resolved' }));
-    const digest2 = adminDigests.assignment({ ...input, validForSeconds: 60 });
-    const req2 = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.grant_breakglass', scope: hubScope, actionDigest: digest2 }));
+    const digest2Input = adminDigests.assignmentInput({ ...input, validForSeconds: 60 });
+    const digest2 = computeDigest(digest2Input).value;
+    const req2 = await as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.grant_breakglass', scope: hubScope, actionDigest: digest2, subject: digest2Input }));
     await as(p.admin, (trx) => approvals.decide(trx, adminCtx, req2.id, 'approve', digest2));
     await rejects(as(p.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { ...input, validForSeconds: 60, approvalId: req2.id })), '23514', 'admin.incident_not_open');
     await rejects(as(p.owner, (trx) => incidents.update(trx, ownerCtx, incidentId, { status: 'closed' })), '23514');

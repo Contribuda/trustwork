@@ -214,7 +214,7 @@ test('hubs core: territories, scoped staff, versioned configuration, launch gate
     await rejects(activate(p.owner, residency, forDrafter), '42501', 'admin.self_approval');
     // Another person without an approval, or approving their own request.
     await rejects(activate(p.officer, residency), '42501', 'admin.approval_required');
-    const own = await a.cmd(p.officer, (trx, ctx) => approvals.request(trx, ctx, { action: 'hub.change_residency', scope: { kind: 'hub', hubId: hubA }, actionDigest: computeDigest(digestInput).value }));
+    const own = await a.cmd(p.officer, (trx, ctx) => approvals.request(trx, ctx, { action: 'hub.change_residency', scope: { kind: 'hub', hubId: hubA }, actionDigest: computeDigest(digestInput).value, subject: digestInput }));
     await rejects(a.cmd(p.officer, (trx, ctx) => approvals.decide(trx, ctx, own.id, 'approve', computeDigest(digestInput).value)), '42501', 'admin.self_approval');
     await rejects(activate(p.officer, residency, own.id), '23514', 'admin.approval_not_approved');
     // An approval of another digest (another version, the wrong action) never fits.
@@ -307,7 +307,8 @@ test('hubs core: territories, scoped staff, versioned configuration, launch gate
     // PAY-001 only narrows admission to the active payments config; it grants no data access. payments_candidate_lock
     // takes SHARE locks on the configuration it reads later in the same transaction (serialization only, no read).
     // PAY-001 only narrows admission to the active payments config; it grants no data access.
-    const narrowingReaders = new Set(['jurisdiction_resolve_context', 'jurisdiction_demo_authority', 'jurisdiction_quote_notices', 'jurisdiction_disclosure_bundle', 'hubs_activate_config_base', 'payments_candidate_lock', 'payments_collecting_candidates', 'payments_source_places', 'payments_route_available', 'providers_residency', 'jurisdiction_config_guard', 'jurisdiction_language_guard', 'jurisdiction_resolve_quote', 'jurisdiction_preflight']);
+    // HUBC-007 reads the version an approval's digest binds to show it to that approval's own readers; it decides no access.
+    const narrowingReaders = new Set(['admin_change_config', 'jurisdiction_resolve_context', 'jurisdiction_demo_authority', 'jurisdiction_quote_notices', 'jurisdiction_disclosure_bundle', 'hubs_activate_config_base', 'payments_candidate_lock', 'payments_collecting_candidates', 'payments_source_places', 'payments_route_available', 'providers_residency', 'jurisdiction_config_guard', 'jurisdiction_language_guard', 'jurisdiction_resolve_quote', 'jurisdiction_preflight']);
     // These four exact readers preserve the original HUB implementations behind the KEYS ordering wrapper.
     // No generic wrapper prefix is exempt, and runtime roles must not invoke the unfenced bodies.
     const internalHubReaders = ['callback_unfenced_hubs_activate_config', 'callback_unfenced_hubs_cancel_config', 'callback_unfenced_hubs_create', 'callback_unfenced_hubs_draft_config'];

@@ -639,6 +639,8 @@
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-2);
   align-items: baseline;
+  /* A bound value can be a long unbroken identifier or JSON text; it wraps on a phone instead of widening the page. */
+  overflow-wrap: anywhere;
 }
 
 .admin-diff__field {

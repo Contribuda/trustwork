@@ -13,6 +13,7 @@ import { Client, SKIP_REASON, startHarness, type Response } from '../backend/hel
 import { codeNow } from '../backend/second-factor/helpers.js';
 import { addLogins, enrolNow, expectRefusal, PASSWORD, signIn } from '../admin/helpers.js';
 import { buildSourcesWorld, DISPLAY_ONLY, OPEN_USES, type SourcesWorld } from './helpers.js';
+import { assertCardBinds } from '../admin/approval-change-helpers.js';
 
 /**
  * SRC-001 through the HTTP API on real PostgreSQL under the runtime role, with real sessions, TOTP and elevated
@@ -295,6 +296,9 @@ test('sources API: registry, checks, review queue, egress, takedown and sponsore
     assert.equal(pending.result.outcome, 'pending_second_person');
     const approvalId = pending.result.approvalRequestId;
     expectRefusal(await command('officerA', `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: pending.approvalDigest }), 403, 'access.second_approver_required');
+    const shown = (await c.officerB.get(`/v1/admin/approvals/${approvalId}`)).body as { approval: { change: { fields: Array<{ field: string }> } } };
+    assert.ok(['maxSlotsPerPage', 'requireVerifiedSponsor'].every((f) => shown.approval.change.fields.some((x) => x.field === f)), 'the second person reads the policy the digest binds');
+    await assertCardBinds(h.db.admin, approvalId);
     ok(await command('officerB', `/v1/admin/approvals/${approvalId}/approve`, { actionDigest: pending.approvalDigest }));
     expectRefusal(await command('officerB', `${base}/sponsored-policy`, { ...body, approvalId }), 403, 'access.approval_required', 'not_requester');
     const applied = ok<{ result: { outcome: string }; policy: { allowed: boolean; version: number; readerLabel: boolean } }>(await command('officerA', `${base}/sponsored-policy`, { ...body, approvalId }));

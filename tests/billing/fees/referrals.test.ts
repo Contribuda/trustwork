@@ -6,6 +6,7 @@ import { createPool, withMaintenance } from '@trustwork/data';
 import { provisionTestDatabase, SKIP_REASON } from '../../data/helpers/postgres.js';
 import { rejects } from '../../hubs/helpers.js';
 import { approvals } from '../../../packages/data/src/repositories/admin.js';
+import { digestInputOf, forged, forgedDigest } from '../../admin/approval-change-helpers.js';
 import { billingReferrals } from '../../../packages/data/src/repositories/billing-fees.js';
 import { directory } from '../../../packages/data/src/repositories/directory.js';
 import { ReferralTermsSchema, type PublicReferral, type ReferralTerms } from '../../../packages/contracts/src/billing-fees.js';
@@ -36,8 +37,8 @@ test('BILL-003 referral terms on real PostgreSQL under the runtime role', { skip
   assert.ok(peopleBefore.length >= 2);
   const neutralBefore = neutralOutputs(p.outsider);
   const draft = (input: ReferralTerms, hubId = hubA, person = p.owner) => a.cmd(person, (trx, ctx) => billingReferrals.draft(trx, ctx, hubId, input, REVIEW));
-  const approve = async (r: PublicReferral, digest = r.digest, requester = p.officer, approver = p.owner, action: 'growth.activate_referral_terms' | 'billing.activate_fee_version' = 'growth.activate_referral_terms') => {
-    const request = await a.cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId: r.hubId }, actionDigest: digest }));
+  const approve = async (r: PublicReferral, digest = r.digest, requester = p.officer, approver = p.owner, action: 'growth.activate_referral_terms' | 'billing.activate_fee_version' = 'growth.activate_referral_terms', subject: Record<string, unknown> | undefined = digest === forgedDigest ? forged : undefined) => {
+    const request = await a.cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action, scope: { kind: 'hub', hubId: r.hubId }, actionDigest: digest, ...(subject ? { subject } : {}) }));
     await a.cmd(approver, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     return request.id;
   };
@@ -75,8 +76,11 @@ test('BILL-003 referral terms on real PostgreSQL under the runtime role', { skip
   await t.test('the drafter, a forged or foreign approval and a changed digest cannot activate', async () => {
     await rejects(activate(r, randomUUID(), p.owner), '42501', 'admin.self_approval');
     await rejects(activate(r, randomUUID()), '42501', 'admin.not_requester');
-    await rejects(activate(r, await approve(r, 'f'.repeat(64))), '23514', 'admin.approval_mismatch');
-    await rejects(activate(r, await approve(r, r.digest, p.officer, p.owner, 'billing.activate_fee_version')), '23514', 'admin.approval_mismatch');
+    await rejects(activate(r, await approve(r, forgedDigest)), '23514', 'admin.approval_mismatch');
+    // The right digest under another action: unproved it cannot be approved, and proved it still activates nothing.
+    await rejects(approve(r, r.digest, p.officer, p.owner, 'billing.activate_fee_version'), '42501', 'admin.change_unbound');
+    const open = await a.cmd(p.officer, (trx, ctx) => approvals.request(trx, ctx, { action: 'growth.activate_referral_terms', scope: { kind: 'hub', hubId: r.hubId }, actionDigest: r.digest }));
+    await rejects(activate(r, await approve(r, r.digest, p.officer, p.owner, 'billing.activate_fee_version', await digestInputOf(db.admin, open.id))), '23514', 'admin.approval_mismatch');
     const correct = await approve(r);
     await rejects(activate(r, correct, p.officer, 'a'.repeat(64)), '42501', 'admin.approval_mismatch');
     await rejects(a.cmd(p.otherOwner, (trx, ctx) => billingReferrals.activate(trx, ctx, hubB, r.id, r.digest, correct)), 'P0002', 'admin.not_found');

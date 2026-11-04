@@ -35,8 +35,9 @@ test('a legal document is activated by someone other than its drafter (HUB-001)'
   const draft = (by: string, kind: 'terms' | 'privacy_notice' | 'community_rules') => a.cmd(by, (trx, ctx) => legalDocuments.draft(trx, ctx, hub, { kind, locale: 'en', body: `Synthetic ${kind} text` }));
   const counsel = (d: LegalDocumentVersionRow) => a.cmd(p.owner, (trx, ctx) => legalDocuments.recordCounselApproval(trx, ctx, hub, { documentVersionIds: [d.id], counselName: 'Synthetic Counsel', firm: 'Synthetic Firm LLP',
     approvedOn: new Date(Date.now() - 86_400_000).toISOString().slice(0, 10), scopeNote: 'Synthetic scope' }));
-  const digestOf = (d: LegalDocumentVersionRow, counselApprovalId: string) => computeDigest(legalActivationDigestInput({ id: d.id, hubId: hub, kind: d.kind as 'terms', locale: d.locale, version: d.version, bodyDigest: d.body_digest, counselApprovalId })).value;
-  const ask = (by: string, actionDigest: string) => a.cmd(by, (trx, ctx) => approvals.request(trx, ctx, { action: 'legal.activate_document_version', scope, actionDigest }));
+  const inputOf = (d: LegalDocumentVersionRow, counselApprovalId: string) => legalActivationDigestInput({ id: d.id, hubId: hub, kind: d.kind as 'terms', locale: d.locale, version: d.version, bodyDigest: d.body_digest, counselApprovalId });
+  const digestOf = (d: LegalDocumentVersionRow, counselApprovalId: string) => computeDigest(inputOf(d, counselApprovalId)).value;
+  const ask = (by: string, actionDigest: string, subject?: unknown) => a.cmd(by, (trx, ctx) => approvals.request(trx, ctx, { action: 'legal.activate_document_version', scope, actionDigest, ...(subject ? { subject } : {}) }));
 
   await t.test('the drafter cannot ask for the activation of their own document, by any route', async () => {
     const d = await draft(p.owner, 'terms');
@@ -61,7 +62,10 @@ test('a legal document is activated by someone other than its drafter (HUB-001)'
     const d = await draft(p.owner, 'community_rules');
     const counselId = randomUUID();
     const digest = digestOf(d, counselId);
-    const request = await ask(p.owner, digest);
+    // With no counsel row yet the digest input is the only proof of the change, and without one the approval is refused.
+    const unproven = await ask(p.owner, digest);
+    await rejects(a.cmd(p.officer, (trx, ctx) => approvals.decide(trx, ctx, unproven.id, 'approve', digest)), '42501', 'admin.change_unbound');
+    const request = await ask(p.owner, digest, inputOf(d, counselId));
     await a.cmd(p.officer, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     await withMaintenance(db.admin, (trx) => trx.insertInto('counsel_approval').values({ id: counselId, hub_id: hub, document_version_ids: [d.id], counsel_name: 'Synthetic Counsel', firm: 'Synthetic Firm LLP',
       approved_on: new Date(Date.now() - 86_400_000).toISOString().slice(0, 10), scope_note: 'Synthetic scope', recorded_by: p.owner } as never).execute());

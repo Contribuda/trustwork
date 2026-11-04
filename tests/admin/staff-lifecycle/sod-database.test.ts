@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
+import { computeDigest } from '@trustwork/contracts';
 import { createPool, type DataPool } from '@trustwork/data';
 import { adminDigests, approvals, staffAssignments, staffRoleDefinitions, type StaffScope } from '../../../packages/data/src/repositories/admin.js';
 import { staffLifecycle } from '../../../packages/data/src/repositories/staff-lifecycle.js';
@@ -25,10 +26,12 @@ test('the database decides the different-role rule (ADM-004)', { skip: db ? fals
   const p = w.people;
   const hub: StaffScope = { kind: 'hub', hubId: w.hubId };
   const otherHub: StaffScope = { kind: 'hub', hubId: w.otherHubId };
-  const digest = () => randomBytes(32).toString('hex');
+  // Approving needs a change the digest proves, so each digest here comes with its input.
+  const subjects = new Map<string, Record<string, string>>();
+  const digest = () => { const input = { synthetic: randomBytes(8).toString('hex') }; const value = computeDigest(input).value; subjects.set(value, input); return value; };
   const STAFF_ACTION = 'staff.assign_sensitive_role';
   const ask = async (by: string, action: string, scope: StaffScope, actionDigest: string) =>
-    as(by, async (trx) => approvals.request(trx, await elevate(by), { action, scope, actionDigest }));
+    as(by, async (trx) => approvals.request(trx, await elevate(by), { action, scope, actionDigest, subject: subjects.get(actionDigest) }));
   const approve = async (by: string, id: string, actionDigest: string) => as(by, async (trx) => approvals.decide(trx, await elevate(by), id, 'approve', actionDigest));
   const sod = (by: string, scope: StaffScope) => as(by, (trx) => staffLifecycle.sod(trx, scope));
 

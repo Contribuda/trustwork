@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { computeDigest } from '@trustwork/contracts';
 import assert from 'node:assert/strict';
 import { approvals, killSwitches, adminDigests } from '../../packages/data/src/repositories/admin.js';
 import { withMaintenance } from '@trustwork/data';
@@ -122,8 +123,9 @@ test('PAY-001 current authority: actual HTTP and registered worker, competing ow
         if (!k) return;
         const note = 'Synthetic matrix release after independent review';
         const scope = scopeKind === 'node' ? { kind: 'node' as const, nodeId: hub.w.nodeId } : { kind: 'hub' as const, hubId: hub.hubId };
-        const digest = adminDigests.killSwitchRelease(k.id as string, note);
-        const approval = await hub.a.cmd(hub.w.people.owner, (trx, ctx) => approvals.request(trx, ctx, { action: 'kill_switch.release', scope, actionDigest: digest }));
+        const digestInput = adminDigests.killSwitchReleaseInput(k.id as string, note);
+        const digest = computeDigest(digestInput).value;
+        const approval = await hub.a.cmd(hub.w.people.owner, (trx, ctx) => approvals.request(trx, ctx, { action: 'kill_switch.release', scope, actionDigest: digest, subject: digestInput }));
         await hub.a.cmd(hub.w.people.officer, (trx, ctx) => approvals.decide(trx, ctx, approval.id, 'approve', digest));
         await hub.a.cmd(hub.w.people.owner, (trx, ctx) => killSwitches.release(trx, ctx, k.id as string, approval.id, note));
       } });

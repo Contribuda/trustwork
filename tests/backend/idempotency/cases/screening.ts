@@ -1,4 +1,5 @@
 import { listCrashCases } from '../../../web/admin/screening/list-crashes.js';
+import { computeDigest } from '@trustwork/contracts';
 import assert from 'node:assert/strict';
 import { withMaintenance, withPrincipal } from '@trustwork/data';
 import type { Client, Harness } from '../../helpers/app.js';
@@ -33,9 +34,10 @@ async function complianceOfficer(h: Harness, personId: string): Promise<void> {
     return { elevationId: elevation.id, requestId: `req-${crypto.randomUUID()}`, reasonCode: 'synthetic_test', reasonText: 'Synthetic crash test setup' };
   };
   const scope = { kind: 'node', nodeId } as const;
-  const digest = adminDigests.assignment({ breakglass: false, personId, role: 'compliance-officer', scope, definitionVersion: 1 });
+  const digestInput = adminDigests.assignmentInput({ breakglass: false, personId, role: 'compliance-officer', scope, definitionVersion: 1 });
+  const digest = computeDigest(digestInput).value;
   const ownerCtx = await ctxOf(owner.person_id);
-  const request = await withPrincipal(h.pool, await principalFor(admin, owner.person_id), (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope, actionDigest: digest }));
+  const request = await withPrincipal(h.pool, await principalFor(admin, owner.person_id), (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope, actionDigest: digest, subject: digestInput }));
   await withPrincipal(h.pool, await principalFor(admin, staffAdmin.person_id), async (trx) => approvals.decide(trx, await ctxOf(staffAdmin.person_id), request.id, 'approve', digest));
   await withPrincipal(h.pool, await principalFor(admin, owner.person_id), (trx) => staffAssignments.assign(trx, ownerCtx, { personId, role: 'compliance-officer', scope, definitionVersion: 1, approvalId: request.id }));
 }

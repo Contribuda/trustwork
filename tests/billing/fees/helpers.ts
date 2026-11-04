@@ -1,17 +1,19 @@
 import assert from 'node:assert/strict';
+import { computeDigest } from '@trustwork/contracts';
 import { sql } from 'kysely';
 import { withMaintenance, type DataPool } from '@trustwork/data';
 import { adminDigests, approvals, staffAssignments, staffRoleDefinitions } from '../../../packages/data/src/repositories/admin.js';
 import { actors, buildHubWorld, syncKernel } from '../../hubs/helpers.js';
 import type { FeeTerms, PublicFee } from '../../../packages/contracts/src/billing-fees.js';
 import { billingFees } from '../../../packages/data/src/repositories/billing-fees.js';
+import { assertCardBinds, forged, forgedDigest } from '../../admin/approval-change-helpers.js';
 
 /** Synthetic people, hubs and rates only; real database roles, elevations and approvals. */
 export async function feeWorld(admin: DataPool, runtime: DataPool, historical?: 'before-fee11') {
   if (historical) assert.equal((await admin.query("SELECT to_regclass('trustwork.agent_serving_hub') AS relation")).rows[0].relation,null);
   await syncKernel(admin);
   const w = await buildHubWorld(admin);
-  const a = actors(admin, runtime, w);
+  const a = actors(admin, runtime, w, { digestInputs: !historical });
   const p = w.people;
   await a.assignSensitive({ personId: p.operator, role: 'node-operator', scope: { kind: 'node', nodeId: w.nodeId } });
   const hubA = (await a.createHub('synthetic-fee-a')).hub_id;
@@ -23,13 +25,19 @@ export async function feeWorld(admin: DataPool, runtime: DataPool, historical?: 
   }));
   for (const [personId, hubId] of [[p.owner, hubA], [p.officer, hubA], [p.otherOwner, hubB], [p.moderator, hubB]] as const) {
     const scope = { kind: 'hub', hubId } as const;
-    const digest = adminDigests.assignment({ breakglass: false, personId, role: 'hub-owner', scope, definitionVersion: 2 });
-    const request = await a.cmd(p.founder, (trx, ctx) => approvals.request(trx, ctx, { action: 'staff.assign_sensitive_role', scope, actionDigest: digest }));
+    const digestInput = adminDigests.assignmentInput({ breakglass: false, personId, role: 'hub-owner', scope, definitionVersion: 2 });
+    const digest = computeDigest(digestInput).value;
+    const request = await a.cmd(p.founder, (trx, ctx) => approvals.request(trx, ctx, { action: 'staff.assign_sensitive_role', scope, actionDigest: digest, ...(historical ? {} : { subject: digestInput }) }));
     await a.cmd(p.founder2, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     await a.cmd(p.founder, (trx, ctx) => staffAssignments.assign(trx, ctx, { personId, role: 'hub-owner', scope, definitionVersion: 2, approvalId: request.id }));
   }
   const approve = async (f: PublicFee, digest = f.digest, requester = p.officer, approver = p.owner) => {
-    const r = await a.cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action: 'billing.activate_fee_version', scope: { kind: 'hub', hubId: f.hubId }, actionDigest: digest }));
+    const r = await a.cmd(requester, (trx, ctx) => approvals.request(trx, ctx, { action: 'billing.activate_fee_version', scope: { kind: 'hub', hubId: f.hubId }, actionDigest: digest, ...(digest === forgedDigest ? { subject: forged } : {}) }));
+    if (digest === f.digest) {
+      const shown = (await a.as(approver, (trx) => approvals.changes(trx, [r.id]))).get(r.id) as { bound: boolean; fields: Array<{ field: string }> };
+      if (!shown.bound || !shown.fields.some((x) => x.field === 'terms.basisPoints')) throw new Error('the second person reads the fee the digest binds');
+      await assertCardBinds(admin, r.id);
+    }
     await a.cmd(approver, (trx, ctx) => approvals.decide(trx, ctx, r.id, 'approve', digest));
     return r.id;
   };

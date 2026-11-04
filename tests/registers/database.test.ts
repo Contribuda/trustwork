@@ -13,6 +13,7 @@ import { SKIP_REASON } from '../data/helpers/postgres.js';
 import { rejects } from '../data/admin/helpers.js';
 import { provisionWorkerDatabase, tx } from '../worker/helpers/worker-db.js';
 import { NO_DISPLAY_USES, registerSource, registersWorld } from './helpers.js';
+import { assertCardBinds } from '../admin/approval-change-helpers.js';
 
 const env = await provisionWorkerDatabase('registers_db');
 
@@ -192,6 +193,9 @@ test('REG-001 register facts on PostgreSQL', { skip: env ? false : SKIP_REASON }
     const digest = await as(steward, (trx) => registers.liveDigest(trx, sam.id, sam.revision, credential));
     const request = await cmd(steward, (trx, ctx) => approvals.request(trx, ctx, { action: 'providers.enable_non_fake', scope: world.hub, actionDigest: digest }));
     await rejects(cmd(steward, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest)), '42501');
+    const shown = (await as(p.lead2, (trx) => approvals.changes(trx, [request.id]))).get(request.id) as { bound: boolean; fields: Array<{ field: string }> };
+    assert.ok(shown.bound && shown.fields.some((f) => f.field === 'adapter'), 'the second person reads the adapter the digest binds');
+    await assertCardBinds(env.db.admin, request.id);
     await cmd(p.lead2, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
     const live = await cmd(steward, (trx, ctx) => registers.goLive(trx, ctx, sam.id, sam.revision, credential, request.id));
     assert.equal(live.mode, 'live');

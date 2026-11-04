@@ -15,6 +15,7 @@ import { screenEveryoneClear } from '../screening-gates/helpers.js';
 import { untilDatabaseTimePasses } from '../data/helpers/postgres.js';
 import type { PaymentView } from '../../packages/contracts/src/payments.js';
 import { sourceWorld } from './source-helpers.js';
+import { digestInputOf, forged, forgedDigest } from '../admin/approval-change-helpers.js';
 import { ok } from './helpers.js';
 const h = await startHarness('payment_sources');
 test('PAY-001 registered synthetic source through actual API, signed ingress and final worker', { skip: h ? false : SKIP_REASON }, async (t) => {
@@ -102,9 +103,15 @@ test('PAY-001 registered synthetic source through actual API, signed ingress and
     for (const wrong of ['digest', 'action', 'reviewer expiry', 'proposer epoch'] as const) {
       const ctx = await w.a.elevate(w.w.people.owner);
       const proposal = await w.install((trx) => paymentSources.proposeAdapter(trx, ctx, w.issuers.account.input));
-      const digest = wrong === 'digest' ? 'a'.repeat(64) : proposal.digest;
+      const digest = wrong === 'digest' ? forgedDigest : proposal.digest;
       const action = wrong === 'action' ? 'payments.activate_account_binding' : 'payments.register_source_adapter';
-      const requested = await w.a.cmd(w.w.people.owner, (trx, c) => approvals.request(trx, c, { action, scope: { kind: 'hub', hubId: w.hubId }, actionDigest: digest }));
+      const ask = (a: string, subject?: Record<string, unknown>) => w.a.cmd(w.w.people.owner, (trx, c) => approvals.request(trx, c, { action: a, scope: { kind: 'hub', hubId: w.hubId }, actionDigest: digest, ...(subject ? { subject } : {}) }));
+      // Approving needs a proved change, so a wrong digest or action carries the input of that digest; the activation is what must refuse.
+      const requested = wrong === 'digest' ? await ask(action, forged) : wrong === 'action' ? await ask(action, await digestInputOf(h.db.admin, (await ask('payments.register_source_adapter')).id)) : await ask(action);
+      if (wrong === 'reviewer expiry') {
+        const shown = (await w.a.as(w.w.people.officer, (trx) => approvals.changes(trx, [requested.id]))).get(requested.id) as { bound: boolean; fields: Array<{ field: string }> };
+        assert.ok(shown.bound && shown.fields.some((f) => f.field === 'payload.fact'), 'the second person reads the adapter the digest binds');
+      }
       const review = await w.a.elevate(w.w.people.officer, wrong === 'reviewer expiry' ? 1 : 900);
       await w.a.as(w.w.people.officer, (trx) => approvals.decide(trx, review, requested.id, 'approve', digest));
       if (wrong === 'reviewer expiry') await delay(1050);

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { computeDigest } from '@trustwork/contracts';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { sql } from 'kysely';
 import { withMaintenance, type DataPool } from '@trustwork/data';
@@ -140,8 +141,9 @@ export async function release(world: AgentWorld, killSwitchId: string): Promise<
   const note = 'Synthetic incident resolved';
   const { a, w, hubId } = world;
   const ctx = await a.elevate(w.people.officer);
-  const digest = adminDigests.killSwitchRelease(killSwitchId, note);
-  const request = await a.as(w.people.officer, (trx) => approvals.request(trx, ctx, { action: 'kill_switch.release', scope: { kind: 'hub', hubId }, actionDigest: digest }));
+  const digestInput = adminDigests.killSwitchReleaseInput(killSwitchId, note);
+  const digest = computeDigest(digestInput).value;
+  const request = await a.as(w.people.officer, (trx) => approvals.request(trx, ctx, { action: 'kill_switch.release', scope: { kind: 'hub', hubId }, actionDigest: digest, subject: digestInput }));
   await a.cmd(w.people.owner, (trx, c) => approvals.decide(trx, c, request.id, 'approve', digest));
   await a.as(w.people.officer, (trx) => agentKillSwitches.release(trx, ctx, killSwitchId, request.id, note));
 }

@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { computeDigest } from '@trustwork/contracts';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { withPrincipal } from '@trustwork/data';
@@ -154,10 +155,11 @@ test('platform administration API', { skip: h ? false : SKIP_REASON }, async (t)
   });
 
   await t.test('an expired approval no longer authorizes the action', async () => {
-    const digest = adminDigests.assignment({ breakglass: false, personId: p.outsider, role: 'privacy-officer', scope: hub, definitionVersion: 1 });
+    const digestInput = adminDigests.assignmentInput({ breakglass: false, personId: p.outsider, role: 'privacy-officer', scope: hub, definitionVersion: 1 });
+    const digest = computeDigest(digestInput).value;
     const ownerCtx = await w.actors.elevate(p.owner);
     const adminCtx = await w.actors.elevate(p.admin);
-    const req = await w.actors.as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hub, actionDigest: digest }));
+    const req = await w.actors.as(p.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: hub, actionDigest: digest, subject: digestInput }));
     const decided = await w.actors.as(p.admin, (trx) => approvals.decide(trx, adminCtx, req.id, 'approve', digest, 1));
     await untilDatabaseTimePasses(h.db.admin, decided.expires_at as Date);
     expectRefusal(await command(c.owner, '/v1/admin/staff/assignments', { personId: p.outsider, role: 'privacy-officer', scope: hub, definitionVersion: 1, approvalId: req.id }), 403, 'access.approval_required', 'approval_expired');
@@ -255,9 +257,32 @@ test('platform administration API', { skip: h ? false : SKIP_REASON }, async (t)
     assert.ok((await auditRows(h, "action = 'moderation.apply_sanction_l4' AND outcome = 'denied' AND actor_person_id = $1", [p.hubOwner])).length >= 1, 'the refused attempt is audited');
     const requested = body(await command(c.hubOwner, '/v1/admin/approvals', { subject: { action: 'moderation.apply_sanction_l4', moderationCaseId: caseId, featureScope: 'account', durationSeconds: null } })).approval as Body;
     expectRefusal(await command(c.hubOwner, `/v1/admin/approvals/${requested.id}/approve`, { actionDigest: requested.actionDigest }), 403, 'access.second_approver_required', 'self_approval');
+    // The reason has the readers of the change: open or decided, a reader of staff or of the audit gets neither.
+    const seenBy = async (client: Client, approvalId: string) => body(await client.get(`/v1/admin/approvals/${approvalId}`)).approval as Body;
+    const listed = async (client: Client, approvalId: string) => { const all = body(await client.get('/v1/admin/approvals')); return [...(all.forMe as Body[]), ...(all.mine as Body[]), ...(all.decided as Body[])].filter((r) => r.id === approvalId); };
+    const hiddenFrom = async (approvalId: string, moderatorReads = true) => {
+      for (const client of [c.auditor, c.admin]) {
+        for (const row of [await seenBy(client, approvalId), ...(await listed(client, approvalId))]) {
+          assert.deepEqual([row.reason, row.declineReason], [null, null], 'free text of a change the reader does not read');
+          assert.ok(row.action && row.actionDigest && row.scope, 'action, scope and digest stay');
+        }
+      }
+      if (moderatorReads) assert.ok(typeof (await seenBy(c.moderator, approvalId)).reason === 'string', 'a reader of moderation reads it');
+      // Nor through the audit: the same text is on the rows of the change.
+      const rows = (body(await c.auditor.get(`/v1/admin/audit?hubId=${w.world.hubId}&objectType=second_person_approval&objectId=${approvalId}`)).events as Body[]);
+      assert.ok(rows.length >= 1, 'the audit reader reads that it happened');
+      for (const row of rows) assert.deepEqual([row.reasonText, row.action !== undefined, row.actorPersonId !== undefined], [null, true, true]);
+    };
+    await hiddenFrom(requested.id as string);
+    const declinedOne = body(await command(c.hubOwner, '/v1/admin/approvals', { subject: { action: 'moderation.apply_sanction_l4', moderationCaseId: caseId, featureScope: 'marketplace', durationSeconds: null } })).approval as Body;
+    assert.equal((await command(c.moderator, `/v1/admin/approvals/${declinedOne.id}/decline`, {})).status, 200);
+    const stored = await h.db.admin.query<{ decline_reason: string | null }>('SELECT decline_reason FROM trustwork.second_person_approval WHERE id = $1', [declinedOne.id]);
+    assert.ok(stored.rows[0]?.decline_reason, 'there is a decline reason to withhold');
+    await hiddenFrom(declinedOne.id as string, false);
     const approved = await command(c.moderator, `/v1/admin/approvals/${requested.id}/approve`, { actionDigest: requested.actionDigest });
     assert.equal(approved.status, 200, JSON.stringify(approved.body));
     assert.equal((body(approved).sod as Body).verified, false, 'the moderator cannot read the staff directory: only the database rules apply');
+    await hiddenFrom(requested.id as string);
     expectRefusal(await command(c.hubOwner, `/v1/admin/moderation/cases/${caseId}/sanctions`, { level: 4, featureScope: 'marketplace', durationSeconds: null, approvalId: requested.id }), 409, 'access.approval_digest_mismatch');
     expectRefusal(await command(c.moderator, `/v1/admin/moderation/cases/${caseId}/sanctions`, { level: 4, featureScope: 'account', durationSeconds: null, approvalId: requested.id }), 403, 'access.forbidden', 'sanction_level_not_allowed');
     const applied = await command(c.hubOwner, `/v1/admin/moderation/cases/${caseId}/sanctions`, { level: 4, featureScope: 'account', durationSeconds: null, approvalId: requested.id });
@@ -267,6 +292,11 @@ test('platform administration API', { skip: h ? false : SKIP_REASON }, async (t)
     assert.equal(sanction.secondApprovalId, requested.id);
     const audit = await auditRows(h, "action = 'moderation.apply_sanction_l4' AND outcome = 'applied' AND object_id = $1", [level4]);
     assert.equal(audit[0]?.second_approver_person_id, p.moderator);
+    const sanctionRows = (who: Client) => async () => (body(await who.get(`/v1/admin/audit?hubId=${w.world.hubId}&limit=500`)).events as Body[]).filter((r) => r.action === 'moderation.apply_sanction_l4');
+    const forAuditor = await sanctionRows(c.auditor)();
+    assert.ok(forAuditor.length >= 2 && forAuditor.every((r) => r.reasonText === null), 'the applied sanction and the refused attempt, under the same rule');
+    const elsewhere = (body(await c.auditor.get(`/v1/admin/audit?hubId=${w.world.hubId}&limit=500`)).events as Body[]).filter((r) => r.action !== 'moderation.apply_sanction_l4' && r.objectType !== 'second_person_approval' && r.approvalId === null);
+    assert.ok(elsewhere.some((r) => typeof r.reasonText === 'string'), 'an ordinary row keeps its reason');
   });
 
   await t.test('appeals: the subject appeals, a different person decides, overturning lifts the sanction', async () => {

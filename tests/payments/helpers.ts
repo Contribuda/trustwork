@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { computeDigest } from '@trustwork/contracts';
 import { randomBytes } from 'node:crypto';
 import { createPool, withMaintenance } from '@trustwork/data';
 import type { OwnerRfqView } from '../../packages/contracts/src/commerce.js';
@@ -71,9 +72,10 @@ export async function paymentHub(h: Harness, slug = 'synthetic-payments') {
   const a = { ...base,
     assign: async (input: Parameters<typeof base.assign>[0]) => base.cmd(w.people.founder, (trx, ctx) => staffAssignments.assign(trx, ctx, { ...input, definitionVersion: 20 })),
     assignSensitive: async (input: Parameters<typeof base.assignSensitive>[0]) => {
-      const digest = adminDigests.assignment({ breakglass: false, ...input, definitionVersion: 20 });
+      const digestInput = adminDigests.assignmentInput({ breakglass: false, ...input, definitionVersion: 20 });
+      const digest = computeDigest(digestInput).value;
       const ownerCtx = await base.elevate(w.people.founder);
-      const request = await base.as(w.people.founder, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest }));
+      const request = await base.as(w.people.founder, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest, subject: digestInput }));
       await base.cmd(w.people.founder2, (trx, ctx) => approvals.decide(trx, ctx, request.id, 'approve', digest));
       return base.as(w.people.founder, (trx) => staffAssignments.assign(trx, ownerCtx, { ...input, definitionVersion: 20, approvalId: request.id }));
     },

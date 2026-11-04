@@ -95,15 +95,29 @@ export type StaffFixture = z.infer<typeof StaffFixtureSchema>;
 /** A changed value: a locale key under `admin.values` (enum-like), staff-entered text with its language, or nothing. */
 export const ChangeValueSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('key'), key: z.string().regex(/^[a-z][a-zA-Z0-9_-]*(\.[a-z][a-zA-Z0-9_-]*)*$/) }),
-  z.strictObject({ kind: z.literal('text'), value: ShortTextSchema, lang: LocaleTagSchema }),
+  z.strictObject({ kind: z.literal('text'), value: z.string().min(1).max(4000), lang: LocaleTagSchema }),
   z.strictObject({ kind: z.literal('none') }),
+  z.strictObject({ kind: z.literal('person'), personId: z.string().min(1), displayName: z.string().min(1).nullable(), maskedEmail: z.string().min(1).nullable().default(null) }),
+  z.strictObject({ kind: z.literal('duration'), seconds: z.int().min(0) }),
 ]);
 export type ChangeValue = z.infer<typeof ChangeValueSchema>;
 
 /**
+ * A person on an approval card. A display name is chosen at sign-up and is not unique, so it never stands alone: the
+ * identifier is always shown, and the masked verified address where the server sends it. `noName` is for a missing name.
+ */
+export const changePersonLabel = (value: Extract<ChangeValue, { kind: 'person' }>, noName: string): string =>
+  [value.displayName ?? noName, value.maskedEmail, value.personId].filter((part) => part !== null).join(' · ');
+
+/** The requester or the decider of an approval, read from the staff directory: the same label as the person it binds. */
+export const staffPersonLabel = (id: string, person: { displayName: string } | undefined, noName: string): string =>
+  changePersonLabel({ kind: 'person', personId: id, displayName: person?.displayName ?? null, maskedEmail: null }, noName);
+
+/**
  * A pending second-person request (the frozen contract has the request command and the decided approval, not the
- * request read model). `currentDigest` is the digest of the action as it stands now: when it differs from
- * `actionDigest` the request is void ("The action changed; a new request is required").
+ * request read model). `currentDigest` is the digest of the action as it stands now, null when there is none: when it
+ * differs from `actionDigest` the request is void ("The action changed; a new request is required"). `changes` is what
+ * the digest binds, as the server computed it; `bound: false` means nothing proves it, and the request is not approvable.
  */
 export const ApprovalRequestSchema = z.strictObject({
   id: IdSchema,
@@ -111,13 +125,18 @@ export const ApprovalRequestSchema = z.strictObject({
   action: ConsoleSecondPersonActionSchema,
   scope: StaffScopeSchema,
   actionDigest: DigestSchema,
-  currentDigest: DigestSchema,
+  currentDigest: DigestSchema.nullable(),
   requestedBy: IdSchema,
-  reason: z.strictObject({ value: ShortTextSchema, lang: LocaleTagSchema }),
+  /** Null for a viewer who does not read this domain: the server does not send it. */
+  reason: z.strictObject({ value: ShortTextSchema, lang: LocaleTagSchema }).nullable(),
   requestedAt: TimestampSchema,
   expiresAt: TimestampSchema,
-  changes: z.array(z.strictObject({ field: z.string().regex(/^[a-z][a-zA-Z0-9_]*$/), before: ChangeValueSchema, after: ChangeValueSchema })).min(1),
+  changes: z.array(z.strictObject({ field: z.string().regex(/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_-]+)*$/), before: ChangeValueSchema, after: ChangeValueSchema })).min(1),
   state: z.enum(['pending', 'withdrawn']),
+  bound: z.boolean().default(true),
+  /** False: the viewer does not read this domain. Incomplete: part of the change is too long to show. Neither can be approved. */
+  visible: z.boolean().default(true),
+  complete: z.boolean().default(true),
   ...Synthetic,
 }).refine((r) => Date.parse(r.expiresAt) > Date.parse(r.requestedAt), { message: 'a request expires after it was made', path: ['expiresAt'] });
 export type ApprovalRequest = z.infer<typeof ApprovalRequestSchema>;

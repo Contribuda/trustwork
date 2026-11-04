@@ -55,6 +55,12 @@ export function shortDateTime(value: string): string {
   return formatDate(value, 'short');
 }
 
+/** A length of time in the largest whole unit of days, hours or minutes. */
+export function duration(seconds: number): string {
+  const [unit, size] = seconds % 86_400 === 0 ? ['day', 86_400] as const : seconds % 3600 === 0 ? ['hour', 3600] as const : ['minute', 60] as const;
+  return new Intl.NumberFormat(intlTag(), { style: 'unit', unit, unitDisplay: 'long' }).format(Math.ceil(seconds / size));
+}
+
 export function number(value: number): string {
   return formatNumber(value);
 }
