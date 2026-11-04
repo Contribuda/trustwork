@@ -73,7 +73,16 @@ export interface CompanyHandoverTable {
 }
 export type CompanyHandoverRow = Selectable<CompanyHandoverTable>;
 
+/** A verification check bound to one claim: a decision counts only these. Append-only. */
+export interface CompanyClaimEvidenceTable {
+  claim_id: string;
+  check_id: string;
+  bound_by: string;
+  bound_at: Generated<Date>;
+}
+
 export interface ClaimsDatabase {
+  company_claim_evidence: CompanyClaimEvidenceTable;
   claims_settings: ClaimsSettingsTable;
   claim_dispute: ClaimDisputeTable;
   company_claim: CompanyClaimTable;
@@ -87,6 +96,7 @@ declare module './index.js' {
 
 const columns = columnsOf<ClaimsDatabase>();
 export const TABLE_COLUMNS: TableColumns<ClaimsDatabase> = {
+  company_claim_evidence: columns('company_claim_evidence', ['claim_id', 'check_id', 'bound_by', 'bound_at']),
   claims_settings: columns('claims_settings', ['hub_id', 'waiting_days', 'cooling_days', 'updated_by', 'revision', 'updated_at']),
   claim_dispute: columns('claim_dispute', [
     'id', 'hub_id', 'company_id', 'state', 'proposed_claim_id', 'proposed_none', 'proposed_by', 'proposed_note', 'confirmed_by', 'decided_at', 'revision', 'created_at',

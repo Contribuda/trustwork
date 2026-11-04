@@ -509,6 +509,7 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'claims.submit': IN_TRANSACTION,
   'claims.withdraw': IN_TRANSACTION,
   'claims.decide': IN_TRANSACTION,
+  'claims.evidence_bind': IN_TRANSACTION,
   'claims.dispute_propose': IN_TRANSACTION,
   'claims.dispute_confirm': IN_TRANSACTION,
   'claims.handover_revoke': IN_TRANSACTION,

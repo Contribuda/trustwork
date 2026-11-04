@@ -13,7 +13,7 @@ export function ok<T>(r: Response): T {
   return r.body as T;
 }
 
-export type Claim = { id: string; state: string; revision: number; domainTie: string | null; disputeId?: string | null; waitingUntil: string | null; claimantId?: string };
+export type Claim = { id: string; state: string; revision: number; domainTie: string | null; disputeId?: string | null; waitingUntil: string | null; claimantId?: string; companyId?: string; recipeId?: string };
 
 /**
  * The HTTP world of the claim suites, on the ADM-001 world: the API serves the world's hub, every staff session is
@@ -72,12 +72,28 @@ export async function claimsWorld(h: Harness) {
 
   const submit = (client: Client, companyId: string, level: 'claimed' | 'verified', tie: { kind: string; email: string } | null = null): Promise<Response> =>
     client.post('/v1/claims', { hubId, companyId, level, recipeId: recipes[level], tie });
-  const decide = (client: Client, claim: Pick<Claim, 'id' | 'revision'>, decision: 'approved' | 'rejected' = 'approved', officerMatch = false): Promise<Response> =>
+  const decideOnly = (client: Client, claim: Pick<Claim, 'id' | 'revision'>, decision: 'approved' | 'rejected' = 'approved', officerMatch = false): Promise<Response> =>
     command(client, `${console_}/claims/requests/${claim.id}/decide`, { expectedRevision: claim.revision, decision, officerMatch, note: null });
+  /** The checks of the claim's recipe, recorded now, after the claim was submitted. */
+  const freshChecks = async (companyId: string, recipeId: string): Promise<string[]> => {
+    const subject = { kind: 'company', id: companyId };
+    const register = ok<{ check: { id: string } }>(await command(reviewer, `${console_}/verification/checks`, { subject, recipeId, providerId: provider, result: 'pass', evidenceRef: 'register:SYN-CLAIM-1' })).check.id;
+    const screening = ok<{ check: { id: string } }>(await command(reviewer, `${console_}/verification/checks/screening`, { subject, recipeId })).check.id;
+    return [register, screening];
+  };
+  const bind = (client: Client, claimId: string, checkIds: string[]): Promise<Response> => command(client, `${console_}/claims/requests/${claimId}/evidence`, { checkIds });
+  const prove = async (claim: Required<Pick<Claim, 'id' | 'companyId' | 'recipeId'>>): Promise<void> => {
+    ok(await bind(reviewer, claim.id, await freshChecks(claim.companyId, claim.recipeId)));
+  };
+  /** A reviewer's approval as it happens in the console: fresh evidence bound to the claim, then the decision. */
+  const decide = async (client: Client, claim: Pick<Claim, 'id' | 'revision' | 'companyId' | 'recipeId'>, decision: 'approved' | 'rejected' = 'approved', officerMatch = false): Promise<Response> => {
+    if (decision === 'approved' && claim.companyId && claim.recipeId) await prove({ id: claim.id, companyId: claim.companyId, recipeId: claim.recipeId });
+    return decideOnly(client, claim, decision, officerMatch);
+  };
   const statusOf = async (companyId: string) => (await withMaintenance(h.db.admin, (trx) => trx.selectFrom('company').select('claim_status').where('id', '=', companyId).executeTakeFirstOrThrow())).claim_status;
   const roleOf = async (personId: string, companyId: string) => (await withMaintenance(h.db.admin, (trx) => trx.selectFrom('membership').select('role').where('person_id', '=', personId).where('company_id', '=', companyId)
     .where('status', '=', 'active').executeTakeFirst()))?.role ?? null;
   const notices = async (client: Client) => ok<{ items: Array<{ templateKey: string; params: Record<string, string> }> }>(await client.get('/v1/notifications')).items.filter((n) => n.templateKey.startsWith('claims.'));
 
-  return { w, hubId, otherHubId, console: console_, reviewer, second, recipes, provider, page, claimant, submit, decide, statusOf, roleOf, notices };
+  return { w, hubId, otherHubId, console: console_, reviewer, second, recipes, provider, page, claimant, submit, decide, decideOnly, freshChecks, bind, prove, statusOf, roleOf, notices };
 }

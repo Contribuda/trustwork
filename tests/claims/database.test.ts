@@ -72,6 +72,13 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     }
     return id;
   };
+  /** A reviewer's evidence for a claim: fresh results of its recipe, bound to it. */
+  const prove = async (claim: { id: string; company_id: string; recipe_id: string }) => {
+    const subject = { kind: 'company', id: claim.company_id } as const;
+    const register = await cmd(second, (trx, ctx) => verification.recordCheck(trx, ctx, w.hubId, subject, claim.recipe_id, provider.id, 'pass', null));
+    const screening = await cmd(second, (trx, ctx) => verification.recordScreening(trx, ctx, w.hubId, subject, claim.recipe_id));
+    await cmd(second, (trx, ctx) => claims.bindEvidence(trx, ctx, claim.id, [register.id, screening.id]));
+  };
   const status = async (id: string) => (await owner((trx) => trx.selectFrom('company').select('claim_status').where('id', '=', id).executeTakeFirstOrThrow())).claim_status;
   const roleOf = async (personId: string, companyId: string) =>
     (await owner((trx) => trx.selectFrom('membership').select(['role', 'status']).where('person_id', '=', personId).where('company_id', '=', companyId).where('status', '=', 'active').executeTakeFirst()))?.role ?? null;
@@ -94,6 +101,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     await rejects(as(own, (trx) => claims.submit(trx, w.hubId, companyId, 'claimed', claimedRecipe.id, null)), '23505', 'claims.already_claiming');
     // The claimed level: a reviewer approves; limited control, no company role.
     await rejects(cmd(reviewer, (trx, ctx) => claims.decide(trx, ctx, ownClaim.id, ownClaim.revision + 1, 'approved', false, null)), '40001', 'claims.revision_conflict');
+    await prove(ownClaim);
     const approved = await cmd(reviewer, (trx, ctx) => claims.decide(trx, ctx, ownClaim.id, ownClaim.revision, 'approved', false, null));
     assert.equal(approved.state, 'approved');
     assert.deepEqual([await status(companyId), await roleOf(own, companyId)], ['claimed', null]);
@@ -104,6 +112,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     const noTie = await claimant(admin, worker, 'Synthetic No Tie Claimant', 'notie@notie.synthetic.invalid');
     const claim = await as(noTie, (trx) => claims.submit(trx, w.hubId, companyId, 'claimed', claimedRecipe.id, null));
     await rejects(cmd(reviewer, (trx, ctx) => claims.decide(trx, ctx, claim.id, claim.revision, 'approved', false, null)), '23514', 'claims.company_tie_required');
+    await prove(claim);
     const viaOfficer = await cmd(reviewer, (trx, ctx) => claims.decide(trx, ctx, claim.id, claim.revision, 'approved', true, 'Officer name matches the register'));
     assert.equal(viaOfficer.domain_tie, 'register_officer_match');
     const companyB = await page('Synthetic Self Builders');
@@ -113,6 +122,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     await as(reviewer, (trx) => claims.withdraw(trx, own.id));
     const unscreened = await claimant(admin, worker, 'Synthetic Unscreened Claimant', 'unscreened@self.synthetic.invalid', false);
     const pending = await as(unscreened, (trx) => claims.submit(trx, w.hubId, companyB, 'claimed', claimedRecipe.id, null));
+    await prove(pending);
     await rejects(cmd(second, (trx, ctx) => claims.decide(trx, ctx, pending.id, pending.revision, 'approved', true, null)), '23514', 'claims.claimant_not_clear');
     await rejects(cmd(p.outsider, (trx, ctx) => claims.decide(trx, ctx, pending.id, pending.revision, 'approved', true, null)), '42501', 'admin.forbidden');
     const noLogin = (await person(admin, 'Synthetic No Login Claimant')).id;
@@ -145,6 +155,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     assert.equal(await status(companyId), 'unclaimed', 'the dispute itself hands nothing over');
     // The winner is then decided as any claim: the verified level gives the administrator role.
     const open = after.find((c) => c.state === 'open')!;
+    await prove(open);
     await cmd(reviewer, (trx, ctx) => claims.decide(trx, ctx, open.id, open.revision, 'approved', false, null));
     assert.deepEqual([await status(companyId), await roleOf(first, companyId)], ['verified', 'administrator']);
   });
@@ -153,6 +164,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     const companyId = await page('Synthetic Managed Builders', 'managed.synthetic.invalid');
     const holder = await claimant(admin, worker, 'Synthetic Holder', 'holder@managed.synthetic.invalid');
     const held = await as(holder, (trx) => claims.submit(trx, w.hubId, companyId, 'claimed', claimedRecipe.id, { kind: 'invitation_link', email: 'holder@managed.synthetic.invalid' }));
+    await prove(held);
     await cmd(reviewer, (trx, ctx) => claims.decide(trx, ctx, held.id, held.revision, 'approved', false, null));
     const challenger = await claimant(admin, worker, 'Synthetic Challenger', 'challenger@managed.synthetic.invalid');
     await rejects(as(challenger, (trx) => claims.submit(trx, w.hubId, companyId, 'claimed', claimedRecipe.id, null)), '23514', 'claims.verified_level_required');
@@ -163,6 +175,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     await rejects(cmd(reviewer, (trx, ctx) => claims.decide(trx, ctx, waiting.id, waiting.revision, 'approved', false, null)), '23514', 'claims.waiting_period');
     // Clock: the period passes.
     await owner((trx) => sql`UPDATE trustwork.company_claim SET waiting_until = now() - interval '1 minute' WHERE id = ${waiting.id}::uuid`.execute(trx));
+    await prove(waiting);
     const later = await cmd(reviewer, (trx, ctx) => claims.decide(trx, ctx, waiting.id, waiting.revision, 'approved', false, null));
     assert.equal(later.state, 'approved');
     assert.equal(await status(companyId), 'verified');
@@ -172,6 +185,7 @@ test('CLM-001 claims on PostgreSQL', { skip: env ? false : SKIP_REASON }, async 
     const companyId = await page('Synthetic Cooling Builders', 'cooling.synthetic.invalid');
     const admin_ = await claimant(admin, worker, 'Synthetic New Administrator', 'admin@cooling.synthetic.invalid');
     const claim = await as(admin_, (trx) => claims.submit(trx, w.hubId, companyId, 'verified', verifiedRecipe.id, null));
+    await prove(claim);
     await cmd(reviewer, (trx, ctx) => claims.decide(trx, ctx, claim.id, claim.revision, 'approved', false, null));
     const [handover] = await as(admin_, (trx) => claims.handovers(trx, companyId));
     assert.ok(handover && handover.membership_id);

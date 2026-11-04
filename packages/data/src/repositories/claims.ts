@@ -53,6 +53,13 @@ export const claims = {
       'claims_set_settings');
   },
 
+  /** A reviewer binds checks to a claim; a decision counts only these. */
+  async bindEvidence(trx: Transaction, ctx: CommandContext, claimId: string, checkIds: readonly string[]): Promise<number> {
+    return (await one(sql<{ bound: number }>`SELECT trustwork.claims_bind_evidence(${ctxJson(ctx)}::jsonb, ${claimId}::uuid, ${[...checkIds]}::uuid[]) AS bound`, trx, 'claims_bind_evidence')).bound;
+  },
+  async evidence(trx: Transaction, claimId: string): Promise<string[]> {
+    return (await trx.selectFrom('company_claim_evidence').select('check_id').where('claim_id', '=', claimId).orderBy('bound_at').orderBy('check_id').execute()).map((r) => r.check_id);
+  },
   /** The recipes a hub offers a claimant, per level. */
   async activeRecipes(trx: Transaction, hubId: string): Promise<ClaimRecipe[]> {
     return (await sql<ClaimRecipe>`SELECT * FROM trustwork.claims_active_recipes(${hubId}::uuid)`.execute(trx)).rows;

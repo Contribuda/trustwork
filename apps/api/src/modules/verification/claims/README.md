@@ -9,8 +9,9 @@ Status: claims, disputes, hand-overs, the cooling period, their routes and notic
 | A claim comes from a verified login and names an active company recipe for its level (`claim_claimed` or `claim_verified`) | `claims_submit`, `claims_recipe` |
 | One open claim per page; a second claim opens a dispute and a third waits until it ends | `company_claim_open_uq`, `claims_submit` |
 | A dispute is decided by two people: one reviewer proposes the outcome, a different reviewer (not a claimant) confirms; nothing is handed over by the dispute itself | `claims_propose_dispute`, `claims_confirm_dispute` |
-| A claim against a page someone else holds aims at the verified level and waits a hub-set period (default seven days); a holder moving from claimed to verified does not wait for themselves | `claims_submit`, `claims_settings` |
+| A claim against a page someone else runs (an active administrator or a hand-over, `claims_page_people`) aims at the verified level and waits a hub-set period (default seven days); a holder or founder claiming their own page does not wait for themselves | `claims_submit`, `claims_settings` |
 | The decider is never the claimant; approval needs the recipe standing passed with nothing blocking it (company screening, an unavailable screening store) and the claimant screened clear | `claims_decide` |
+| A decision counts only checks bound to this claim: a reviewer binds a check of its hub, company and recipe, recorded after the claim was submitted, and a check serves one claim only. An earlier holder's results prove nothing for a challenger | `company_claim_evidence`, `claims_bind_evidence`, `claims_evidence_passes` |
 | A claim asks SANC-003 to screen the claimant and the company | `identity.company_claim_submitted` and `company.claim_submitted` (`SCREENING_TRIGGER_EVENTS`, trigger `claim`) |
 | The claimed level needs a company tie: a mailbox on the company's own domain, or the reviewer's recorded register officer match; it gives limited page control and no company role | `claims_decide` |
 | A mailbox tie counts only when the address is the claimant's own verified login, on a domain recorded for the company (verified domains, the website of its sourced records) and not a free mail service; a typed address proves nothing | `claims_submit`, `claims_company_domains`, `claims_free_mail_domains` |
@@ -27,7 +28,7 @@ The claimant's own path, `/v1/claims` (a signed-in session; a mutation carries t
 | Method and path | Use |
 |---|---|
 | `GET /recipes?hubId=` | The recipes a hub offers per level: steps and badge categories |
-| `GET /` | The caller's claims and hand-overs. A claimant never sees who reviewed, the reviewer's note, a dispute's id or anything about another claimant |
+| `GET /` | The caller's claims and hand-overs, without who reviewed, the reviewer's note, a dispute's id or anything about another claimant. The same projection applies through the console when the claimant also holds a staff role, and a dispute they are a party to is hidden from them there |
 | `POST /` | `{ hubId, companyId, level, recipeId, tie }`; `tie` is null or `{ kind: 'own_domain_mailbox' \| 'invitation_link', email }`. An address that proves nothing is recorded as no tie |
 | `POST /:claimId/withdraw` | Withdraw; a dispute left with one claim dissolves and that claim is back in review. Another person's claim is not found |
 
@@ -38,13 +39,14 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | `GET /?state=` | any claims permission | Claims, disputes and the hub's periods |
 | `GET /requests/:claimId` | any claims permission | One claim |
 | `GET /handovers?companyId=` | any claims permission | Hand-overs of the hub or one company |
+| `POST /requests/:claimId/evidence` | `admin.claims.decide` | `{ checkIds }`: binds checks to the claim |
 | `POST /requests/:claimId/decide` | `admin.claims.decide` | `{ expectedRevision, decision, officerMatch, note }` |
 | `POST /disputes/:disputeId/propose` | `admin.claims.decide` | `{ expectedRevision, winnerClaimId \| null, note }` |
 | `POST /disputes/:disputeId/confirm` | `admin.claims.decide` | A second person confirms; `403 access.second_approver_required` for the proposer |
 | `POST /handovers/:handoverId/revoke` | `admin.claims.revoke` | `{ revocationReason }` |
 | `POST /settings` | `admin.claims.policy.edit` | `{ waitingDays, coolingDays }`, each 1 to 30 |
 
-Evidence stays in the verification checks of HUB-003 (`/v1/admin/hubs/:hubId/verification`); a reviewer reads the standing there before deciding. Refusals carry `details.reason` (`waiting_period`, `company_tie_required`, `standing_not_passed`, `claimant_not_clear`, `own_claim`, and so on).
+Evidence stays in the verification checks of HUB-003 (`/v1/admin/hubs/:hubId/verification`): a reviewer records them there after the claim arrives, then binds them to it. Refusals carry `details.reason` (`waiting_period`, `company_tie_required`, `evidence_required`, `evidence_mismatch`, `standing_not_passed`, `claimant_not_clear`, `own_claim`, and so on).
 
 ## Notices (COMMS-001)
 

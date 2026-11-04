@@ -6,7 +6,7 @@ import type { RequestState } from '../../../common/request.js';
 import type { CommunicationsService } from '../../communications/communications.service.js';
 import type { AppContext } from '../../identity/context.js';
 import type { PrincipalService } from '../../identity/principal.service.js';
-import type { ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RevokeHandoverCommandSchema, SubmitClaimCommandSchema } from './commands.js';
+import type { BindEvidenceCommandSchema, ClaimSettingsCommandSchema, ConfirmDisputeCommandSchema, DecideClaimCommandSchema, ProposeDisputeCommandSchema, RevokeHandoverCommandSchema, SubmitClaimCommandSchema } from './commands.js';
 import { adminAudit, claims, type ClaimState, type CommandContext, type StaffRole } from './deps.js';
 import { claimsRefusal, isAuthorityRefusal } from './errors.js';
 import { toClaim, toDispute, toHandover, toOwnClaim, toOwnHandover, toRecipe, toSettings } from './views.js';
@@ -110,22 +110,35 @@ export class ClaimsService {
 
   /* ---------- Staff reads ---------- */
 
+  /**
+   * A staff role does not lift what a claimant may see of their own case: their own claims and hand-overs keep the
+   * claimant's projection, and a dispute they are a party to, with the other claims in it, is not theirs to read here.
+   */
   overview(state: RequestState, hubId: string, claimState: ClaimState | null) {
-    return this.read(state, async (trx) => ({
-      claims: (await claims.list(trx, hubId, claimState)).map(toClaim),
-      disputes: (await claims.disputes(trx, hubId)).map(toDispute),
-      settings: toSettings(hubId, await claims.settings(trx, hubId)),
-    }));
+    return this.read(state, async (trx, p) => {
+      const parties = new Set((await claims.own(trx, p.personId)).map((c) => c.dispute_id).filter((id) => id !== null));
+      return {
+        claims: (await claims.list(trx, hubId, claimState)).filter((c) => c.claimant_id === p.personId || c.dispute_id === null || !parties.has(c.dispute_id))
+          .map((c) => (c.claimant_id === p.personId ? toOwnClaim(c) : toClaim(c))),
+        disputes: (await claims.disputes(trx, hubId)).filter((d) => !parties.has(d.id)).map(toDispute),
+        settings: toSettings(hubId, await claims.settings(trx, hubId)),
+      };
+    });
   }
 
   claim(state: RequestState, hubId: string, claimId: string) {
-    return this.read(state, async (trx) => ({ claim: toClaim(ClaimsService.ofHub(await claims.get(trx, claimId), hubId)) }));
+    return this.read(state, async (trx, p) => {
+      const row = ClaimsService.ofHub(await claims.get(trx, claimId), hubId);
+      if (row.claimant_id === p.personId) return { claim: toOwnClaim(row) };
+      if (row.dispute_id !== null && (await claims.own(trx, p.personId)).some((c) => c.dispute_id === row.dispute_id)) throw new ApiError('access.not_found', 'access.not_found');
+      return { claim: { ...toClaim(row), evidence: await claims.evidence(trx, claimId) } };
+    });
   }
 
   handovers(state: RequestState, hubId: string, companyId: string | null) {
-    return this.read(state, async (trx) => {
+    return this.read(state, async (trx, p) => {
       const rows = companyId ? (await claims.handovers(trx, companyId)).filter((h) => h.hub_id === hubId) : await claims.hubHandovers(trx, hubId);
-      return { items: rows.map(toHandover) };
+      return { items: rows.map((h) => (h.person_id === p.personId ? toOwnHandover(h) : toHandover(h))) };
     });
   }
 
@@ -135,6 +148,14 @@ export class ClaimsService {
     return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: `claims.${body.decision}`, objectType: 'company_claim', objectId: claimId }, async (trx, cmd) => {
       ClaimsService.ofHub(await claims.get(trx, claimId), hubId);
       return { claim: toClaim(await claims.decide(trx, cmd, claimId, body.expectedRevision, body.decision, body.officerMatch, body.note)) };
+    });
+  }
+
+  bindEvidence(e: Elevated, hubId: string, claimId: string, body: Body<typeof BindEvidenceCommandSchema>) {
+    return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'claims.evidence_bound', objectType: 'company_claim', objectId: claimId }, async (trx, cmd) => {
+      ClaimsService.ofHub(await claims.get(trx, claimId), hubId);
+      await claims.bindEvidence(trx, cmd, claimId, body.checkIds);
+      return { evidence: await claims.evidence(trx, claimId) };
     });
   }
 

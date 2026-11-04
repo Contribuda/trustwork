@@ -83,6 +83,16 @@ export default {
       { expectedRevision: dispute.revision, winnerClaimId: firstClaim.claim.id, note: 'Synthetic crash test proposal' }, audits('claims.dispute_proposed', dispute.id)));
     await run('claims.dispute_confirm', b, `${base}/claims/disputes/${dispute.id}/confirm`, { expectedRevision: proposed.dispute.revision }, audits('claims.dispute_decided', dispute.id));
 
+    // Evidence: a check recorded after the claim, bound to it by a reviewer.
+    const boundCompany = await withMaintenance(admin, async (trx) => (await trx.insertInto('company').values({ display_name: 'Synthetic Crash Evidence Builders', claim_status: 'unclaimed' } as never).returning('id').executeTakeFirstOrThrow()).id);
+    const boundClaim = body<{ claim: { id: string } }>(await c1.post('/v1/claims', submission(boundCompany), { idempotencyKey: 'crash-claims.submit_evidence' }));
+    const boundProvider = body<{ provider: { id: string } }>(await a.post(`${base}/verification/providers`, cmd('claims.provider_bound', { checkType: 'register_match', adapter: 'synthetic_crash_claims_bound', mode: 'fake',
+      retentionDays: 365, legalBasis: 'statutory_public_register', costMinor: null }), { idempotencyKey: 'crash-claims.provider_bound' }));
+    const boundCheck = body<{ check: { id: string } }>(await a.post(`${base}/verification/checks`, cmd('claims.check_bound', { subject: { kind: 'company', id: boundCompany }, recipeId, providerId: boundProvider.provider.id, result: 'pass',
+      evidenceRef: 'register:SYN-CRASH-BOUND' }), { idempotencyKey: 'crash-claims.check_bound' }));
+    await run('claims.evidence_bind', a, `${base}/claims/requests/${boundClaim.claim.id}/evidence`, { checkIds: [boundCheck.check.id] },
+      () => count(admin, 'SELECT 1 FROM trustwork.company_claim_evidence WHERE claim_id = $1', [boundClaim.claim.id]));
+
     // A hand-over as a decision would leave it (the approval path needs screening; tests/claims covers that path).
     const handoverId = await withMaintenance(admin, async (trx) => {
       const claim = await trx.insertInto('company_claim').values({ hub_id: hubId, company_id: held, claimant_id: people.c1, level: 'claimed', recipe_id: recipeId, state: 'approved', domain_tie: 'register_officer_match',
