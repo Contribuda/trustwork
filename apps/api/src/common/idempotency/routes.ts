@@ -27,6 +27,23 @@ export const IDEMPOTENT_ROUTES: Readonly<Record<string, CompletionMode>> = {
   'person.set_handle': IN_TRANSACTION,
   'company.set_handle': IN_TRANSACTION,
   'project.set_handle': IN_TRANSACTION,
+  // FED-001: node identity, key rotation and peering decisions commit with their audit row in the request transaction.
+  'federation.node_initialize': IN_TRANSACTION,
+  'federation.node_update': IN_TRANSACTION,
+  'federation.key_rotate': IN_TRANSACTION,
+  // The outgoing record and the acceptance commit with their audit row; the handshake to the peer is sent after COMMIT and
+  // resent by the refresh command and the daily refresh for every record still awaiting the peer, so a crash between the
+  // commit and the send loses nothing. The response is the committed record (awaiting the peer).
+  'federation.peering_request': IN_TRANSACTION,
+  'federation.peering_accept': IN_TRANSACTION,
+  'federation.peering_decline': IN_TRANSACTION,
+  'federation.peering_lower': IN_TRANSACTION,
+  'federation.peering_suspend': IN_TRANSACTION,
+  'federation.peering_lift': IN_TRANSACTION,
+  'federation.defederate': IN_TRANSACTION,
+  // The manifest fetch and re-admission happen before the request transaction (idempotent on repeat); the audit row and
+  // the response commit in it.
+  'federation.peer_refresh': IN_TRANSACTION,
   // HUB-005: immutable consent and revocation commit with the request receipt.
   'jurisdiction.applicability_activate': IN_TRANSACTION,
   'jurisdiction.applicability_propose': IN_TRANSACTION,
