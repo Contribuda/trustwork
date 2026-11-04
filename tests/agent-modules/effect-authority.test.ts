@@ -29,15 +29,16 @@ test('code-owned effect callback, current revokers and exact original-operation 
   const seed = await seedPersonas(h);
   const pool = worker.pool(8);
   const declaration = syntheticEffectDeclaration('deal_desk.place_order', 'fake_orders', 'order.place');
-  const prepare = async (capabilityId = 'deal_desk.place_order', actor: 'petr' | 'boris' = 'petr', existingProject?: { id: string }, ask = false) => {
+  const prepare = async (capabilityId = 'deal_desk.place_order', actor: 'petr' | 'boris' = 'petr', existingProject?: { id: string }, ask = false, again?: { client: ReturnType<typeof h.client>; project: { id: string }; budget: string; mandate: MandateView }) => {
     const personId = seed.people[actor];
     const actionVerb = capabilityId === PLANNER_COMMIT ? 'publish' : 'place_order';
-    const client = h.client();
-    await login(client, actor);
-    const project = existingProject ?? ok<{ id: string }>(await client.post('/v1/projects', { owner: { kind: 'person', id: personId }, name: 'Synthetic effect authority', summary: null, leaderPersonId: null }), 201);
+    // A new mandate moves the person's epoch and would revoke what is queued, so a second run reuses the first's.
+    const client = again?.client ?? h.client();
+    if (!again) await login(client, actor);
+    const project = again?.project ?? existingProject ?? ok<{ id: string }>(await client.post('/v1/projects', { owner: { kind: 'person', id: personId }, name: 'Synthetic effect authority', summary: null, leaderPersonId: null }), 201);
     const state = await stateOf(h, client, randomUUID());
-    const budget = await personalBudget(h, personId, 'transaction', '1000');
-    const mandate = ok<MandateView>(await client.post('/v1/assistant/mandates', { draft: draft({ moduleKeys: [capabilityId.split('.')[0]!], actions: [actionVerb],
+    const budget = again?.budget ?? await personalBudget(h, personId, 'transaction', '1000');
+    const mandate = again?.mandate ?? ok<MandateView>(await client.post('/v1/assistant/mandates', { draft: draft({ moduleKeys: [capabilityId.split('.')[0]!], actions: [actionVerb],
       contexts: [{ kind: 'project', id: project.id }], approvalPolicy: { mode: ask ? 'ask_each' : 'pre_authorized' }, limits: { ceiling: usd('1000'), perActionCeiling: null, transactionBudgetId: budget, platformBudgetId: null, perWindow: null } }) }), 201);
     const { service, model } = assistantService(h);
     model.push({ text: 'Synthetic local action', messageKey: null, usage: { inputTokens: 1, outputTokens: 1 }, toolCalls: [{ kind: 'propose_action', mandateId: mandate.id,
@@ -64,6 +65,51 @@ test('code-owned effect callback, current revokers and exact original-operation 
   const runtime = (provider: FakeEffectProvider, implementation = defineEffectImplementation(declaration, provider, input => structuredClone(input))): AssistantRuntime =>
     ({ pool, providers: [provider], implementations: [implementation], hubId: null, log: silentLogger });
 
+  for (const waiter of ['alone', 'with a budget close waiting behind them'] as const) {
+    await t.test(`two money intents of different runs on one budget settle together, ${waiter}`, async () => {
+      const first = await prepare();
+      const second = await prepare('deal_desk.place_order', 'petr', undefined, false, first);
+      assert.notEqual(first.runId, second.runId);
+      const provider = new FakeEffectProvider('fake_orders');
+      const inCallback = deferred(), finish = deferred();
+      let inside = 0;
+      const submit = provider.submit.bind(provider);
+      provider.submit = async (request, signal) => { if (++inside === 2) inCallback.resolve(); await finish.promise; return submit(request, signal); };
+      // Each dispatch opens one transaction for its attempt and one for its callback. An attempt waits for a callback
+      // already holding the mandate, so the race needs both attempts committed before either callback starts.
+      const bothBegun = deferred();
+      let opened = 0;
+      const gate = new Proxy(pool, { get(target, key) {
+        if (key === 'connect') return async () => {
+          if (++opened > 2) { if (opened === 4) bothBegun.resolve(); await bothBegun.promise; }
+          return target.connect();
+        };
+        const value = Reflect.get(target, key);
+        return typeof value === 'function' ? value.bind(target) : value;
+      } });
+      const handler = dispatchHandler({ ...runtime(provider), pool: gate });
+      const dispatches = Promise.allSettled([handler.run(first.context), handler.run(second.context)]);
+      let closing: Promise<unknown> | undefined;
+      try {
+        await Promise.race([inCallback.promise, new Promise(r => setTimeout(r, 15_000))]);
+        assert.equal(inside, 2, 'both effects are in their callback at once, each holding the budget shared');
+        if (waiter !== 'alone') {
+          closing = as(h, seed.people.petr, trx => budgets.close(trx, first.budget));
+          let blocked = false;
+          for (let attempt = 0; attempt < 400 && !blocked; attempt++) {
+            blocked = (await h.db.admin.query<{ n: number }>("SELECT count(*)::int AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock'")).rows[0]!.n > 0;
+            if (!blocked) await new Promise(r => setTimeout(r, 5));
+          }
+          assert.ok(blocked, 'the close waits for both callbacks');
+        }
+      } finally { bothBegun.resolve(); finish.resolve(); }
+      const results = await dispatches;
+      await closing;
+      assert.deepEqual(results.map(r => r.status === 'rejected' ? String(r.reason) : 'ok'), ['ok', 'ok']);
+      assert.equal(provider.submissions.length, 2);
+      for (const p of [first, second]) assert.deepEqual([(await p.read()).state, (await p.read()).hold], ['succeeded', 'settled']);
+    });
+  }
   await t.test('equal provider and operation names cannot replace a different code declaration', async () => {
     const p = await prepare();
     const provider = new FakeEffectProvider('fake_orders');
