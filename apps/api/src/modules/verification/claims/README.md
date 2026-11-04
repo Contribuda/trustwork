@@ -25,8 +25,12 @@ Status: claims, disputes, hand-overs, the cooling period, per-hub badges with ex
 | A public badge shows the level, categories and dates. A category naming sanctions or screening is left out (ADR 014 decision 16) | `claims_public_badges` |
 | For a hub-set cooling period (default seven days) the legal name, identifiers, verified domains, the website and the representative cannot change, for any caller. A reviewer's label on an identifier is not a change of its value | `claims_company_cooling_guard`, `claims_identifier_cooling_guard`, `claims_profile_cooling_guard`, `claims_representative_cooling_guard` |
 | A value proves nothing: no record command writes a verification, a hand-over or the claim status; `verified` on an identifier needs a passing, current check of that company at the hub, and holds for one company only | `claims_verify_identifier`, `company_identifier_verified_uq` |
+| A self-stated value is not evidence: only a public identifier that is sourced or verified reaches `legal_identifiers`, so `registers_company_holds`, `/sourced-facts` and `datasets_statutory_match` do not see it | `claims_identifier_mirrored` |
+| An identifier is private unless the country pack shows it belongs to a legal entity alone: a `tax`, `vat` or `licence` role, an `appliesTo` that reaches a sole proprietor or a natural person, `other`, an unknown kind, and `US-EIN` until the owner decides. A private value stays out of every public read, verified or not | `identifier-kinds.ts`, `company_identifier.private` |
 | A company administrator states records (status `claimed`); staff record what a source says (`sourced`, with its reference); neither sets a status in a payload. A claimed-level holder edits descriptive fields only | `claims_record_add`, `claims_staff_record_add`, `claims_set_profile` |
-| Tax registrations are private: the company's administrators read them; the public, other members and hub staff do not. Private branches stay with the company and hub staff | `claims_company_records`, `claims_staff_records`, `claims_public_records` |
+| Tax registrations are private: the company's administrators read them; the public, other members and hub staff do not | `claims_company_records`, `claims_staff_records`, `claims_public_records` |
+| Private records reach staff only for a claim in play or an open support case of the company at that hub; each read is audited, and staff sourcing a record needs the same reason | `claims_staff_reachable`, `claims_staff_records`, `claims_staff_record_add` |
+| A person who lost their administrator role keeps nothing through a hand-over, at either level; a claimed-level holder who never had the role keeps what that level gives | `claims_holds_page` |
 | Every state change raises its notice in the same transaction, whichever command made it | `claims_claim_notice`, `claims_handover_notice` |
 
 ## Routes
@@ -54,8 +58,8 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | `POST /handovers/:handoverId/revoke` | `admin.claims.revoke` | `{ revocationReason }` |
 | `GET /verifications?companyId=&dueDays=` | any claims permission | Verifications of the hub, one company, or those lapsing within `dueDays` |
 | `POST /verifications/:verificationId/recheck` | `admin.claims.decide` | `{ recipeId }`, an active recipe of the level |
-| `GET /companies/:companyId/records` | any claims permission | The company's records, without tax registrations |
-| `POST /companies/:companyId/records` | `admin.claims.decide` | `{ record, sourceRef }`: an identifier or a registration, labelled `sourced` |
+| `GET /companies/:companyId/records` | any claims permission, with an open claim or case there | The company's records, without tax registrations; audited (`claims.records_read`) |
+| `POST /companies/:companyId/records` | `admin.claims.decide`, with an open claim or case there | `{ record, sourceRef }`: an identifier or a registration, labelled `sourced` |
 | `POST /identifiers/:identifierId/verify` | `admin.claims.decide` | `{ expectedRevision, checkId }`: ties the identifier to a passing check; moves no badge |
 | `POST /settings` | `admin.claims.policy.edit` | `{ waitingDays, coolingDays }`, each 1 to 30 |
 
@@ -64,8 +68,8 @@ The company's page, `/v1/companies/:companyId`:
 | Method and path | Who | Use |
 |---|---|---|
 | `GET /badges` | anyone | Badges at the hub this API serves: level, categories and dates |
-| `GET /public-records` | anyone | Identifiers, registrations, public branches and the profile fields the company chose to show |
-| `GET /records` | members and hand-over holders | Everything above; tax registrations for administrators |
+| `GET /public-records` | anyone | Public identifiers, registrations, public branches and the profile fields the company chose to show |
+| `GET /records` | active members and claimed-level holders | Everything above with private identifiers; tax registrations for administrators |
 | `POST /records` | an administrator | One of `identifier`, `registration`, `tax_registration`, `branch` (`kind` picks the shape). An identifier value is checked against the country pack; a country without a pack uses `other` |
 | `POST /records/:recordKind/:recordId/retire` | an administrator | The row stays on record |
 | `POST /page-profile` | an administrator, or a holder for the descriptive fields | Legal form, website, region, categories, public fields and description |

@@ -10,6 +10,14 @@ const h = await startHarness('claims_records');
 type Identifier = { id: string; kind: string; value: string; status: string; revision: number };
 type Records = { identifiers: Identifier[]; registrations: Array<Record<string, unknown>>; branches: Array<Record<string, unknown>>; profile: Record<string, unknown> | null; taxRegistrations?: Array<Record<string, unknown>> };
 
+test('what may be public follows the pack and fails closed', () => {
+  const kinds = new IdentifierKinds();
+  for (const kind of ['MX-RFCPF', 'US-EIN', 'US-CA-CSLB', 'US-AZ-ROC', 'US-UEI', 'GB-VAT', 'CA-GSTHST', 'other', 'US-XX-SOS']) assert.ok(kinds.isPrivate(kind), kind);
+  for (const kind of ['US-CA-SOS', 'GB-CRN', 'UZ-STIR', 'MX-RFC']) assert.ok(!kinds.isPrivate(kind), kind);
+  assert.ok(new IdentifierKinds(null).isPrivate('US-CA-SOS'), 'without the pack files everything is private');
+  assert.ok(kinds.accepts('MX-RFCPF', 'GODE561231GR8'));
+});
+
 test('identifier kinds come from the country packs; a country without a pack uses other', () => {
   const kinds = new IdentifierKinds();
   assert.ok(kinds.accepts('US-EIN', '12-3456789'));
@@ -31,6 +39,13 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
   const world = await claimsWorld(h);
   t.after(async () => { await world.w.close(); await h.close(); });
   const { w, hubId, otherHubId, reviewer, recipes, provider, page, claimant, submit, decide, statusOf, roleOf } = world;
+  const sos = (value: string) => ({ kind: 'identifier', identifierKind: 'US-CA-SOS', jurisdiction: 'US-CA', value });
+  const legalIdentifiers = async (companyId: string) => (await withMaintenance(h.db.admin, (trx) => trx.selectFrom('company').select('legal_identifiers').where('id', '=', companyId).executeTakeFirstOrThrow())).legal_identifiers;
+  /** A claim in play, which is what lets staff of the hub read and source the company's records. */
+  const openClaim = async (companyId: string, key: string) => {
+    const person = await claimant(`Synthetic ${key} Claimant`, `claimant@${key}.synthetic.invalid`);
+    return { person, claim: ok<{ claim: Claim }>(await submit(person.client, companyId, 'verified')).claim };
+  };
   const base = world.console;
   const admin = h.db.admin;
   const anonymous = new Client(w.app);
@@ -62,7 +77,7 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
     const { companyId, person } = await verifiedPage('Synthetic Golden State Builders', 'admin@goldenstate.synthetic.invalid');
     await cooled(companyId);
     ok(await add(person.client, companyId, ein()));
-    ok(await add(person.client, companyId, { kind: 'identifier', identifierKind: 'US-CA-SOS', jurisdiction: 'US-CA', value: 'C1234567' }));
+    const stateNumber = ok<{ record: { id: string } }>(await add(person.client, companyId, sos('C1234567'))).record;
     expectRefusal(await add(person.client, companyId, ein('00-1234567')), 422, 'validation.schema', 'identifier_invalid');
     expectRefusal(await add(person.client, companyId, { kind: 'identifier', identifierKind: 'US-XX-SOS', jurisdiction: 'US', value: 'C1' }), 422, 'validation.schema', 'identifier_invalid');
     ok(await add(person.client, companyId, { kind: 'registration', jurisdiction: 'US-DE', registrationKind: 'formation', registeredName: 'Synthetic Golden State Builders LLC', number: '7000001', status: 'active', observedAt: null }));
@@ -77,10 +92,13 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
     assert.deepEqual(own.registrations.map((r) => [r.jurisdiction, r.kind, r.status]), [['US-DE', 'formation', 'active'], ['US-CA', 'foreign_qualification', 'unknown']], 'unknown stays unknown');
     assert.equal(own.taxRegistrations?.length, 1);
 
-    // Readers of the old column see the new rows, three-part kinds included.
-    const directory = ok<{ items: Array<{ id: string; legalIdentifiers: Array<{ kind: string; status: string }>; publicDescription: string | null }> }>(await anonymous.get('/v1/companies?limit=100')).items.find((c) => c.id === companyId);
-    assert.deepEqual(directory?.legalIdentifiers.map((i) => [i.kind, i.status]), [['US-EIN', 'claimed'], ['US-CA-SOS', 'claimed']]);
-    assert.equal(directory?.publicDescription, 'Synthetic general contractor, as stated by the company.');
+    // Nothing self-stated reaches the old column. Once verified, a public kind does, three-part kinds included; the EIN never.
+    const directory = async () => ok<{ items: Array<{ id: string; legalIdentifiers: Array<{ kind: string; status: string }>; publicDescription: string | null }> }>(await anonymous.get('/v1/companies?limit=100')).items.find((c) => c.id === companyId);
+    assert.deepEqual((await directory())?.legalIdentifiers, []);
+    assert.equal((await directory())?.publicDescription, 'Synthetic general contractor, as stated by the company.');
+    ok(await verify(reviewer, { id: stateNumber.id, revision: 1 }, await passingCheck(companyId)));
+    assert.deepEqual((await directory())?.legalIdentifiers.map((i) => [i.kind, i.status]), [['US-CA-SOS', 'verified']]);
+    assert.deepEqual((await publicRecords(companyId)).identifiers.map((i) => i.kind), ['US-CA-SOS'], 'the EIN is not public');
 
     // The licence: a professional credential of REP-001, checked through a HUB-003 recipe; the badge names the category.
     await withMaintenance(admin, (trx) => trx.insertInto('professional_credential').values({ holder_company_id: companyId, kind: 'licence', jurisdiction: 'US-CA', credential_type: 'US-CA-CSLB', issuer: 'Synthetic Contractors Board',
@@ -102,7 +120,7 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
 
   await t.test('an identifier value never upgrades a badge, not even when a reviewer verifies it', async () => {
     const { companyId, person } = await foundedPage('Synthetic Numbers Builders', 'founder@numbers.synthetic.invalid');
-    const stated = ok<{ record: { id: string } }>(await add(person.client, companyId, ein('12-1111111'))).record;
+    const stated = ok<{ record: { id: string } }>(await add(person.client, companyId, sos('C1111111'))).record;
     const check = await passingCheck(companyId);
     const verified = ok<{ identifier: Identifier }>(await verify(reviewer, { id: stated.id, revision: 1 }, check)).identifier;
     assert.equal(verified.status, 'verified');
@@ -166,7 +184,7 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
     await assert.rejects(w.actors.as(w.people.hubOwner, (trx) => trx.selectFrom('tax_registration').selectAll().execute()), (e: { code?: string }) => e.code === '42501');
     expectRefusal(await command(w.clients.moderator, `${base}/claims/companies/${companyId}/records`, { record: ein('12-4444444'), sourceRef: 'register:SYN-1' }), 403, 'access.forbidden', 'forbidden');
     assert.equal((await w.clients.employee.get(`${base}/claims/companies/${companyId}/records`)).status, 403);
-    assert.equal((await w.clients.moderator.get(`${base}/claims/companies/${companyId}/records`)).status, 404);
+    assert.equal((await w.clients.moderator.get(`${base}/claims/companies/${companyId}/records`)).status, 403);
   });
 
   await t.test('tax registrations and private branches stay private; the page shows only the fields it chose', async () => {
@@ -182,8 +200,24 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
     assert.deepEqual(open.profile, { legalForm: 'US-LLC' }, 'only the chosen fields');
     assert.deepEqual(open.branches, []);
     const member = await records(colleague.client, companyId);
-    const staff = ok<Records>(await reviewer.get(`${base}/claims/companies/${companyId}/records`));
+
+    // Staff have no reason to read this page until a claim or a case of it is open at their hub.
+    const url = `${base}/claims/companies/${companyId}/records`;
+    const elsewhere = `/v1/admin/hubs/${otherHubId}/claims/companies/${companyId}/records`;
+    assert.equal((await reviewer.get(url)).status, 404);
+    assert.equal((await command(reviewer, url, { record: sos('C2222222'), sourceRef: 'register:SYN-1' })).status, 404);
+    const { person: claimantPerson, claim } = await openClaim(companyId, 'privatereads');
+    const staff = ok<Records>(await reviewer.get(url));
     assert.equal(staff.branches.length, 1, 'staff of the hub see the branch');
+    const audited = () => admin.query("SELECT 1 FROM trustwork.admin_audit_event WHERE action = 'claims.records_read' AND outcome = 'applied' AND object_id = $1", [companyId]);
+    assert.equal((await audited()).rowCount, 1, 'the read is audited');
+    assert.equal((await w.clients.ops.get(elsewhere)).status, 404, 'a claim at one hub opens nothing to staff of another');
+    assert.equal((await command(w.clients.ops, elsewhere, { record: sos('C2222222'), sourceRef: 'register:SYN-1' })).status, 404);
+    ok(await claimantPerson.client.post(`/v1/claims/${claim.id}/withdraw`, {}));
+    assert.equal((await reviewer.get(url)).status, 404, 'the reason ends with the claim');
+    await withMaintenance(admin, (trx) => trx.insertInto('support_case').values({ hub_id: otherHubId, requester_person_id: person.id, opened_by: person.id, subject_company_id: companyId, category: 'account_access', summary: 'Synthetic: a question about our page' } as never).execute());
+    assert.equal(ok<Records>(await w.clients.ops.get(elsewhere)).branches.length, 1, 'an open case at that hub is a reason there');
+    assert.equal((await reviewer.get(url)).status, 404, 'and only there');
     for (const view of [open, member, staff]) {
       assert.ok(!('taxRegistrations' in view));
       assert.ok(!JSON.stringify(view).includes('SYN-TAX-SECRET'));
@@ -192,6 +226,7 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
 
   await t.test('staff record what a source says, labelled sourced; a tax registration is not theirs to record', async () => {
     const companyId = await page('Synthetic Sourced Builders');
+    await openClaim(companyId, 'sourced');
     const url = `${base}/claims/companies/${companyId}/records`;
     ok(await command(reviewer, url, { record: { kind: 'identifier', identifierKind: 'US-CA-SOS', jurisdiction: 'US-CA', value: 'C7654321' }, sourceRef: 'register:SYN-CA-SOS' }));
     ok(await command(reviewer, url, { record: { kind: 'registration', jurisdiction: 'US-CA', registrationKind: 'formation', registeredName: 'Synthetic Sourced Builders Inc', number: 'C7654321', status: 'active', observedAt: '2026-10-20T09:00:00Z' }, sourceRef: 'register:SYN-CA-SOS' }));
@@ -209,6 +244,7 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
     ok(await person.client.post(`/v1/companies/${companyId}/page-profile`, profile({ websiteUrl: 'https://coolingrecords.synthetic.invalid/' })));
     const lock = () => withMaintenance(admin, (trx) => trx.updateTable('company_handover').set({ cooling_until: new Date(Date.now() + 7 * 86_400_000) }).where('company_id', '=', companyId).execute());
     await lock();
+    await openClaim(companyId, 'coolingrecords');
 
     expectRefusal(await add(person.client, companyId, ein('12-6666666')), 422, 'validation.schema', 'cooling_period');
     expectRefusal(await person.client.post(`/v1/companies/${companyId}/records/identifier/${before.id}/retire`, {}), 422, 'validation.schema', 'cooling_period');
@@ -221,8 +257,9 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
     // Descriptions stay free, and a reviewer's label on an identifier is not a change of the value.
     ok(await person.client.post(`/v1/companies/${companyId}/page-profile`, profile({ websiteUrl: 'https://coolingrecords.synthetic.invalid/', description: 'Synthetic description during cooling.' })));
     ok(await verify(reviewer, { id: before.id, revision: 1 }, await passingCheck(companyId)));
-    // Emptying the old column is a change of the values, whoever does it.
-    await withMaintenance(admin, (trx) => trx.updateTable('company').set({ legal_identifiers: JSON.stringify([]) }).where('id', '=', companyId).execute()).then(() => assert.fail('emptying the old column is a change'), (e: { hint?: string }) => assert.equal(e.hint, 'claims.cooling_period'));
+    // A new value in the old column is a change, whoever writes it.
+    await withMaintenance(admin, (trx) => trx.updateTable('company').set({ legal_identifiers: JSON.stringify([{ kind: 'other', value: 'SYN 2', status: 'sourced' }]) }).where('id', '=', companyId).execute())
+      .then(() => assert.fail('a new value in the old column is a change'), (e: { hint?: string }) => assert.equal(e.hint, 'claims.cooling_period'));
 
     await cooled(companyId);
     ok(await add(person.client, companyId, ein('12-6666666')));
@@ -239,13 +276,91 @@ test('CLM-001 company records', { skip: h ? false : SKIP_REASON }, async (t) => 
     assert.deepEqual(rows[0], { same: true, changed: true });
   });
 
+  await t.test('a self-stated value is not evidence: a company that types a contractor\'s licence number shows no licence status', async () => {
+    // A public register holds the licence of a real contractor (synthetic here); a new company enters that number.
+    const sourceId = await withMaintenance(admin, async (trx) => (await trx.insertInto('source').values({
+      hub_id: hubId, kind: 'register_open_data', name: 'Synthetic Claims Licence Board', url: 'https://board.synthetic-claims.invalid/data', reader_kind: 'official_register', purposes: ['company_directory'],
+      licence_kind: 'statutory_public', allowed_uses: JSON.stringify({ displayHeadlineAndLink: true, displaySummary: true, storeFullText: false, indexForSearch: true, sendToModelProviders: false, translate: false,
+        rewriteWithAttribution: false, reuseImages: false, syndicateToPeers: false }), attribution_template: 'Source: Synthetic Claims Licence Board', takedown_contact: 'records@synthetic-claims.invalid',
+      owner_person_id: w.people.hubOwner, personal_data: false, proposed_by_person: w.people.hubOwner, edited_by: w.people.hubOwner, status: 'active', activated_by: w.people.lead2, activated_at: new Date(),
+    } as never).returning('id').executeTakeFirstOrThrow()).id);
+    const adapter = ok<{ adapter: { id: string } }>(await command(reviewer, `${base}/registers/adapters`, { adapter: 'us_ca_cslb_licence_file', sourceId, refreshDays: 7 })).adapter.id;
+    ok(await command(reviewer, `${base}/registers/adapters/${adapter}/fake-runs`, { subjects: [{ identifierValue: '8000123' }] }));
+
+    const { companyId, person } = await foundedPage('Synthetic Impostor Builders', 'founder@impostor.synthetic.invalid');
+    ok(await add(person.client, companyId, { kind: 'identifier', identifierKind: 'US-CA-CSLB', jurisdiction: 'US-CA', value: '8000123' }));
+    const previous = process.env.TRUSTWORK_HUB_ID;
+    process.env.TRUSTWORK_HUB_ID = hubId;
+    try {
+      assert.deepEqual(ok<{ items: unknown[] }>(await anonymous.get(`/v1/companies/${companyId}/sourced-facts`)).items, [], 'no licence status appears');
+      assert.deepEqual(await legalIdentifiers(companyId), []);
+      assert.deepEqual((await publicRecords(companyId)).identifiers, [], 'nor the number');
+      const holds = async (kind: string, value: string) => (await admin.query<{ holds: boolean }>('SELECT trustwork.registers_company_holds($1, $2, trustwork.registers_norm($3)) AS holds', [companyId, kind, value])).rows[0]?.holds;
+      assert.equal(await holds('US-CA-CSLB', '8000123'), false);
+
+      // A public kind typed by the company is no evidence either, until it passes verification.
+      const stated = ok<{ record: { id: string } }>(await add(person.client, companyId, sos('C3333333'))).record;
+      assert.equal(await holds('US-CA-SOS', 'C3333333'), false);
+      assert.deepEqual(await legalIdentifiers(companyId), []);
+      ok(await verify(reviewer, { id: stated.id, revision: 1 }, await passingCheck(companyId)));
+      assert.equal(await holds('US-CA-SOS', 'C3333333'), true);
+    } finally {
+      process.env.TRUSTWORK_HUB_ID = previous;
+    }
+    // Both evidence readers read only the old column; nothing outside this module reads the new table.
+    const { rows } = await admin.query<{ proname: string }>("SELECT proname FROM pg_proc WHERE pronamespace = 'trustwork'::regnamespace AND prosrc LIKE '%trustwork.company_identifier%' AND proname NOT LIKE 'claims\\_%' ORDER BY proname");
+    assert.deepEqual(rows, []);
+    const sources = await admin.query<{ proname: string }>("SELECT proname FROM pg_proc WHERE proname IN ('registers_company_holds', 'datasets_statutory_match') AND prosrc LIKE '%legal_identifiers%' ORDER BY proname");
+    assert.deepEqual(sources.rows.map((r) => r.proname), ['datasets_statutory_match', 'registers_company_holds']);
+  });
+
+  await t.test('personal and tax identifiers stay private, verified or not', async () => {
+    const { companyId, person } = await foundedPage('Synthetic Personal Numbers Builders', 'founder@personalnumbers.synthetic.invalid');
+    const rfc = ok<{ record: { id: string } }>(await add(person.client, companyId, { kind: 'identifier', identifierKind: 'MX-RFCPF', jurisdiction: 'MX', value: 'GODE561231GR8' })).record;
+    const eins = ok<{ record: { id: string } }>(await add(person.client, companyId, ein('12-8888888'))).record;
+    assert.equal((await add(person.client, companyId, { ...ein('12-9999999'), private: false })).status, 422, 'the request does not choose');
+    const check = await passingCheck(companyId);
+    ok(await verify(reviewer, { id: rfc.id, revision: 1 }, check));
+    ok(await verify(reviewer, { id: eins.id, revision: 1 }, await passingCheck(companyId)));
+    assert.deepEqual((await publicRecords(companyId)).identifiers, []);
+    assert.deepEqual(await legalIdentifiers(companyId), [], 'never mirrored, so no public read can show it');
+    const directory = ok<{ items: Array<{ id: string; legalIdentifiers: unknown[] }> }>(await anonymous.get('/v1/companies?limit=100')).items.find((c) => c.id === companyId);
+    assert.deepEqual(directory?.legalIdentifiers, []);
+    const own = await records(person.client, companyId);
+    assert.deepEqual(own.identifiers.map((i) => [i.kind, i.status]), [['MX-RFCPF', 'verified'], ['US-EIN', 'verified']], 'the company still sees its own');
+    // An EIN written to the old column by maintenance is still kept out of the new public read.
+    await withMaintenance(admin, (trx) => trx.updateTable('company').set({ legal_identifiers: JSON.stringify([{ kind: 'US-EIN', value: '12-7070707', status: 'sourced' }]) }).where('id', '=', companyId).execute());
+    assert.deepEqual((await publicRecords(companyId)).identifiers, []);
+  });
+
+  await t.test('a removed administrator keeps nothing through a hand-over; a claimed-level holder keeps what the level gives', async () => {
+    const { companyId, person } = await verifiedPage('Synthetic Removed Builders', 'admin@removed.synthetic.invalid');
+    await cooled(companyId);
+    const endMembership = (personId: string, company: string) => withMaintenance(admin, (trx) => trx.updateTable('membership').set({ status: 'ended', ended_at: new Date(), ended_by: personId, ended_reason: 'Synthetic: removed by the company' })
+      .where('person_id', '=', personId).where('company_id', '=', company).where('status', '=', 'active').execute());
+    ok(await records(person.client, companyId).then((r) => ({ status: 200, body: r, headers: {}, cookies: [] })));
+    await endMembership(person.id, companyId);
+    assert.equal((await person.client.get(`/v1/companies/${companyId}/records`)).status, 404);
+    expectRefusal(await person.client.post(`/v1/companies/${companyId}/page-profile`, { legalForm: null, websiteUrl: null, regionCode: null, categories: [], publicFields: [] }), 403, 'access.forbidden', 'administrator_required');
+
+    // Claimed first, then verified, then removed: the older claimed-level hand-over does not bring the access back.
+    const upgraded = await page('Synthetic Upgraded Removed Builders', 'upgradedremoved.synthetic.invalid');
+    const holder = await claimant('Synthetic Upgraded Holder', 'holder@upgradedremoved.synthetic.invalid');
+    ok(await decide(reviewer, ok<{ claim: Claim }>(await submit(holder.client, upgraded, 'claimed', { kind: 'own_domain_mailbox', email: 'holder@upgradedremoved.synthetic.invalid' })).claim));
+    assert.equal((await holder.client.get(`/v1/companies/${upgraded}/records`)).status, 200, 'a claimed-level holder reads the page');
+    ok(await decide(reviewer, ok<{ claim: Claim }>(await submit(holder.client, upgraded, 'verified')).claim));
+    await endMembership(holder.id, upgraded);
+    assert.equal((await holder.client.get(`/v1/companies/${upgraded}/records`)).status, 404);
+  });
+
   await t.test('expand: a write to the old column reaches the table, and a value gone from it retires', async () => {
     const companyId = await page('Synthetic Legacy Builders');
+    const live = async () => (await admin.query<{ kind: string; status: string }>('SELECT kind, status FROM trustwork.company_identifier WHERE company_id = $1 AND retired_at IS NULL ', [companyId])).rows.map((r) => [r.kind, r.status]).sort();
     const write = (list: unknown[]) => withMaintenance(admin, (trx) => trx.updateTable('company').set({ legal_identifiers: JSON.stringify(list) }).where('id', '=', companyId).execute());
     await write([{ kind: 'US-EIN', value: '12-7777777', status: 'sourced' }, { kind: 'other', value: 'SYN 1', status: 'claimed' }]);
-    assert.deepEqual((await publicRecords(companyId)).identifiers.map((i) => [i.kind, i.status]).sort(), [['US-EIN', 'sourced'], ['other', 'claimed']]);
+    assert.deepEqual(await live(), [['US-EIN', 'sourced'], ['other', 'claimed']]);
     await write([{ kind: 'other', value: 'SYN 1', status: 'claimed' }]);
-    assert.deepEqual((await publicRecords(companyId)).identifiers.map((i) => i.kind), ['other']);
+    assert.deepEqual(await live(), [['other', 'claimed']]);
     const { rows } = await admin.query<{ n: string }>('SELECT count(*)::text AS n FROM trustwork.company_identifier WHERE company_id = $1', [companyId]);
     assert.equal(rows[0]?.n, '2', 'the retired row stays on record');
   });

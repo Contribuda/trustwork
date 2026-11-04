@@ -93,8 +93,10 @@ export class ClaimsService {
   }
 
   /** What anyone may read about a company: identifiers, registrations, public branches and the fields it chose to show. */
-  publicRecords(companyId: string) {
-    return withoutPrincipal(this.ctx.pool, (trx) => claims.publicRecords(trx, companyId));
+  async publicRecords(companyId: string) {
+    const records = await withoutPrincipal(this.ctx.pool, (trx) => claims.publicRecords(trx, companyId)) as { identifiers: Array<{ kind: string }> };
+    // The table says private for what the API recorded; a value from the old column is held to the pack here as well.
+    return { ...records, identifiers: records.identifiers.filter((i) => !this.kinds.isPrivate(i.kind)) };
   }
 
   /* ---------- The company ---------- */
@@ -105,13 +107,18 @@ export class ClaimsService {
     }
   }
 
+  /** Whether a value may be public comes from the country pack, never from the request. */
+  private withPrivacy<T extends { kind: string; identifierKind?: string }>(record: T): T & { private?: boolean } {
+    return record.kind === 'identifier' ? { ...record, private: this.kinds.isPrivate(record.identifierKind as string) } : record;
+  }
+
   companyRecords(state: RequestState, companyId: string) {
     return this.read(state, (trx) => claims.companyRecords(trx, companyId));
   }
 
   addRecord(state: RequestState, companyId: string, body: Body<typeof AddRecordCommandSchema>) {
     this.checkIdentifier(body);
-    return this.read(state, async (trx) => ({ record: { kind: body.kind, id: await claims.addRecord(trx, companyId, body.kind, body) } }));
+    return this.read(state, async (trx) => ({ record: { kind: body.kind, id: await claims.addRecord(trx, companyId, body.kind, this.withPrivacy(body)) } }));
   }
 
   retireRecord(state: RequestState, companyId: string, kind: RecordKind, recordId: string) {
@@ -199,8 +206,11 @@ export class ClaimsService {
     });
   }
 
-  staffRecords(state: RequestState, hubId: string, companyId: string) {
-    return this.read(state, (trx) => claims.staffRecords(trx, hubId, companyId));
+  /** Private records need an open claim or case of the company at this hub, and each read is audited in the database. */
+  staffRecords(e: Elevated, hubId: string, companyId: string) {
+    const reason = 'Read company records for an open claim or case';
+    return this.staff(e, { idempotencyKey: '', reason }, { hubId, permission: 'admin.claims.read', action: 'claims.records_read', objectType: 'company', objectId: companyId },
+      (trx, cmd) => claims.staffRecords(trx, cmd, hubId, companyId));
   }
 
   /* ---------- Staff commands ---------- */
@@ -251,7 +261,7 @@ export class ClaimsService {
   sourceRecord(e: Elevated, hubId: string, companyId: string, body: Body<typeof SourceRecordCommandSchema>) {
     this.checkIdentifier(body.record);
     return this.staff(e, body, { hubId, permission: 'admin.claims.decide', action: 'claims.record_sourced', objectType: 'company', objectId: companyId },
-      async (trx, cmd) => ({ record: { kind: body.record.kind, id: await claims.sourceRecord(trx, cmd, hubId, companyId, body.record.kind, body.record, body.sourceRef) } }));
+      async (trx, cmd) => ({ record: { kind: body.record.kind, id: await claims.sourceRecord(trx, cmd, hubId, companyId, body.record.kind, this.withPrivacy(body.record), body.sourceRef) } }));
   }
 
   /** The label on the identifier is all that changes: a badge comes only from a claim decision. */
