@@ -16,7 +16,10 @@
 --     the grantor, holding admin.staff.assign at the scope; the guard recomputes the digest;
 --   * the window is bounded three times: the eligibility's ceiling, the released definition's grant_max_hours, and the
 --     break-glass limit of 12 hours (BREAKGLASS_MAX_HOURS);
---   * full separation-of-duties mode refuses a conflicting role at the grant of eligibility and again at activation.
+--   * full separation-of-duties mode refuses a conflicting role at the grant of eligibility and again at activation; a
+--     person's role changes serialize on one advisory lock (the API's role-change apply takes the same one), so two
+--     concurrent activations of a conflicting pair never both commit; in full mode the second person of a sensitive
+--     activation acts through a role the grantor does not hold for admin.staff.assign (decided here, not only in the API).
 --
 -- The holder's own acts (request, early end) are audited with the actor's role covering the scope (or the eligible role
 -- itself) under admin.session.elevate: an activation is the elevation of the session into a role. Revoking a person's
@@ -201,6 +204,27 @@ LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
       AND ((n.sod_mode = 'full' AND a.role = ANY (n.sod_conflicts)) OR (d.sod_mode = 'full' AND p_role = ANY (d.sod_conflicts))))
 $$;
 
+-- The scope runs in full separation-of-duties mode from five distinct staff people covering it (FULL_SOD_MIN_STAFF).
+CREATE FUNCTION trustwork.staff_sod_full(p_node uuid, p_hub uuid) RETURNS boolean
+LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
+  SELECT (SELECT count(DISTINCT a.person_id) FROM trustwork.staff_role_assignment a
+            JOIN trustwork.staff_role_definition_version d ON d.role = a.role AND d.version = a.definition_version
+           WHERE a.revoked_at IS NULL AND a.valid_from <= now() AND (a.valid_until IS NULL OR a.valid_until > now()) AND a.scope_kind = ANY (d.scopes)
+             AND CASE a.scope_kind WHEN 'platform' THEN true WHEN 'node' THEN p_hub IS NOT NULL OR p_node = a.node_id ELSE p_hub = a.hub_id END) >= 5
+$$;
+
+-- Every role through which a person holds a permission at a target (admin_resolve_permission picks one; the full-mode
+-- approver rule needs them all).
+CREATE FUNCTION trustwork.staff_roles_granting(p_person uuid, p_permission text, p_node uuid, p_hub uuid) RETURNS text[]
+LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
+  SELECT coalesce(array_agg(DISTINCT a.role ORDER BY a.role), '{}'::text[]) FROM trustwork.staff_role_assignment a
+    JOIN trustwork.staff_role_definition_version d ON d.role = a.role AND d.version = a.definition_version
+   WHERE a.person_id = p_person AND a.revoked_at IS NULL AND a.valid_from <= now() AND (a.valid_until IS NULL OR a.valid_until > now())
+     AND p_permission = ANY (d.permissions) AND a.scope_kind = ANY (d.scopes)
+     AND CASE a.scope_kind WHEN 'platform' THEN true WHEN 'node' THEN p_hub IS NOT NULL OR p_node = a.node_id
+         ELSE p_hub = a.hub_id AND NOT (p_permission = ANY (trustwork.admin_node_only_permissions())) END
+$$;
+
 -- The activation ceiling of an eligibility: its own ceiling, the released definition's grant_max_hours, 12 hours.
 CREATE FUNCTION trustwork.staff_activation_ceiling(p_role text, p_definition_version integer, p_max bigint) RETURNS bigint
 LANGUAGE sql STABLE SET search_path = trustwork, pg_temp AS $$
@@ -234,6 +258,8 @@ BEGIN
   IF p_valid_for_seconds IS NOT NULL AND p_valid_for_seconds < 3600 THEN
     RAISE EXCEPTION 'an eligibility lasts at least one hour' USING ERRCODE = 'invalid_parameter_value', HINT = 'admin.context_invalid';
   END IF;
+  -- The person's role changes serialize on one lock (the API's role-change apply takes the same one).
+  PERFORM pg_advisory_xact_lock(hashtext('staff_role_change:' || p_person::text));
   IF trustwork.staff_role_conflicts(p_person, p_role, p_definition_version) THEN
     RAISE EXCEPTION 'role % conflicts with a role the person already holds', p_role USING ERRCODE = 'check_violation', HINT = 'admin.sod_conflict';
   END IF;
@@ -326,6 +352,9 @@ BEGIN
   IF (SELECT r.role FROM trustwork.admin_resolve_permission(v_eligible.granted_by, 'admin.staff.assign', v_eligible.node_id, v_eligible.hub_id) r) IS NULL THEN
     RAISE EXCEPTION 'the person who granted the eligibility no longer assigns roles here; ask for a new eligibility' USING ERRCODE = 'check_violation', HINT = 'admin.eligibility_stale';
   END IF;
+  -- Two activations of a conflicting pair race otherwise (each sees only committed rows): the person's role changes
+  -- serialize on one lock, taken before the conflict check, so the second one sees the first one's assignment.
+  PERFORM pg_advisory_xact_lock(hashtext('staff_role_change:' || v_person::text));
   IF trustwork.staff_role_conflicts(v_person, v_eligible.role, v_eligible.definition_version) THEN
     RAISE EXCEPTION 'role % conflicts with a role the person already holds', v_eligible.role USING ERRCODE = 'check_violation', HINT = 'admin.sod_conflict';
   END IF;
@@ -422,6 +451,18 @@ BEGIN
   ELSE
     RAISE EXCEPTION 'the approval is %', v_approval.status USING ERRCODE = 'check_violation', HINT = 'admin.approval_not_approved';
   END IF;
+  -- Full separation-of-duties mode: the second person acts through a role the grantor (the requester) does not hold for
+  -- admin.staff.assign at this scope (docs/engine/hub-administration.md, "the second with a different role").
+  IF trustwork.staff_sod_full(v_before.node_id, v_before.hub_id)
+     AND trustwork.staff_roles_granting(v_approval.approved_by, 'admin.staff.assign', v_before.node_id, v_before.hub_id)
+         <@ trustwork.staff_roles_granting(v_eligible.granted_by, 'admin.staff.assign', v_before.node_id, v_before.hub_id) THEN
+    RAISE EXCEPTION 'in full separation-of-duties mode the second person acts through a different role' USING ERRCODE = 'insufficient_privilege', HINT = 'admin.same_role';
+  END IF;
+  -- The person's role changes serialize on one lock; the conflict check then sees every committed assignment.
+  PERFORM pg_advisory_xact_lock(hashtext('staff_role_change:' || v_before.person_id::text));
+  IF trustwork.staff_role_conflicts(v_before.person_id, v_before.role, v_eligible.definition_version) THEN
+    RAISE EXCEPTION 'role % conflicts with a role the person already holds', v_before.role USING ERRCODE = 'check_violation', HINT = 'admin.sod_conflict';
+  END IF;
   UPDATE trustwork.second_person_approval SET status = 'consumed', consumed_ref = v_assignment, consumed_at = now() WHERE id = v_approval.id RETURNING * INTO v_approval;
   INSERT INTO trustwork.staff_role_assignment (id, person_id, role, scope_kind, node_id, hub_id, definition_version, granted_by, approved_by, approval_id, reason, valid_from, valid_until)
   VALUES (v_assignment, v_before.person_id, v_before.role, v_before.scope_kind, v_before.node_id, v_before.hub_id, v_eligible.definition_version, v_eligible.granted_by,
@@ -499,8 +540,12 @@ BEGIN
     IF v_act.status = 'pending' THEN
       UPDATE trustwork.second_person_approval SET status = 'revoked', revoked_by = NEW.revoked_by WHERE id = v_act.approval_id AND status IN ('pending', 'approved');
       UPDATE trustwork.staff_activation SET status = 'withdrawn', withdrawn_by = NEW.revoked_by WHERE id = v_act.id;
-    ELSIF (SELECT r.role FROM trustwork.admin_resolve_permission(NEW.revoked_by, 'admin.staff.revoke', v_act.node_id, v_act.hub_id) r) IS NOT NULL THEN
-      UPDATE trustwork.staff_role_assignment SET revoked_at = now(), revoked_by = NEW.revoked_by, revoke_reason = 'Last standing role revoked'
+    ELSE
+      -- The activation always ends. The revoker is named when they hold admin.staff.revoke at the activation's scope;
+      -- otherwise the assignment guard only allows the holder's own revocation, and the reason records the cause.
+      UPDATE trustwork.staff_role_assignment SET revoked_at = now(), revoke_reason = 'Last standing role revoked',
+        revoked_by = CASE WHEN (SELECT r.role FROM trustwork.admin_resolve_permission(NEW.revoked_by, 'admin.staff.revoke', v_act.node_id, v_act.hub_id) r) IS NOT NULL
+                          THEN NEW.revoked_by ELSE v_act.person_id END
        WHERE id = v_act.assignment_id AND revoked_at IS NULL AND valid_until > now();
     END IF;
   END LOOP;
@@ -526,7 +571,7 @@ CREATE POLICY staff_activation_read ON trustwork.staff_activation FOR SELECT TO 
 GRANT SELECT ON trustwork.staff_eligible_role, trustwork.staff_activation TO trustwork_app;
 
 REVOKE EXECUTE ON FUNCTION trustwork.staff_own_actor(uuid, uuid, uuid, uuid, text), trustwork.staff_role_conflicts(uuid, text, integer),
-  trustwork.staff_activation_ceiling(text, integer, bigint) FROM PUBLIC;
+  trustwork.staff_activation_ceiling(text, integer, bigint), trustwork.staff_sod_full(uuid, uuid), trustwork.staff_roles_granting(uuid, text, uuid, uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION trustwork.staff_grant_eligible_role(jsonb, uuid, text, text, uuid, uuid, integer, bigint, bigint), trustwork.staff_revoke_eligible_role(jsonb, uuid),
   trustwork.staff_activation_request(jsonb, uuid, bigint), trustwork.staff_activation_decide(jsonb, uuid, text), trustwork.staff_activation_end(jsonb, uuid) TO trustwork_app;
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA trustwork FROM PUBLIC;
