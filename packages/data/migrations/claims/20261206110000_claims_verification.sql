@@ -12,7 +12,11 @@
 -- Every change of the derived status appends `company.verification_changed` for the projections that follow.
 --
 -- Public badges show the level, categories and dates. A category naming sanctions or screening is left out: a
--- screening state is never part of a public projection (ADR 014 decision 16), whatever a recipe calls it.
+-- screening state is never part of a public projection (ADR 014 decision 16), whatever a recipe calls it. They follow
+-- the no-administrator rule of the status, so a page never shows more on `/badges` than its status says.
+--
+-- Recovery is a safety net, not a product path today: `end_membership` and the role change refuse to remove the last
+-- administrator, and `claims_revoke` revokes the verification with the role. Only a maintenance write reaches it.
 
 CREATE TABLE trustwork.company_verification (
   id uuid PRIMARY KEY DEFAULT trustwork.new_uuid(),
@@ -134,6 +138,8 @@ DECLARE
   v_actor trustwork.admin_actor;
   v_recipe trustwork.verification_recipe%ROWTYPE;
   v_standing jsonb;
+  v_holder uuid;
+  v_state record;
   v_row trustwork.company_verification%ROWTYPE;
 BEGIN
   PERFORM trustwork.admin_require_caller();
@@ -144,6 +150,11 @@ BEGIN
   PERFORM 1 FROM trustwork.company WHERE id = v_before.company_id FOR UPDATE;
   SELECT * INTO v_before FROM trustwork.company_verification WHERE id = p_verification FOR UPDATE;
   v_actor := trustwork.claims_staff(p_ctx, ARRAY['admin.claims.decide'], v_before.hub_id);
+  SELECT person_id INTO STRICT v_holder FROM trustwork.company_handover WHERE id = v_before.handover_id;
+  -- The person checks of claims_decide: nobody renews their own badge, and a holder who is held or suspended keeps none.
+  IF v_actor.person_id = v_holder THEN
+    RAISE EXCEPTION 'the holder does not re-check their own verification' USING ERRCODE = 'insufficient_privilege', HINT = 'claims.own_claim';
+  END IF;
   IF v_before.state NOT IN ('active', 'expired')
      OR EXISTS (SELECT 1 FROM trustwork.company_verification WHERE renewed_from = p_verification)
      OR EXISTS (SELECT 1 FROM trustwork.company_handover WHERE id = v_before.handover_id AND revoked_at IS NOT NULL) THEN
@@ -153,6 +164,10 @@ BEGIN
   v_standing := trustwork.verification_evaluate(v_before.hub_id, 'company', v_before.company_id, v_recipe.id);
   IF v_standing ->> 'status' <> 'passed' OR (v_standing ->> 'handoverBlocked')::boolean THEN
     RAISE EXCEPTION 'the recipe standing does not allow a re-check' USING ERRCODE = 'check_violation', HINT = 'claims.standing_not_passed';
+  END IF;
+  SELECT s.id, s.last_outcome, s.money_held, s.suspended INTO v_state FROM trustwork.screening_state_row(v_holder, NULL) s;
+  IF NOT trustwork.screening_available() OR v_state.id IS NULL OR v_state.last_outcome IS DISTINCT FROM 'clear' OR v_state.money_held OR v_state.suspended THEN
+    RAISE EXCEPTION 'the holder is not screened clear' USING ERRCODE = 'check_violation', HINT = 'claims.claimant_not_clear';
   END IF;
   UPDATE trustwork.company_verification SET state = 'superseded' WHERE id = p_verification AND state = 'active';
   INSERT INTO trustwork.company_verification (hub_id, company_id, handover_id, level, recipe_id, categories, decided_by, valid_until, renewed_from)
@@ -193,6 +208,7 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = trustwork, pg_temp SET tr
   SELECT v.level, ARRAY(SELECT c FROM unnest(v.categories) c WHERE c !~ '(sanction|screen)' ORDER BY c), v.decided_at, v.valid_until
     FROM trustwork.company_verification v
    WHERE v.hub_id = p_hub AND v.company_id = p_company AND v.state = 'active' AND v.valid_until > now()
+     AND (v.level <> 'verified' OR EXISTS (SELECT 1 FROM trustwork.membership m WHERE m.company_id = p_company AND m.status = 'active' AND m.role = 'administrator'))
    ORDER BY v.level DESC
 $$;
 
