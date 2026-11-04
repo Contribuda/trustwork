@@ -83,23 +83,31 @@ export const REFRESH_INTERVAL_MS = 6 * 3_600_000;
 export class FederationRefreshTimer implements OnApplicationBootstrap, OnApplicationShutdown {
   private timer: NodeJS.Timeout | null = null;
   private running: Promise<void> | null = null;
+  private stopping = false;
   constructor(private readonly service: FederationNodeService, private readonly options: { enabled: boolean; intervalMs: number; log: (message: string, error?: unknown) => void }) {}
   get active(): boolean {
     return this.timer !== null;
   }
   onApplicationBootstrap(): void {
-    if (!this.options.enabled || this.timer) return;
+    if (!this.options.enabled || this.timer || this.stopping) return;
     this.timer = setInterval(() => void this.tick(), this.options.intervalMs);
     this.timer.unref();
   }
-  onApplicationShutdown(): void {
+  /**
+   * Deterministic shutdown: no further tick starts, a tick in flight begins no further peer fetch and is awaited, so
+   * once the application has closed nothing of this timer runs or will run.
+   */
+  async onApplicationShutdown(): Promise<void> {
+    this.stopping = true;
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+    if (this.running) await this.running;
   }
-  /** One tick (also callable by tests); ticks never overlap within an instance. */
+  /** One tick (also callable by tests); ticks never overlap within an instance and start no fetch once shutdown began. */
   tick(): Promise<void> {
     if (this.running) return this.running;
-    this.running = this.service.refreshDueLocked().then(
+    if (this.stopping) return Promise.resolve();
+    this.running = this.service.refreshDueLocked(undefined, undefined, () => this.stopping).then(
       (result) => { if ('refreshed' in result && result.refreshed.length) this.options.log('federation.refresh_tick', { refreshed: result.refreshed }); },
       (error: unknown) => this.options.log('federation.refresh_tick_failed', error),
     ).finally(() => { this.running = null; });

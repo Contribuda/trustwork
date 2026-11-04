@@ -416,24 +416,29 @@ export class FederationNodeService {
    * The timer's tick: one API instance at a time refreshes the due peers (a PostgreSQL advisory lock held for the run;
    * another instance that finds it taken skips and tries again next tick). A peer that fails is logged and left due.
    */
-  async refreshDueLocked(now: Date = this.ctx.clock.now(), limit = 100): Promise<{ skipped: 'locked' } | { refreshed: { host: string; outcome: 'admitted' | 'refused' | 'failed' }[] }> {
+  async refreshDueLocked(now: Date = this.ctx.clock.now(), limit = 100, cancelled: () => boolean = () => false): Promise<{ skipped: 'locked' } | { refreshed: { host: string; outcome: 'admitted' | 'refused' | 'failed' }[] }> {
     const client = await this.ctx.pool.connect();
     let locked = false;
     try {
       const { rows } = await client.query<{ ok: boolean }>('SELECT pg_try_advisory_lock(hashtextextended($1, 0)) AS ok', [REFRESH_LOCK]);
       locked = rows[0]?.ok === true;
       if (!locked) return { skipped: 'locked' };
-      return { refreshed: await this.refreshDue(now, limit) };
+      return { refreshed: await this.refreshDue(now, limit, cancelled) };
     } finally {
       if (locked) await client.query('SELECT pg_advisory_unlock(hashtextextended($1, 0))', [REFRESH_LOCK]).catch(() => undefined);
       client.release();
     }
   }
-  /** Every peer whose manifest is due (at least daily); failures are logged and retried on the next run. */
-  async refreshDue(now: Date = this.ctx.clock.now(), limit = 100): Promise<{ host: string; outcome: 'admitted' | 'refused' | 'failed' }[]> {
+  /**
+   * Every peer whose manifest is due (at least daily); failures are logged and retried on the next run. `cancelled`
+   * is consulted before each peer, so a run stops beginning fetches once the caller is shutting down.
+   */
+  async refreshDue(now: Date = this.ctx.clock.now(), limit = 100, cancelled: () => boolean = () => false): Promise<{ host: string; outcome: 'admitted' | 'refused' | 'failed' }[]> {
     const out: { host: string; outcome: 'admitted' | 'refused' | 'failed' }[] = [];
     await federationPeers.purgeNonces(this.ctx.pool).catch((error: unknown) => this.ctx.log('federation.nonce_purge_failed', error));
+    if (cancelled()) return out;
     for (const host of await federationPeers.due(this.ctx.pool, now, limit)) {
+      if (cancelled()) break;
       try {
         const peer = await this.refreshPeer(host, 'refresh');
         out.push({ host, outcome: peer.admission_state });

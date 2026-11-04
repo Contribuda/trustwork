@@ -591,10 +591,13 @@ test('federation node API', { skip: h ? false : SKIP_REASON }, async (t) => {
     } finally {
       lockHolder.release();
     }
+    // Shutdown is deterministic: the interval is cleared, a tick in flight is awaited and begins no further fetch, so the
+    // count read after close() is final.
     await app2.close();
     assert.equal(timer.active, false, 'the timer is cleared on shutdown');
     await h.db.admin.query("UPDATE trustwork.federation_peer SET refresh_due_at = now() - interval '1 minute' WHERE peer_node = $1", [CITY]);
     const afterClose = transport.manifestFetches.length;
+    await timer.tick();
     await sleep(400);
     assert.equal(transport.manifestFetches.length, afterClose, 'no tick after shutdown');
     await service.refreshDue();
