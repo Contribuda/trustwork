@@ -11,7 +11,7 @@ The composition root registers the module independently of the administration wo
 | `GET /v1/privacy/preferences` | Own preference data |
 | `POST /v1/privacy/preferences` | Own sale/share/sensitive/GPC/marketing preferences; GPC and marketing objections cannot be accidentally cleared by concurrent updates |
 | `POST /v1/privacy/exports` | Creates a request with an explicit incomplete coverage manifest |
-| `GET /v1/privacy/exports/:id` | Authenticated delivery, recomposed under current authority; local FILE/blob fake only; JSON with SHA-256; no provider URL |
+| `GET /v1/privacy/exports/:id` | Authenticated delivery, recomposed under current authority and sent from memory; the archive is never written to storage; JSON with SHA-256; no provider URL |
 | `POST /v1/privacy/public/marketing-objections` | Unregistered constant acknowledgement; minimal durable MAIL suppression |
 | `POST /v1/privacy/public/sourced-requests` | Opaque proof bound to action/record/current authority; constant acknowledgement |
 | `POST /v1/admin/privacy/requests/:id/response-draft` | Privacy read permission, no elevation, the person only (delegated principals refused until AGT-030 operator grants exist); prepares an immutable response package at Draft (ids and codes only); decides nothing |

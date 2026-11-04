@@ -102,7 +102,7 @@ export class AppModule {
         SupplierBaseModule.forRoot(ctx, identity, { mandates: store.port(['procurement']) }), // PRC-003
         SupportModule.forRoot(ctx, identity),
         TransactionsModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.deals) }),
-        PrivacyModule.forRoot(ctx, identity, files.store, privacyExportPort(ctx, identity, files, { compliance: privacyCompliance, support: (principals) => new SupportService(ctx, principals) })),
+        PrivacyModule.forRoot(ctx, identity, privacyExportPort(ctx, identity, files, { compliance: privacyCompliance, support: (principals) => new SupportService(ctx, principals) })),
         ProvenanceModule.forRoot(identity),
         ProfilesModule.forRoot(ctx, identity, { mandates: store.port(MODULE_KEYS.profiles), capabilities }),
         // KEYS-001: provider connections, write-only secrets, routes, egress, caps and kill switches (KEK from the createApp environment).

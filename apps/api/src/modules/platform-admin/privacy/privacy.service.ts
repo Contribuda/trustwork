@@ -9,7 +9,6 @@ import type { AppContext } from '../../identity/context.js';
 import type { IdentityServices } from '../../identity/identity.module.js';
 import type { CommandContext } from '../../../../../../packages/data/src/repositories/admin.js';
 import { privacy } from '../../../../../../packages/data/src/repositories/privacy.js';
-import type { BlobStore } from '../../../../../../packages/data/src/files/blob-store.js';
 import type { PrivacyHoldCommandSchema, PrivacyPreferenceCommand, PrivacyRequestCommand, PrivacySubject, PrivacySourceProofSchema, PrivacySourceSubmissionSchema, PrivacyExternalSourceCaseSchema } from '../../../../../../packages/contracts/src/privacy.js';
 import type { PrivacyExportPort } from './ports.js';
 import { mailAddressHash } from '../../../../../../packages/data/src/repositories/mail.js';
@@ -23,7 +22,7 @@ function refusal(error: unknown): never {
 }
 
 export class PrivacyService {
-  constructor(private readonly ctx: AppContext, private readonly identity: IdentityServices, private readonly store: BlobStore | null, private readonly exports: PrivacyExportPort) {}
+  constructor(private readonly ctx: AppContext, private readonly identity: IdentityServices, private readonly exports: PrivacyExportPort) {}
   async objectToMarketing(address: string): Promise<{ accepted: true }> {
     await this.ctx.pool.query('SELECT trustwork.privacy_marketing_object($1::text)', [mailAddressHash(address)]);
     return { accepted: true };
@@ -83,10 +82,13 @@ export class PrivacyService {
   createExport(state: RequestState, subject: PrivacySubject) {
     return this.run(state, async (trx) => ({ export: await privacy.createExport(trx, subject.kind, subject.id, this.exports.coverage), complete: false }));
   }
-  /** Recompose at delivery: a stored id is not a bearer capability and there is no reusable provider URL. */
+  /**
+   * Recompose at delivery: a stored id is not a bearer capability and there is no reusable provider URL. The response
+   * is the delivery and goes out from memory: the archive is never written anywhere, so no crash can leave personal
+   * export bytes behind. The digest travels with the response so the subject can check what arrived.
+   */
   download(state: RequestState, id: string, consume: (result: { sha256: string; archive: unknown }) => Promise<void>) {
     return this.delivery(state, async (trx, p) => {
-      if (!this.store || this.store.kind !== 'filesystem') throw new ApiError('validation.schema', 'local export storage unavailable', { reason: 'storage_unavailable' });
       const row = await this.authorizeDownload(trx, p, state, id);
       const subject = { kind: row.subject_kind, id: row.subject_id };
       const data = await this.exports.compose(trx, p, state, subject);
@@ -95,18 +97,7 @@ export class PrivacyService {
         ...(subject.kind === 'person' ? { preference: await privacy.preferences(trx) ?? null } : {}),
       };
       const archive = { format: 'privacy-json-1', complete: false, subject, coverage: this.exports.coverage, data };
-      const body = Buffer.from(JSON.stringify(archive));
-      const digest = createHash('sha256').update(body).digest('hex');
-      const key = `privacy-exports/${row.id}/${digest}.json`;
-      try {
-        await this.store.put(key, body, 'application/json');
-        const stored = await this.store.read(key, body.length);
-        if (!stored || createHash('sha256').update(stored).digest('hex') !== digest) throw new ApiError('validation.schema', 'export storage verification failed');
-      } finally {
-        // The authenticated response is the delivery and goes out from memory. No personal export bytes remain as an
-        // ungoverned cache, not even while a slow client reads: the object is gone before the first byte is sent.
-        await this.store.delete(key);
-      }
+      const digest = createHash('sha256').update(JSON.stringify(archive)).digest('hex');
       await this.checkDeliverySession(trx, p, state);
       await consume({ sha256: digest, archive });
     });

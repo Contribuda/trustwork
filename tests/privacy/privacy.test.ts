@@ -125,7 +125,6 @@ test('PRV-001: authenticated requests, preferences and delivery through real mod
     assert.ok(!JSON.stringify(result.body).includes('tokenHash') && !JSON.stringify(result.body).includes('token_hash'), 'session token material never reaches the archive');
     assert.ok(!JSON.stringify(result.body).includes('Synthetic seller secret 1974'), 'the counterparty private side of the same agreement is never exported');
     assert.equal(result.headers['cache-control'], 'no-store');
-    assert.deepEqual(await store.list('privacy-exports/'), []);
   });
   await t.test('RFQ and quote histories use owning COMMS projections without exporting employer threads as personal data', async () => {
     const fixture = await buildAgreement({ admin: h.db.admin, app: h.pool, people: seed.people, supplier: seed.companies.supplier, project: seed.project }, businessDate(20));
