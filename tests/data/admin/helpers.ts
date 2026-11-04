@@ -86,13 +86,13 @@ export function actors(adminPool: DataPool, runtime: DataPool, world: AdminWorld
     return { elevationId: elevation.id, requestId: `req-${randomUUID()}`, reasonCode: 'synthetic_test', reasonText: 'Synthetic test action' };
   };
   /** A sensitive role through the console: the founding owner asks, the founding staff admin approves, the owner assigns. */
-  const assignSensitive = async (input: { personId: string; role: HubStaffRole; scope: StaffScope }) => {
+  const assignSensitive = async ({ definitionVersion = 1, ...input }: { personId: string; role: HubStaffRole; scope: StaffScope; definitionVersion?: number }) => {
     const ownerCtx = await elevate(world.people.owner);
     const adminCtx = await elevate(world.people.admin);
-    const digest = adminDigests.assignment({ breakglass: false, personId: input.personId, role: input.role, scope: input.scope, definitionVersion: 1 });
+    const digest = adminDigests.assignment({ breakglass: false, personId: input.personId, role: input.role, scope: input.scope, definitionVersion });
     const request = await as(world.people.owner, (trx) => approvals.request(trx, ownerCtx, { action: 'staff.assign_sensitive_role', scope: input.scope, actionDigest: digest }));
     await as(world.people.admin, (trx) => approvals.decide(trx, adminCtx, request.id, 'approve', digest));
-    return as(world.people.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { ...input, definitionVersion: 1, approvalId: request.id }));
+    return as(world.people.owner, (trx) => staffAssignments.assign(trx, ownerCtx, { ...input, definitionVersion, approvalId: request.id }));
   };
   const assign = async (input: { personId: string; role: HubStaffRole; scope: StaffScope }) => {
     const ownerCtx = await elevate(world.people.owner);

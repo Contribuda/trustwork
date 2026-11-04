@@ -116,7 +116,7 @@ const ROLE_PERMISSIONS: Record<HubStaffRole, { scopes: Array<'platform' | 'node'
   'data-steward': {
     scopes: ['platform', 'node', 'hub'],
     permissions: [
-      'admin.hub.read', 'admin.hub.country.edit', 'admin.sources.read', 'admin.sources.manage', 'admin.sources.import.activate', 'admin.sources.dedupe.decide',
+      'admin.hub.read', 'admin.hub.country.edit', 'admin.claims.authority.decide', 'admin.sources.read', 'admin.sources.manage', 'admin.sources.import.activate', 'admin.sources.dedupe.decide',
       'admin.datasets.read', 'admin.datasets.edit', 'admin.links.decide', 'admin.taxonomy.read', 'admin.taxonomy.edit', 'admin.taxonomy.release', 'admin.units.edit',
       'admin.retrieval.read', 'admin.pipelines.read', 'admin.recommendations.rules.edit',
     ],
@@ -142,7 +142,7 @@ const ROLE_PERMISSIONS: Record<HubStaffRole, { scopes: Array<'platform' | 'node'
   'node-operator': {
     scopes: ['node'],
     permissions: [
-      'admin.hub.read', 'admin.node.hubs.manage', 'admin.node.keys.rotate', 'admin.ops.backups.read', 'admin.ops.restore.drill', 'admin.ops.restore.execute',
+      'admin.hub.read', 'admin.claims.authority.decide', 'admin.node.hubs.manage', 'admin.node.keys.rotate', 'admin.ops.backups.read', 'admin.ops.restore.drill', 'admin.ops.restore.execute',
       'admin.ops.updates.apply', 'admin.observability.read', 'admin.staff.read', 'admin.staff.assign', 'admin.providers.read', 'admin.audit.read',
     ],
   },

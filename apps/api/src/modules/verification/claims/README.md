@@ -64,7 +64,7 @@ The hub console, `/v1/admin/hubs/:hubId/claims`. Every route needs a staff role 
 | `POST /verifications/:verificationId/recheck` | `admin.claims.decide` | `{ recipeId }`, an active recipe of the level |
 | `GET /companies/:companyId/records` | any claims permission, with an open claim or case there | The company's records, without tax registrations; audited (`claims.records_read`) |
 | `POST /companies/:companyId/records` | `admin.claims.decide`, with an open claim or case there | `{ record, sourceRef }`: an identifier or a registration, labelled `sourced` |
-| `POST /companies/:companyId/country` | `admin.claims.authority.decide`, at a hub covering the old or the new country | `{ fromCountry, fromRegion, country, region }`: the first two restate what the reviewer saw (`409 country_changed` otherwise); `region` follows the rule of company creation; audited as `company.country_corrected` |
+| `POST /companies/:companyId/country` | `admin.claims.authority.decide` (the founding `node-operator` holds it, as it holds the other place authority such as `admin.hub.country.edit`, and so does the default `data-steward`; neither holds `admin.claims.decide`), at a hub covering the old or the new country | `{ fromCountry, fromRegion, country, region }`: the first two restate what the reviewer saw (`409 country_changed` otherwise); `region` follows the rule of company creation; audited as `company.country_corrected` |
 | `POST /identifiers/:identifierId/verify` | `admin.claims.decide` | `{ expectedRevision, checkId }`: ties the identifier to a passing check; moves no badge |
 | `POST /settings` | `admin.claims.policy.edit` | `{ waitingDays, coolingDays }`, each 1 to 30 |
 

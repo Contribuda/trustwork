@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { withMaintenance } from '@trustwork/data';
+import { staffRoleDefinitions } from '../../packages/data/src/repositories/admin.js';
 import { hubs } from '../../packages/data/src/repositories/kernel.js';
 import { command, expectRefusal } from '../admin/helpers.js';
 import { SKIP_REASON, startHarness, type Client, type Response } from '../backend/helpers/app.js';
@@ -60,6 +61,28 @@ test('Claim review stays inside a hub\'s territories', { skip: h ? false : SKIP_
     assert.equal(decided.state, 'rejected', 'the hub holds one region of the country, and the company has no place finer than the country');
     // A territory of another country still covers nothing here.
     expectRefusal(await submit(person.client, companyId, 'verified'), 422, 'validation.schema', 'company_outside_hub');
+  });
+
+  await t.test('the founding role unsticks a company with no country, and hands nothing over', async () => {
+    // Exactly what the setup wizard releases: on a new node this is the only role that exists.
+    const founding = (await admin.query<{ v: string[] }>('SELECT trustwork.setup_founding_permissions() AS v')).rows[0]!.v;
+    await withMaintenance(admin, (trx) => staffRoleDefinitions.release(trx, { version: 2, role: 'node-operator', scopes: ['node'], permissions: founding as never,
+      caps: { creditCapMinorUnits: null, grantMaxHours: 72 }, sodConflicts: [], sodMode: 'reduced', releasedBy: null }));
+    await w.actors.assignSensitive({ personId: w.people.admin2, role: 'node-operator', scope: { kind: 'node', nodeId: w.world.nodeId }, definitionVersion: 2 });
+    const operator = w.clients.admin2;
+    const companyId = await page('Synthetic Founding Case Builders', null, null);
+    const person = await claimant('Synthetic Founding Case Claimant', 'founding@founding.synthetic.invalid');
+    const claim = ok<{ claim: Claim }>(await submit(person.client, companyId, 'verified')).claim;
+
+    expectRefusal(await correct(w.clients.moderator, hubId, companyId, null, 'US'), 403, 'access.forbidden');
+    ok(await correct(operator, hubId, companyId, null, 'US'));
+    assert.equal(await countryOf(companyId), 'US');
+    assert.deepEqual((await audits('company.country_corrected', companyId)).map((row) => [row.outcome, row.hub_id]), [['denied', hubId], ['applied', hubId]], 'the moderator\'s refusal, then the correction');
+
+    expectRefusal(await decideOnly(operator, claim), 404, 'access.not_found');
+    assert.deepEqual([await statusOf(companyId), await handovers(companyId)], ['unclaimed', 0]);
+    ok(await decide(reviewer, { ...claim, companyId, recipeId: recipes.verified }));
+    assert.equal(await statusOf(companyId), 'verified');
   });
 
   await t.test('a company with no country is refused to every reviewer, whichever way they decide, until a correction', async () => {
