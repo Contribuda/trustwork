@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 326" role="img" aria-labelledby="vote-gap-title vote-gap-desc">
+<title id="vote-gap-title">Between the vote and the building: what three counts found</title>
+<desc id="vote-gap-desc">Three horizontal bars, each the full set of projects counted. The Philippines' Bottom-up Budgeting, 2013 to 2015: a blue segment of 27.8 per cent completed, 16,576 of 59,684 projects, and an amber segment of 7,928 dropped. Paris, projects voted by 2018: a blue segment of 263 of 612 complete, as reported. Uzbekistan, 135 projects checked by a civic monitor: an amber segment of a third found defective, unfinished or never contracted, as reported.</desc>
+<text x="20" y="36" class="bold ink" style="font-size:18px">Philippines, Bottom-up Budgeting, 2013–2015</text>
+<rect x="20" y="48" width="560" height="28" rx="4" class="night"/>
+<path d="M20 48 H171.7 a4 4 0 0 1 4 4 V72.0 a4 4 0 0 1 -4 4 H20 Z" class="blue"/>
+<text x="32" y="68" class="bold onfill" style="font-size:17px">27.8%</text>
+<path d="M177.7 48 H246.1 a4 4 0 0 1 4 4 V72.0 a4 4 0 0 1 -4 4 H177.7 Z" class="amber"/>
+<text x="20" y="100" class="ink2" style="font-size:16px">16,576 of 59,684 projects completed · 7,928 dropped</text>
+<text x="20" y="132" class="bold ink" style="font-size:18px">Paris, projects voted by 2018</text>
+<rect x="20" y="144" width="560" height="28" rx="4" class="night"/>
+<path d="M20 144 H256.7 a4 4 0 0 1 4 4 V168.0 a4 4 0 0 1 -4 4 H20 Z" class="blue"/>
+<text x="32" y="164" class="bold onfill" style="font-size:17px">263 of 612</text>
+<text x="20" y="196" class="ink2" style="font-size:16px">complete, as reported</text>
+<text x="20" y="228" class="bold ink" style="font-size:18px">Uzbekistan, 135 projects checked by a civic monitor</text>
+<rect x="20" y="240" width="560" height="28" rx="4" class="night"/>
+<path d="M20 240 H202.7 a4 4 0 0 1 4 4 V264.0 a4 4 0 0 1 -4 4 H20 Z" class="amber"/>
+<text x="32" y="260" class="bold onamber" style="font-size:17px">a third</text>
+<text x="20" y="292" class="ink2" style="font-size:16px">defective, unfinished or never contracted, as reported</text>
+<rect x="20" y="300" width="14" height="14" rx="3" class="blue"/>
+<text x="42" y="312" class="ink2" style="font-size:16px">completed</text>
+<rect x="150" y="300" width="14" height="14" rx="3" class="amber"/>
+<text x="172" y="312" class="ink2" style="font-size:16px">dropped or found defective</text>
+</svg>

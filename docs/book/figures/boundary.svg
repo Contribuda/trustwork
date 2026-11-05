@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 452" role="img" aria-labelledby="boundary-title boundary-desc">
+<title id="boundary-title">What syncs between a hub and its Contribuda project, and what never crosses</title>
+<desc id="boundary-desc">Two columns. On the left, a blue box, Trustwork hub, the owner's, in the country, with a darker core marked never crosses: private data, deal data, staff case data, agents' grants, provider secrets, audit beyond counts. On the right, a plain box, Contribuda project, the mirror: units and seats held by people; plans, tasks, decisions, obligations; development requests and work; counts in cohorts of ten or more. Six two-way blue arrows run between them, labelled organisation, positions, plans and tasks, decisions, obligations, development work. A dashed amber line crosses all six arrows and ends in a switch, the owner's disconnect switch.</desc>
+<rect x="20" y="20" width="200" height="420" rx="14" class="boxb"/>
+<text x="120" y="54" text-anchor="middle" class="bold ink" style="font-size:20px">Trustwork hub</text>
+<text x="120" y="76" text-anchor="middle" class="ink3" style="font-size:15px">the owner's, in the country</text>
+<rect x="36" y="92" width="168" height="232" rx="10" class="night"/>
+<text x="120" y="118" text-anchor="middle" class="bold ink" style="font-size:17px">never crosses</text>
+<text x="120" y="148" text-anchor="middle" class="ink2" style="font-size:16px">private data</text>
+<text x="120" y="178" text-anchor="middle" class="ink2" style="font-size:16px">deal data</text>
+<text x="120" y="208" text-anchor="middle" class="ink2" style="font-size:16px">staff case data</text>
+<text x="120" y="238" text-anchor="middle" class="ink2" style="font-size:16px">agents' grants</text>
+<text x="120" y="268" text-anchor="middle" class="ink2" style="font-size:16px">provider secrets</text>
+<text x="120" y="298" text-anchor="middle" class="ink2" style="font-size:16px">audit beyond counts</text>
+<text x="120" y="360" text-anchor="middle" class="ink2" style="font-size:15px">mandates, cases,</text>
+<text x="120" y="380" text-anchor="middle" class="ink2" style="font-size:15px">queues and drafts</text>
+<text x="120" y="400" text-anchor="middle" class="ink2" style="font-size:15px">stay here</text>
+<rect x="380" y="20" width="200" height="420" rx="14" class="box"/>
+<text x="480" y="54" text-anchor="middle" class="bold ink" style="font-size:20px">Contribuda project</text>
+<text x="480" y="76" text-anchor="middle" class="ink3" style="font-size:15px">the mirror</text>
+<text x="480" y="118" text-anchor="middle" class="ink2" style="font-size:16px">units and seats</text>
+<text x="480" y="142" text-anchor="middle" class="ink2" style="font-size:16px">held by people</text>
+<text x="480" y="190" text-anchor="middle" class="ink2" style="font-size:16px">plans, tasks,</text>
+<text x="480" y="214" text-anchor="middle" class="ink2" style="font-size:16px">decisions,</text>
+<text x="480" y="238" text-anchor="middle" class="ink2" style="font-size:16px">obligations</text>
+<text x="480" y="286" text-anchor="middle" class="ink2" style="font-size:16px">development</text>
+<text x="480" y="310" text-anchor="middle" class="ink2" style="font-size:16px">requests and work</text>
+<text x="480" y="358" text-anchor="middle" class="ink2" style="font-size:16px">counts in cohorts</text>
+<text x="480" y="382" text-anchor="middle" class="ink2" style="font-size:16px">of ten or more</text>
+<path d="M224 112 L376 112" class="wire-blue"/>
+<path d="M369 105 L376 112 L369 119" class="wire-blue"/>
+<path d="M231 105 L224 112 L231 119" class="wire-blue"/>
+<text x="310" y="103" text-anchor="middle" class="ink2" style="font-size:16px">organisation</text>
+<path d="M224 158 L376 158" class="wire-blue"/>
+<path d="M369 151 L376 158 L369 165" class="wire-blue"/>
+<path d="M231 151 L224 158 L231 165" class="wire-blue"/>
+<text x="310" y="149" text-anchor="middle" class="ink2" style="font-size:16px">positions</text>
+<path d="M224 204 L376 204" class="wire-blue"/>
+<path d="M369 197 L376 204 L369 211" class="wire-blue"/>
+<path d="M231 197 L224 204 L231 211" class="wire-blue"/>
+<text x="310" y="195" text-anchor="middle" class="ink2" style="font-size:16px">plans and tasks</text>
+<path d="M224 250 L376 250" class="wire-blue"/>
+<path d="M369 243 L376 250 L369 257" class="wire-blue"/>
+<path d="M231 243 L224 250 L231 257" class="wire-blue"/>
+<text x="310" y="241" text-anchor="middle" class="ink2" style="font-size:16px">decisions</text>
+<path d="M224 296 L376 296" class="wire-blue"/>
+<path d="M369 289 L376 296 L369 303" class="wire-blue"/>
+<path d="M231 289 L224 296 L231 303" class="wire-blue"/>
+<text x="310" y="287" text-anchor="middle" class="ink2" style="font-size:16px">obligations</text>
+<path d="M224 342 L376 342" class="wire-blue"/>
+<path d="M369 335 L376 342 L369 349" class="wire-blue"/>
+<path d="M231 335 L224 342 L231 349" class="wire-blue"/>
+<text x="310" y="333" text-anchor="middle" class="ink2" style="font-size:16px">development work</text>
+<path d="M240 94 L240 352" class="wire-amber" stroke-dasharray="8 6"/>
+<rect x="252" y="362" width="96" height="28" rx="14" class="boxa"/>
+<circle cx="328" cy="376" r="10" class="amber"/>
+<text x="262" y="382" class="bold ink" style="font-size:15px">on</text>
+<text x="300" y="416" text-anchor="middle" class="amberink" style="font-size:16px">the owner's</text>
+<text x="300" y="436" text-anchor="middle" class="amberink" style="font-size:16px">disconnect switch</text>
+</svg>

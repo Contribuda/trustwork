@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 490" role="img" aria-labelledby="civic-scores-title civic-scores-desc">
+<title id="civic-scores-title">The civic scores of the fourteen countries</title>
+<desc id="civic-scores-desc">Fourteen horizontal bars sorted from the highest score to the lowest: Dominican Republic 83, Peru 82, Colombia 80, Philippines 78, United States 77, Kenya 75, Ghana 73, Mexico 73, Armenia 68, Nigeria 66, Georgia 59, Rwanda 57, Uzbekistan 53, Azerbaijan 41. The Dominican Republic's bar is amber and marked first civic pilot. Georgia, Rwanda, Uzbekistan and Azerbaijan are drawn as dashed outlines and marked civic layer paused; the rest are solid blue.</desc>
+<text x="184" y="18" class="ink3" style="font-size:16px">civic score, 0 to 100</text>
+<text x="172" y="46" text-anchor="end" class="ink" style="font-size:16px">Dominican Republic</text>
+<path d="M184 31 H492.0 a4 4 0 0 1 4 4 V47.0 a4 4 0 0 1 -4 4 H184 Z" class="amber"/>
+<text x="504.0" y="46" class="bold ink" style="font-size:16px">83</text>
+<text x="486.0" y="46" text-anchor="end" class="bold onamber" style="font-size:16px">first civic pilot</text>
+<text x="172" y="76" text-anchor="end" class="ink" style="font-size:16px">Peru</text>
+<path d="M184 61 H488.3 a4 4 0 0 1 4 4 V77.0 a4 4 0 0 1 -4 4 H184 Z" class="blue"/>
+<text x="500.32" y="76" class="bold ink" style="font-size:16px">82</text>
+<text x="172" y="106" text-anchor="end" class="ink" style="font-size:16px">Colombia</text>
+<path d="M184 91 H480.8 a4 4 0 0 1 4 4 V107.0 a4 4 0 0 1 -4 4 H184 Z" class="blue"/>
+<text x="492.8" y="106" class="bold ink" style="font-size:16px">80</text>
+<text x="172" y="136" text-anchor="end" class="ink" style="font-size:16px">Philippines</text>
+<path d="M184 121 H473.3 a4 4 0 0 1 4 4 V137.0 a4 4 0 0 1 -4 4 H184 Z" class="blue"/>
+<text x="485.28" y="136" class="bold ink" style="font-size:16px">78</text>
+<text x="172" y="166" text-anchor="end" class="ink" style="font-size:16px">United States</text>
+<path d="M184 151 H469.5 a4 4 0 0 1 4 4 V167.0 a4 4 0 0 1 -4 4 H184 Z" class="blue"/>
+<text x="481.52" y="166" class="bold ink" style="font-size:16px">77</text>
+<text x="172" y="196" text-anchor="end" class="ink" style="font-size:16px">Kenya</text>
+<path d="M184 181 H462.0 a4 4 0 0 1 4 4 V197.0 a4 4 0 0 1 -4 4 H184 Z" class="blue"/>
+<text x="474.0" y="196" class="bold ink" style="font-size:16px">75</text>
+<text x="172" y="226" text-anchor="end" class="ink" style="font-size:16px">Ghana</text>
+<path d="M184 211 H454.5 a4 4 0 0 1 4 4 V227.0 a4 4 0 0 1 -4 4 H184 Z" class="blue"/>
+<text x="466.48" y="226" class="bold ink" style="font-size:16px">73</text>
+<text x="172" y="256" text-anchor="end" class="ink" style="font-size:16px">Mexico</text>
+<path d="M184 241 H454.5 a4 4 0 0 1 4 4 V257.0 a4 4 0 0 1 -4 4 H184 Z" class="blue"/>
+<text x="466.48" y="256" class="bold ink" style="font-size:16px">73</text>
+<text x="172" y="286" text-anchor="end" class="ink" style="font-size:16px">Armenia</text>
+<path d="M184 271 H435.7 a4 4 0 0 1 4 4 V287.0 a4 4 0 0 1 -4 4 H184 Z" class="blue"/>
+<text x="447.68" y="286" class="bold ink" style="font-size:16px">68</text>
+<text x="172" y="316" text-anchor="end" class="ink" style="font-size:16px">Nigeria</text>
+<path d="M184 301 H428.2 a4 4 0 0 1 4 4 V317.0 a4 4 0 0 1 -4 4 H184 Z" class="blue"/>
+<text x="440.15999999999997" y="316" class="bold ink" style="font-size:16px">66</text>
+<text x="172" y="346" text-anchor="end" class="ink" style="font-size:16px">Georgia</text>
+<rect x="184" y="331" width="221.8" height="20" rx="4" class="paused"/>
+<text x="413.84000000000003" y="346" class="bold ink" style="font-size:16px">59</text>
+<text x="294.92" y="346" text-anchor="middle" class="ink3" style="font-size:16px">paused</text>
+<text x="172" y="376" text-anchor="end" class="ink" style="font-size:16px">Rwanda</text>
+<rect x="184" y="361" width="214.3" height="20" rx="4" class="paused"/>
+<text x="406.32" y="376" class="bold ink" style="font-size:16px">57</text>
+<text x="291.15999999999997" y="376" text-anchor="middle" class="ink3" style="font-size:16px">paused</text>
+<text x="172" y="406" text-anchor="end" class="ink" style="font-size:16px">Uzbekistan</text>
+<rect x="184" y="391" width="199.3" height="20" rx="4" class="paused"/>
+<text x="391.28" y="406" class="bold ink" style="font-size:16px">53</text>
+<text x="283.64" y="406" text-anchor="middle" class="ink3" style="font-size:16px">paused</text>
+<text x="172" y="436" text-anchor="end" class="ink" style="font-size:16px">Azerbaijan</text>
+<rect x="184" y="421" width="154.2" height="20" rx="4" class="paused"/>
+<text x="346.15999999999997" y="436" class="bold ink" style="font-size:16px">41</text>
+<text x="261.08" y="436" text-anchor="middle" class="ink3" style="font-size:16px">paused</text>
+<path d="M184 26 L184 450" class="thin"/>
+<rect x="20" y="464" width="14" height="14" rx="3" class="blue"/>
+<text x="42" y="476" class="ink2" style="font-size:16px">civic ring may open</text>
+<rect x="212" y="464" width="14" height="14" rx="3" class="amber"/>
+<text x="234" y="476" class="ink2" style="font-size:16px">first civic pilot</text>
+<rect x="384" y="464" width="14" height="14" rx="3" class="paused"/>
+<text x="406" y="476" class="ink2" style="font-size:16px">civic layer paused</text>
+</svg>

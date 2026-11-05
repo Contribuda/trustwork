@@ -1,0 +1,180 @@
+<h2>This book is part of the engine</h2>
+<p class="lede">
+  The Trustwork Book is not written about the engine from outside it. It is one
+  of the engine's parts. It lives in the same public repository as the code,
+  under the same licence and in the same history. It changes the same way: in
+  the open, through changes anyone can read, question and trace. It is a living
+  book, and anyone who builds with Trustwork can write in it.
+</p>
+
+<h3>Why a book belongs to an engine</h3>
+<p>
+  An engine that many people run in many countries needs more than code that
+  works. It needs a shared understanding of what the code is for. A hub operator
+  in Accra, a city budget office in Medellín, a lender reading a build file and
+  a contributor's agent opening the repository for the first time should reach
+  the same answers. They need to know why the engine is free, whom a hub belongs
+  to, what is never done with a resident's data and why reputation cannot be
+  bought. The code enforces those answers, and the decision records fix them.
+  This book explains them. Without the explanation, every new hub would
+  rediscover the reasons, or lose them.
+</p>
+<p>
+  So the book is treated like the rest of the engine. It is versioned with the
+  code, so any reader can see what it said on the day a decision was taken. It
+  is checked by the same pipeline: a change that breaks its rules fails the
+  build. And it is open to the same people. A book about building trust from
+  evidence should itself be built that way.
+</p>
+
+<h3>A living book</h3>
+<p>
+  Each edition is a dated snapshot. This is the first, of November 2026. Between
+  editions the book grows. Corrections land when a reader finds a wrong number.
+  Research lands when someone brings evidence from their country. Chapter 18
+  changes when something is built. And once hubs run, the book gains chapters
+  about what they taught us. When the engine changes what is true, the book
+  changes with it. When the book's reasoning turns out wrong, the book says so
+  and says what replaced it.
+</p>
+<p>
+  The status words in this book (Live, Demo, Contract, Designed and Proposed)
+  describe the state on the date of the edition. The engine's status page in the
+  repository is always authoritative.
+</p>
+
+<h3>Everyone can write in it</h3>
+<p>
+  Hub owners and operators, partners, researchers, engineers, people who have
+  built their own house, students and AI agents working for a person: anyone may
+  propose a change. The book needs most what only its readers have:
+</p>
+<ul>
+  <li>
+    <strong>Corrections.</strong> A fact, a number, a source or a status that is
+    wrong or out of date, or a sentence that reads wrong to someone in another
+    country.
+  </li>
+  <li>
+    <strong>Research.</strong> Evidence about participatory and open budgets,
+    building standards, housing finance, learning, building culture or civic
+    space, with a source for every claim. Research notes sit beside the book,
+    and editors carry what holds up into the chapters.
+  </li>
+  <li>
+    <strong>Places.</strong> A profile of a country or a city where the engine
+    is needed, or a correction of one in chapter 20.
+  </li>
+  <li>
+    <strong>Cases and thoughts.</strong> What happened on a real site or in a
+    real budget, what a family learned from a build, and what a hub should do
+    differently. Ideas that change the direction come as a proposal and are
+    discussed in the open.
+  </li>
+  <li>
+    <strong>Translations.</strong> Editions in other languages, each reviewed by
+    a native speaker.
+  </li>
+</ul>
+<p>
+  What contributors cannot change by editing are the book's positions. These are
+  the mission, the engine being open and free, income earned inside a country
+  belonging to that country, the invariants and the lines in chapter 15. They
+  change only by a recorded decision, and anyone may propose one.
+</p>
+
+<h3>How a change is made</h3>
+<p>
+  The sources are in <code>docs/book/</code> of the repository
+  github.com/Contribuda/trustwork. <code>docs/book/README.md</code> is the
+  book's own page: how to read it, how to contribute and the editorial rules.
+  <code>book.json</code> holds the parts and the order of chapters. Each chapter
+  is one small HTML file in <code>chapters/</code>. The figures are in
+  <code>figures/</code>, drawn with colours taken from the book's theme. The
+  research notes are in <code>research/</code>.
+</p>
+<ol>
+  <li>
+    Open an issue for anything larger than a correction, so that the change fits
+    the book and does not repeat another chapter.
+  </li>
+  <li>
+    Edit the chapter, or add one and name it in <code>book.json</code>. Add
+    every new outside source to chapter 28.
+  </li>
+  <li>
+    Run <code>npm run book</code>. It writes the designed offline edition and a
+    text edition with one Markdown file per chapter. Commit the sources and both
+    editions. <code>npm run validate:docs</code> fails when an edition drifts
+    from its sources.
+  </li>
+  <li>
+    Open a pull request as for any other change: say what and why, name the
+    source, and sign off. People review it, and it lands when a maintainer
+    accepts it.
+  </li>
+</ol>
+<p>
+  The build refuses whatever would make the book depend on a network or break
+  its promises. It rejects anything fetched from outside the file. It rejects an
+  outside link anywhere but the author's page and the sources, and a repository
+  path anywhere but this chapter. It also rejects text that is not English and
+  an unfinished passage.
+</p>
+
+<h3>The rules the editors keep</h3>
+<ul>
+  <li>
+    <strong>Two kinds of chapter.</strong> Vision and the system as it will be
+    fill most of the book. What is built today lives in chapter 18. When
+    something lands, its sentence there changes, and the rest stands.
+  </li>
+  <li>
+    <strong>Evidence.</strong> No invented numbers, people, quotations or
+    prices. Every outside fact has a source in chapter 28. What could not be
+    verified is said plainly or left out.
+  </li>
+  <li>
+    <strong>Organisations.</strong> Naming an organisation records its public
+    work. It implies no contact, interest or agreement. "Connected" is used only
+    for an integration that works today. Nobody is called a partner unless an
+    agreement exists and both sides have made it public.
+  </li>
+  <li>
+    <strong>Places.</strong> Restricted places never appear as hosts or markets.
+    The civic-space review in chapter 20 is repeated every year and dated.
+  </li>
+  <li>
+    <strong>People.</strong> The book holds no personal data beyond the author's
+    public biography and the published contacts.
+  </li>
+  <li>
+    <strong>Words.</strong> The terms of the glossary, "resident" rather than
+    "citizen" unless a law says so, plain professional prose, no hype.
+  </li>
+</ul>
+
+<h3>Editions</h3>
+<ul>
+  <li>
+    <strong>First edition, November 2026.</strong> The first public edition,
+    checked against its sources and against the engine's repository before
+    publication. It states the decisions on the open and free engine, the hub
+    owner's income and the reference hub that the decision record ADR 028 fixes.
+  </li>
+</ul>
+<p>
+  Each new edition adds a line here: its date and what changed in substance. The
+  full record of every change is the repository's history.
+</p>
+
+<h3>Agents read it too</h3>
+<p>
+  Many first readers of this repository are AI agents working for a person. The
+  repository's instructions for agents send them to this book first, so that an
+  agent asked "what is Trustwork, and why is it free?" answers from the book
+  rather than from guesswork. They also tell agents to check the status page for
+  what runs today and to read the latest history before describing the state of
+  the project. An agent that contributes to the book follows the same rules as a
+  person, and the person it works for signs the change.
+</p>

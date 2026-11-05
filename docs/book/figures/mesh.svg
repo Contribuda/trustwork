@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 440" role="img" aria-labelledby="mesh-title mesh-desc">
+<title id="mesh-title">One mesh: what federates and what never leaves a node</title>
+<desc id="mesh-desc">Four boxes, each one node of the mesh: a country hub, a city hub, a country hub elsewhere, and a civic hub. Blue wires between every pair carry public projections. One amber wire, between the city hub and the civic hub, carries a single deal between the nodes of its two parties. Inside each box a dark core marked private has no wire at all, because private data never leaves its node.</desc>
+<path d="M240 100 L360 100" class="wire-blue"/>
+<path d="M240 340 L360 340" class="wire-blue"/>
+<path d="M140 160 L140 280" class="wire-blue"/>
+<path d="M240 160 L360 280" class="wire-blue"/>
+<path d="M360 160 L240 280" class="wire-blue"/>
+<path d="M460 160 L460 280" class="wire-amber" stroke-dasharray="10 8"/>
+<text x="128" y="226" text-anchor="end" class="blueink" style="font-size:20px">public</text>
+<text x="472" y="226" text-anchor="start" class="amberink" style="font-size:20px">one deal</text>
+<rect x="40" y="40" width="200" height="120" rx="12" class="boxb"/>
+<text x="140" y="80" text-anchor="middle" class="bold ink" style="font-size:22px">Country hub</text>
+<rect x="80" y="100" width="120" height="48" rx="6" class="night"/>
+<text x="140" y="131" text-anchor="middle" class="ink2" style="font-size:20px">private</text>
+<rect x="360" y="40" width="200" height="120" rx="12" class="boxb"/>
+<text x="460" y="80" text-anchor="middle" class="bold ink" style="font-size:22px">City hub</text>
+<rect x="400" y="100" width="120" height="48" rx="6" class="night"/>
+<text x="460" y="131" text-anchor="middle" class="ink2" style="font-size:20px">private</text>
+<rect x="40" y="280" width="200" height="120" rx="12" class="boxb"/>
+<text x="140" y="320" text-anchor="middle" class="bold ink" style="font-size:22px">Another country</text>
+<rect x="80" y="340" width="120" height="48" rx="6" class="night"/>
+<text x="140" y="371" text-anchor="middle" class="ink2" style="font-size:20px">private</text>
+<rect x="360" y="280" width="200" height="120" rx="12" class="boxa"/>
+<text x="460" y="320" text-anchor="middle" class="bold ink" style="font-size:22px">Civic hub</text>
+<rect x="400" y="340" width="120" height="48" rx="6" class="night"/>
+<text x="460" y="371" text-anchor="middle" class="ink2" style="font-size:20px">private</text>
+</svg>

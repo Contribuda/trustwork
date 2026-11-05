@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 572" role="img" aria-labelledby="money-flows-title money-flows-desc">
+<title id="money-flows-title">Two zones: inside a country, and across borders</title>
+<desc id="money-flows-desc">Above, a solid blue zone titled inside a country, marked stays in the country: a participants box and a hub owner box joined by a two-way amber arrow labelled commissions, set as hub settings; beneath them a box, money moves only through licensed payment providers; and a line, prices published, never an influence on ranking or reputation. Below, a dashed zone titled across borders, marked Contribuda's part, to be decided: hub, country A and hub, country B joined by a two-way blue arrow labelled deals, payments, reputation, where Contribuda takes part, disclosed before acceptance. At the foot: Contribuda takes no licence fee, no implementation fee and no share of any hub's domestic income.</desc>
+<rect x="20" y="20" width="560" height="250" rx="14" class="boxb"/>
+<text x="40" y="52" class="bold ink" style="font-size:20px">Inside a country</text>
+<text x="560" y="52" text-anchor="end" class="ink3" style="font-size:16px">stays in the country</text>
+<rect x="50" y="90" width="160" height="60" rx="10" class="box"/>
+<text x="130" y="127" text-anchor="middle" class="bold ink" style="font-size:18px">participants</text>
+<rect x="390" y="90" width="160" height="60" rx="10" class="box"/>
+<text x="470" y="127" text-anchor="middle" class="bold ink" style="font-size:18px">the hub owner</text>
+<path d="M216 120 L384 120" class="wire-amber"/>
+<path d="M376 112 L384 120 L376 128" class="wire-amber"/>
+<path d="M224 112 L216 120 L224 128" class="wire-amber"/>
+<text x="300" y="106" text-anchor="middle" class="amberink" style="font-size:16px">commissions</text>
+<text x="300" y="148" text-anchor="middle" class="ink3" style="font-size:16px">set as hub settings</text>
+<rect x="50" y="176" width="500" height="50" rx="10" class="box"/>
+<text x="300" y="208" text-anchor="middle" class="ink" style="font-size:17px">money moves only through licensed payment providers</text>
+<text x="300" y="252" text-anchor="middle" class="ink3" style="font-size:16px">prices published; never an influence on ranking or reputation</text>
+<rect x="20" y="300" width="560" height="196" rx="14" class="open"/>
+<text x="40" y="332" class="bold ink" style="font-size:20px">Across borders</text>
+<text x="560" y="332" text-anchor="end" class="ink3" style="font-size:16px">Contribuda's part · to be decided</text>
+<rect x="50" y="372" width="130" height="60" rx="10" class="box"/>
+<text x="115" y="409" text-anchor="middle" class="bold ink" style="font-size:17px">hub, country A</text>
+<rect x="420" y="372" width="130" height="60" rx="10" class="box"/>
+<text x="485" y="409" text-anchor="middle" class="bold ink" style="font-size:17px">hub, country B</text>
+<path d="M186 402 L414 402" class="wire-blue"/>
+<path d="M406 394 L414 402 L406 410" class="wire-blue"/>
+<path d="M194 394 L186 402 L194 410" class="wire-blue"/>
+<text x="300" y="388" text-anchor="middle" class="blueink" style="font-size:16px">deals, payments, reputation</text>
+<text x="300" y="430" text-anchor="middle" class="ink3" style="font-size:16px">Contribuda takes part here</text>
+<text x="300" y="474" text-anchor="middle" class="ink3" style="font-size:16px">disclosed before acceptance; never changes ranking or matching</text>
+<text x="300" y="530" text-anchor="middle" class="bold ink" style="font-size:18px">Contribuda: no licence fee, no implementation fee,</text>
+<text x="300" y="554" text-anchor="middle" class="bold ink" style="font-size:18px">no share of any hub's domestic income</text>
+</svg>

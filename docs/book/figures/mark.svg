@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-labelledby="mark-title mark-desc">
+<title id="mark-title">The mark, read</title>
+<desc id="mark-desc">Trustwork's mark is a two-by-two grid with three blue squares laid and the upper-left place open. Read clockwise from the open place: the upper right is the person who builds, the lower right the company that delivers, the lower left the public body that commissions with common money, and the open upper left, drawn as a dashed outline, the resident and the community, whose place is not ours to fill.</desc>
+<rect x="14" y="14" width="186" height="186" rx="20" class="open"/>
+<rect x="220" y="14" width="186" height="186" rx="20" class="blue"/>
+<text x="313.0" y="103.0" text-anchor="middle" class="bold onfill" style="font-size:22px">the person</text>
+<text x="313.0" y="131.0" text-anchor="middle" class="onfill" style="font-size:18px">who builds</text>
+<rect x="220" y="220" width="186" height="186" rx="20" class="blue"/>
+<text x="313.0" y="309.0" text-anchor="middle" class="bold onfill" style="font-size:22px">the company</text>
+<text x="313.0" y="337.0" text-anchor="middle" class="onfill" style="font-size:18px">that delivers</text>
+<rect x="14" y="220" width="186" height="186" rx="20" class="blue"/>
+<text x="107.0" y="309.0" text-anchor="middle" class="bold onfill" style="font-size:22px">the public</text>
+<text x="107.0" y="337.0" text-anchor="middle" class="onfill" style="font-size:18px">that commissions</text>
+<text x="107.0" y="103.0" text-anchor="middle" class="bold blueink" style="font-size:22px">the resident</text>
+<text x="107.0" y="131.0" text-anchor="middle" class="blueink" style="font-size:18px">a place left open</text>
+</svg>

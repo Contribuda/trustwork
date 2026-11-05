@@ -4,6 +4,7 @@
 import { readdirSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { resolve, dirname, join, relative } from 'node:path';
 import { load as loadWorkPackages, validate as validateWorkPackages } from './work-packages.mjs';
+import { drift as bookDrift } from './book.mjs';
 
 const root = process.cwd();
 const errors = [];
@@ -20,6 +21,9 @@ for (const file of files.filter((p) => p.endsWith('.md'))) {
     if (link && !existsSync(resolve(dirname(file), link))) errors.push(`Broken local link: ${relative(root, file)} -> ${link}`);
   }
 }
+
+// The Trustwork Book: its HTML and text editions are written from docs/book by npm run book and must not drift.
+try { errors.push(...bookDrift()); } catch (error) { errors.push(`The Trustwork Book does not build: ${error.message}`); }
 
 const workPackages = loadWorkPackages();
 errors.push(...validateWorkPackages(workPackages));
@@ -60,5 +64,5 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log(`Validated local Markdown links, ${workPackages.packages.length} work packages, ${specIds.length} requirements and the navigation invariant.`);
+  console.log(`Validated local Markdown links, the Trustwork Book, ${workPackages.packages.length} work packages, ${specIds.length} requirements and the navigation invariant.`);
 }
