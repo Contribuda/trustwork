@@ -68,7 +68,7 @@ A scoped question from a plan item answered by an expert for a fee, with a recor
 
 **Contribuda**
 
-The company that creates and maintains Trustwork and gives it away under its licence, with no licence or implementation fee and no share of any hub's domestic income; it takes part only in the international layer (chapter 7). Nobody needs it to run a hub; at a hub owner's wish it may be the tool for running one, on its own terms (chapter 23). The decided operator of the reference hub. Formerly Contribuddha; public contact addresses keep the domain contribuddha.com until the move to the new name is complete.
+The company that creates and maintains Trustwork and gives it away under its licence, with no licence or implementation fee and no share of any hub's domestic income; it takes part only in the international layer (chapter 7). Nobody needs it to run a hub. As a company it works under its own rules and commercial terms: a hub owner who chooses its platform or services is its client like any other, and may leave at any moment (chapter 23). The decided operator of the reference hub. Formerly Contribuddha; public contact addresses keep the domain contribuddha.com until the move to the new name is complete.
 
 **CoST**
 

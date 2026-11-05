@@ -12,6 +12,14 @@ Contribuda develops the engine and gives it away, and any hub may decline it ent
 
 Start with the refusal, because it is what makes the rest credible. The engine is free software under a licence that lets anyone run it, change it and run it unbranded. Its handbook, its console, its setup wizard, its launch playbook and its operating company of agents are part of the engine, and so are free of charge. Nothing in the engine requires Contribuda. No gate in the launch checklist asks for a Contribuda account. The public directory of hubs, designed to be run by Contribuda (Proposed; to be confirmed), is a phone book any operator may also run, and no hub needs it in order to peer. A municipality that must win a tender on its own costs, a chamber whose procurement rules forbid a foreign platform, an entrepreneur who prefers their own tools: each runs a complete hub and owes Contribuda nothing, not even a conversation.
 
+## Two roles, kept apart
+
+Contribuda plays two roles, and the book keeps them apart. As the developer of the engine it creates Trustwork, develops it and maintains it, and gives it to everyone free. As a company it runs its own platform and services under its own rules, the laws that apply to it and its own commercial terms, for any client.
+
+The second role is easiest to see by imagining that Trustwork had been written by someone else. A person could still open a project in Contribuda, point it at that open-source engine, launch a business on it and grow it. They would be a client of Contribuda, working with it on commercial terms under Contribuda's rules, like the client of any other project. A hub owner who opens a Trustwork hub through Contribuda is in exactly that position. That Contribuda also wrote the engine gives the hub owner no extra obligation and Contribuda no extra claim: the engine stays free, and only the service the hub owner chooses is paid, by the same rules as for every client.
+
+Three paths are therefore always open. Run the hub entirely alone, without Contribuda. Launch it through Contribuda and use its services for as long as they help. Or leave Contribuda at any moment and keep running the hub alone, with its infrastructure, accounts and data, which were created in the owner's name from the start.
+
 ## What Contribuda is, briefly
 
 Contribuda is a project operating system and a managed delivery service. A person brings an idea; Contribuda's assistant understands it in one conversation and frames a project. The plan is a work breakdown, each work package naming a professional role at a level. The team is a seat chart derived from the plan; a seat is held by the owner's own person or agent, by a contributor, or by one of Contribuda's system agents, and an agent is never accountable. The runtime creates what the plan declared: a repository, hosting, a database, a domain in the owner's name, later a company through a formation operator. Every decision that is a person's comes to them as a gate. The project's conversation lives beside the plan. Money follows accepted work: the client pays Contribuda for a result, and Contribuda pays the people who made it, as the one counterparty on both sides.
@@ -75,7 +83,7 @@ One tension must be named. A hub owned by a local operator may not want to be th
 
 Free, settled, and not for revisiting: the engine; its installation, which is a documented stack anyone can run; the handbook, the console and the launch playbook; the operating company of agents inside the hub; a listing in the directory. No licence fee, no implementation fee, no share of anything a hub earns at home.
 
-A hub owner who wants Contribuda's help, or who runs the hub's company through Contribuda, opens a Contribuda project like any other, under Contribuda's published terms. It is a service the hub owner chooses, not a fee for the engine or for implementing it, and it can be stopped at any moment without the hub losing anything.
+A hub owner who wants Contribuda's help, or who runs the hub's company through Contribuda, opens a Contribuda project like any other and becomes a client of Contribuda, on its commercial terms and under its rules, as anyone would be who built a business on any open-source engine. It is a service the hub owner chooses, not a fee for the engine or for implementing it, and it can be stopped at any moment without the hub losing anything.
 
 ## What we are still missing
 

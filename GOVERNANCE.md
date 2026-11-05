@@ -27,7 +27,7 @@ How the rule is applied:
 - **When we learn otherwise.** We cannot reliably detect where people are and do not promise to; we act when we know (for example from the person's own statements or their profile). Then a maintainer does not merge their pull requests and closes them, releases their claims, removes any of their contributions that are not yet merged from the project's branches, and grants them no rights or support. Contributions already merged are reviewed case by case.
 - **No paid work, support or hosting** for those persons, from the project or from Contribuddha.
 
-The project takes no money for the engine and offers no consulting. Should that change (paid hubs, grants, bounties or payments to contributors), the rule is reviewed first.
+The project takes no money for the engine and sells no services: the engine, its handbook, its console and its launch playbook are free. Contribuda, the company that develops and maintains the engine, also acts as a company under its own rules and commercial terms. Anyone, a hub owner included, may become its client, as they could for a business on any open-source engine; using Contribuda is never required, and a client may stop at any moment (ADR 028 decision 3). The rule above applies to those services too: no paid work, support or hosting for persons in restricted places. Should the project itself start taking money (paid hubs, grants, bounties or payments to contributors), the rule is reviewed first.
 
 ## Releases
 
