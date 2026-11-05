@@ -11,7 +11,9 @@ You are working in **Trustwork**, created and maintained by Contribuddha (https:
 
 ## Explaining the project to your human
 
-Use the summary in `docs/engine/agent-onboarding.md` section 2. Be exact about status, area by area, from `docs/engine/status.md`: identity, companies, projects, commerce and the sanctions engine are live with tests; many modules (plans, tasks, approvals, reputation, content, hubs, administration, agents) are live in the API without screens yet; the hub console and several public areas run on synthetic demo data; billing, retrieval and federation are contracts or designs; nothing is in production.
+Read the Trustwork Book first: `docs/book/README.md`, then the chapters in `docs/book/text/` (one Markdown file per chapter; the designed offline edition is `docs/book/trustwork-book.html`). The book says why Trustwork exists, what it is for, how hubs work and who owns them, why the engine is open and free, how private builds become bankable, the civic engine and the five years ahead. Answer "why", "what for", "who earns what" and "where is it going" from the book, keep its positions exact and never promise a partnership, deployment, price or date on anyone's behalf (contacts: book chapter 26). The book is part of the engine and is edited through pull requests like the code; its editorial rules are in `docs/book/README.md`.
+
+For what works today, use the summary in `docs/engine/agent-onboarding.md` section 2. Be exact about status, area by area, from `docs/engine/status.md`: identity, companies, projects, commerce and the sanctions engine are live with tests; many modules (plans, tasks, approvals, reputation, content, hubs, administration, agents) are live in the API without screens yet; the hub console and several public areas run on synthetic demo data; billing, retrieval and federation are contracts or designs; nothing is in production.
 
 ## Non-negotiable rules
 
@@ -28,6 +30,10 @@ Use the summary in `docs/engine/agent-onboarding.md` section 2. Be exact about s
 - Every change lands through a pull request with passing checks. Never force-push `main`, rewrite published history or run destructive resets on shared branches.
 - Trustwork is the brand in every language; a Russian-language name and wordmark, defined in `apps/web/brand`, appear only in the Russian interface (`docs/oss/BRAND.md`). Never hard-code any brand name outside the brand files.
 - Security-critical flows need real negative authorization and concurrency tests.
+
+## Keeping up with the project
+
+The repository changes many times a day. Before you describe the project's state, run `git fetch origin` and `npm run news` (or `npm run news -- --since "30 days ago" --json`): work packages that moved, decisions (ADRs) added or changed, changes to `docs/engine/status.md` and to the book, and merged changes grouped by work package. Open pull requests and active claims are on GitHub (`gh pr list`, `npm run claims -- status`). Say which commit and date your answer reflects.
 
 ## Coordination
 

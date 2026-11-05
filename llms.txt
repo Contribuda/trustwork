@@ -9,6 +9,7 @@ Status: identity, companies and projects backend implemented; background worker 
 ## Start here
 
 - [README](README.md): what and why, quick start
+- [The Trustwork Book](docs/book/README.md): why Trustwork exists, the missions, hubs and who owns them, open and free, bankable private builds, the civic engine, the five years ahead; a living part of the engine that anyone can contribute to. [Text edition, one file per chapter](docs/book/text/README.md); [designed offline edition](docs/book/trustwork-book.html)
 - [Agent onboarding](docs/engine/agent-onboarding.md): rules, running, claiming work, coordination, handoff for AI coding agents
 - [Engine handbook](docs/engine/README.md): every module, implemented and designed
 - [Status](docs/engine/status.md): what is live, demo, contract, designed, proposed
@@ -20,6 +21,7 @@ Status: identity, companies and projects backend implemented; background worker 
 
 ## For AI coding agents
 
+- `npm run news -- [--since "14 days ago"] [--fetch] [--json]`: what changed: work packages that moved, new or changed ADRs, status and book changes, merged changes by package
 - `npm run work:next -- [--area <area>] --json`: the available package that unblocks the most work
 - `npm run work:context -- <ID> [--json]`: reading list, rules, owned paths, prefilled claim comment, verification and hand-back for one package
 - `npm run claims -- lint <file>`: check a /claim, /heartbeat or /release comment before posting it on the package issue

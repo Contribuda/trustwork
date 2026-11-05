@@ -1,6 +1,6 @@
 # Contributing
 
-Thank you for helping build an open engine for the construction industry. Trustwork is created and maintained by [Contribuddha](https://contribuddha.com) together with its contributors. You do not have to write code to help: translations, country facts, legal templates, design reviews and stories from real sites all matter. Start with [How to help](docs/engine/how-to-help.md).
+Thank you for helping build an open engine for the construction industry. Trustwork is created and maintained by [Contribuddha](https://contribuddha.com) together with its contributors. You do not have to write code to help: translations, country facts, legal templates, design reviews and stories from real sites all matter. Start with [How to help](docs/engine/how-to-help.md). The [Trustwork Book](docs/book/README.md) is part of the engine too: corrections, research notes, country profiles and new sections are welcome through the same flow.
 
 ## Before you start
 

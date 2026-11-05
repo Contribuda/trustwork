@@ -1,0 +1,27 @@
+# ADR 028 — An open and free engine: income inside a country stays in that country, Contribuda's international part, the reference hub and the Trustwork Book
+
+Date: 2026-11-04. Status: **Owner decisions 1–7 recorded 2026-11-04** (Dmitry Parshkov, owner). Decision 8 is **Proposed**. Until decision 8 is accepted, it changes nothing in ADR 016 decision 10 or ADR 025 decision 2.
+
+## Context
+
+The engine is published under AGPL-3.0-only and [GOVERNANCE.md](../../GOVERNANCE.md) says that the project takes no money for the engine. Several questions were still open: who earns what when hubs run in many countries, what role Contribuda (formerly Contribuddha, still at contribuddha.com) plays beside the hubs, what happens to the reference hub in San Diego, and where the reasoning behind the engine is written down for hub owners, partners, contributors and their agents. The owner settled them on 2026-11-04, while the [Trustwork Book](../book/README.md) was being written. The book explains these decisions at length. This record fixes them.
+
+## Decision
+
+1. **The engine is free, not only open.** No licence fee and no implementation fee, from anyone: a person, a company, a city or a state. A public tender that scores the implementation budget therefore sees a cost of zero for the engine. Hub owners pay only for their own operation: hosting, staff, local providers and any help they choose to buy.
+2. **Income earned inside a country belongs to that country.** A hub belongs to its owner: a person, a company or a public body on the side of the country or city it serves. The owner decides the hub's monetisation within the engine's invariants, and the income it earns is the owner's. Contribuda takes no share of any hub's domestic income.
+3. **Contribuda is optional.** Contribuda creates and maintains the engine and gives it away under the licence. Anyone may run a hub without Contribuda and may decline anything Contribuda offers. A hub owner may choose Contribuda as the tool to manage and develop the hub, for example by keeping the hub's organisation (ADR 018) in sync with a project team in Contribuda, or may ask Contribuda for help. Either way it is on Contribuda's own terms, as a separate and optional service. It is never an engine fee or an implementation fee.
+4. **Contribuda takes part in the international layer only.** Its part is in international deals, international transactions and international reputation between hubs. Everything inside a country benefits that country. The form of this part is decision 8.
+5. **San Diego is the demonstration and exemplary hub.** It shows every new method, technology and function of the engine first. Contribuda is its decided operator (ADR 012 decision 26), and today it runs only as a demo on synthetic data. Its ownership is to be transferred to a local operator through an open competition. The terms are to be decided.
+6. **The civic mission grows out of construction.** The mission covers participatory and initiative budgeting, open budgets, education of society, building culture and reputation, in the places where they are most needed. No resident is ever scored, residents are never the object of a record, and a neutral keeper runs any vote. To make private builds bankable and insurable, the engine keeps a standard, evidenced build file. Licensed lenders and insurers read it. Trustwork never lends and never holds money. Contribuda takes no remuneration from lenders or insurers. A hub that lists financing partners follows R71 of the [product specification](../product/specification.md): fees are disclosed before any referral, consumer lending is only through licensed partners, and payment never changes ranking, matching or reputation.
+7. **The Trustwork Book is part of the engine.** It lives in `docs/book/`, is versioned with the code, is built and checked by `npm run book` and `npm run validate:docs`, and anyone may contribute to it through pull requests. Its positions (decisions 1 to 6 and the invariants) change only by a recorded decision, not by an edit.
+8. **Proposed: the form of Contribuda's international part.** It is to be designed and accepted before anything is built. Constraints: it never adds a fee inside a country; it never changes ranking, matching or reputation; it is disclosed and recorded like any fee version; it works with each hub charging only its own participant (ADR 016 decision 10) and with revenue sharing between hubs only by written agreement (ADR 025 decision 2). If accepted, it amends those two decisions explicitly.
+
+## Consequences
+
+- The book, the handbook and the README describe the money model as above. Documents that imply a licence or implementation fee are wrong and should be corrected.
+- Before Contribuda offers any paid optional service, `GOVERNANCE.md` ("offers no consulting … the rule is reviewed first") and its sanctions rule are reviewed, as that document requires.
+- Open questions for the owner:
+  - the form of decision 8;
+  - the terms of the San Diego competition, and whether San Diego remains the first-release hub after the transfer;
+  - who operates the public hub directory (question 2 in the [hub network design](../engine/hub-network.md)).
