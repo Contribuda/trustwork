@@ -34,6 +34,8 @@ function message(outcome: CommandOutcome): CommandState {
     return { status: 'done', tone: 'info', at, message: t('admin.common.sentToSecondPerson', { action: outcome.secondPerson ? tDynamic(`admin.approvals.actions.${outcome.secondPerson}`, outcome.secondPerson) : '' }) };
   }
   if (outcome.status === 'not_found') return { status: 'rejected', tone: 'error', at, message: t('admin.errors.not_found') };
+  // A provider rule keeps its own words (`providers.reasons.*`, shared with the API's reason codes).
+  if (outcome.code === 'provider_reason') return { status: 'rejected', tone: 'error', at, message: tDynamic(`providers.reasons.${outcome.detail[0] ?? ''}`, t('admin.errors.invalid')) };
   const items = outcome.detail.map(detailLabel).join(', ');
   return { status: 'rejected', tone: outcome.code === 'stale' ? 'warning' : 'error', at, message: tDynamic(`admin.errors.${outcome.code}`, t('admin.errors.invalid'), { items }) };
 }

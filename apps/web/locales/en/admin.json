@@ -320,6 +320,7 @@
       "above_cap": "The amount is above your role's cap of {items} minor units.",
       "back_dated": "Versions cannot be back-dated: choose a date after today.",
       "overlap": "This version would overlap another version of the same item.",
+      "provider_reason": "{items}",
       "weaker_than_pack": "A hub setting may be stricter than the country pack, never weaker.",
       "lawful_basis_missing": "No recorded lawful basis: announcements go only to people who opted in.",
       "source_required": "A source address starting with HTTPS is required.",

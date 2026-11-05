@@ -64,6 +64,9 @@ import { screen as outreachSuppression } from '../hubs/[hub]/outreach/suppressio
 import { screen as outreachDeliverability } from '../hubs/[hub]/outreach/deliverability/_screen';
 import { screen as outreachLifecycle } from '../hubs/[hub]/outreach/lifecycle/_screen';
 import { screen as staff } from '../hubs/[hub]/staff/_screen';
+// HC-100 and HC-102 run on the live API only (HUBC-007): in demo mode their sections stay "designed".
+import { screen as providers } from '../hubs/[hub]/integrations/providers/_screen';
+import { screen as egress } from '../hubs/[hub]/integrations/egress/_screen';
 
 /** Every built hub console screen; sections with status `demo` in their group file must have one here (tested). */
 export const SCREENS: readonly Screen[] = [
@@ -77,6 +80,7 @@ export const SCREENS: readonly Screen[] = [
   outreachOverview, outreachPolicies, outreachCampaigns, outreachTemplates, outreachReplies, outreachSuppression, outreachDeliverability, outreachLifecycle,
   // HC-150 (HUBC-006 staff scope, live through HUBC-007 and ADM-004)
   staff,
+  providers, egress,
 ];
 
 export function screenFor(groupId: string, sectionId: string): Screen | null {

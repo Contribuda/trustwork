@@ -259,7 +259,7 @@ test('every built section has its screen on the console route, and only built se
   for (const { group, section } of SECTIONS) {
     const folder = section.path ? `apps/web/app/admin/hubs/[hub]/${section.path}` : 'apps/web/app/admin/hubs/[hub]';
     const has = existsSync(resolve(folder, '_screen.tsx'));
-    assert.equal(has, section.status === 'demo', `${group.id}.${section.id}: a screen exists exactly when the status is demo`);
+    assert.equal(has, section.status === 'demo' || section.live === true, `${group.id}.${section.id}: a screen exists exactly when the status is demo, or the section is built for live mode only`);
     if (has) assert.ok(registry.includes(`'../hubs/[hub]${section.path ? `/${section.path}` : ''}/_screen'`), `${group.id}.${section.id} is registered in screens.ts`);
   }
 });

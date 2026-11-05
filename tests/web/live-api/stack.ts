@@ -29,6 +29,8 @@ class MovableClock implements Clock {
 }
 
 const mailKeyHex = randomBytes(32).toString('hex');
+// A throwaway key-encryption key, new for every run, so a synthetic secret can be sealed; nothing outlives the database.
+const kekHex = randomBytes(32).toString('hex');
 let mailbox: CommittedMailbox | null = null;
 const clock = new MovableClock();
 
@@ -192,6 +194,7 @@ try {
       AUTH_LOCKOUT_THRESHOLD: '50',
       API_LOG_LEVEL: 'error',
       MAIL_SECRET_KEY: mailKeyHex,
+      TRUSTWORK_KEK: kekHex,
     },
     pool,
     clock,

@@ -320,6 +320,7 @@
       "above_cap": "Məbləğ rolunuzun həddindən yuxarıdır: kiçik vahidlərlə {items}.",
       "back_dated": "Versiyalar keçmiş tarixlə qeyd oluna bilməz: bu gündən sonrakı tarix seçin.",
       "overlap": "Bu versiya eyni obyektin başqa versiyası ilə üst-üstə düşərdi.",
+      "provider_reason": "{items}",
       "weaker_than_pack": "Hab ayarı ölkə paketindən sərt ola bilər, zəif ola bilməz.",
       "lawful_basis_missing": "Qeyd olunmuş hüquqi əsas yoxdur: elanlar yalnız razılıq verənlərə gedir.",
       "source_required": "HTTPS ilə başlayan mənbə ünvanı tələb olunur.",
