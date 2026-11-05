@@ -144,6 +144,7 @@ Without `TRUSTWORK_DEFAULT_COUNTRY=US` the demo opens the original Uzbekistan ex
 
 ## Read more
 
+- **[The Trustwork Book](docs/book/README.md)**: why Trustwork exists, what it is for and where it goes over the next five years: the loop of public trust, hubs and who owns them, why the engine is open and free, bankable private builds, the civic engine and the countries where it is most needed. A living part of the engine that anyone can add to. Read the [designed offline edition](docs/book/trustwork-book.html) or the [text edition](docs/book/text/README.md).
 - **[Launching a hub in a new country](docs/launch/README.md)**: proposed launch guidance and [candidate-country research](docs/research/top-10-launch-countries-2026-11.md); no launch authorization.
 
 - **[How it works for you](docs/guides/README.md)**: short step-by-step guides for homeowners and clients, professionals and contractors, experts and mentors, companies, suppliers and manufacturers, event organizers, authors and editors, and hub operators, with an honest status for every step; and [connect your own AI chat](docs/guides/connect-your-ai-chat.md).
