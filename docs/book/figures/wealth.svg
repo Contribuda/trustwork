@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 364" role="img" aria-labelledby="wealth-title wealth-desc">
+<title id="wealth-title">Housing in household wealth: two measures</title>
+<desc id="wealth-desc">Two small bar charts. Above: owner-occupied housing as a share of household wealth across OECD countries, about half for all households and more than sixty per cent for the middle class. Below: median net worth in the United States in 2022, 396,200 dollars for homeowners and 10,400 for renters, drawn to the same scale, so the renters' bar is a sliver.</desc>
+<text x="20" y="28" class="bold ink" style="font-size:18px">Owner-occupied housing, share of household wealth</text>
+<text x="20" y="50" class="ink3" style="font-size:16px">OECD countries, average, 2022 study</text>
+<text x="176" y="85" text-anchor="end" class="ink2" style="font-size:16px">all households</text>
+<rect x="190" y="66" width="376" height="26" rx="4" class="night"/>
+<path d="M190 66 H374.0 a4 4 0 0 1 4 4 V88.0 a4 4 0 0 1 -4 4 H190 Z" class="blue"/>
+<text x="388.0" y="85" class="bold ink" style="font-size:16px">about half</text>
+<text x="176" y="127" text-anchor="end" class="ink2" style="font-size:16px">the middle class</text>
+<rect x="190" y="108" width="376" height="26" rx="4" class="night"/>
+<path d="M190 108 H411.6 a4 4 0 0 1 4 4 V130.0 a4 4 0 0 1 -4 4 H190 Z" class="blue"/>
+<text x="425.6" y="127" class="bold ink" style="font-size:16px">more than 60%</text>
+<text x="190" y="170" class="ink3" style="font-size:16px">0</text>
+<text x="566" y="170" text-anchor="end" class="ink3" style="font-size:16px">100%</text>
+<path d="M20 192 L580 192" class="thin"/>
+<text x="20" y="226" class="bold ink" style="font-size:18px">Median net worth, homeowners and renters</text>
+<text x="20" y="248" class="ink3" style="font-size:16px">United States, 2022, Federal Reserve survey, dollars</text>
+<text x="176" y="285" text-anchor="end" class="ink2" style="font-size:16px">homeowners</text>
+<path d="M190 266 H486.0 a4 4 0 0 1 4 4 V288.0 a4 4 0 0 1 -4 4 H190 Z" class="blue"/>
+<text x="500.0" y="285" class="bold ink" style="font-size:16px">396,200</text>
+<text x="176" y="327" text-anchor="end" class="ink2" style="font-size:16px">renters</text>
+<path d="M190 308 H193.9 a3.9374053508329125 3.9374053508329125 0 0 1 3.9374053508329125 3.9374053508329125 V330.1 a3.9374053508329125 3.9374053508329125 0 0 1 -3.9374053508329125 3.9374053508329125 H190 Z" class="blue"/>
+<text x="207.87481070166584" y="327" class="bold ink" style="font-size:16px">10,400</text>
+<path d="M190 262 L190 338" class="thin"/>
+</svg>

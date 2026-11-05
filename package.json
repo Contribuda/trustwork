@@ -22,6 +22,8 @@
     "lint": "eslint .",
     "test": "node scripts/run-tests.mjs",
     "validate:docs": "node scripts/validate-docs.mjs",
+    "book": "node scripts/book.mjs",
+    "news": "node scripts/news.mjs",
     "work": "node scripts/work-packages.mjs list",
     "work:next": "node scripts/work-packages.mjs next",
     "work:context": "node scripts/work-packages.mjs agent-context",

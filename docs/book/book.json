@@ -1,0 +1,164 @@
+{
+  "title": "The Trustwork Book",
+  "subtitle": "Why trust is built like a building, what the engine will become, and who we build it with.",
+  "edition": "First edition · November 2026 · living",
+  "description": "The Trustwork Book: why trust is built like a building, the open engine and its hubs, the civic engine, bankable private builds, the five years ahead, country by country. A living part of the open engine.",
+  "out": "trustwork-book.html",
+  "mark": "<svg class=\"mark\" viewBox=\"0 0 100 100\" aria-hidden=\"true\" focusable=\"false\"><rect x=\"0\" y=\"54\" width=\"46\" height=\"46\" rx=\"5\"/><rect x=\"54\" y=\"54\" width=\"46\" height=\"46\" rx=\"5\"/><rect x=\"54\" y=\"0\" width=\"46\" height=\"46\" rx=\"5\"/></svg>",
+  "word": "<b>trust</b><b>work</b>",
+  "coverVoice": "A living book for everyone who builds with Trustwork: hub owners and operators, partners, contributors and their agents. It is part of the open engine, and it grows with it.",
+  "colophon": [
+    "The Trustwork Book · First edition · November 2026. Dmitry Parshkov, with the people and agents who contribute to Trustwork. Trustwork is created and maintained by Contribuda.",
+    "The book is part of the engine: it lives in the public repository github.com/Contribuda/trustwork beside the code, under the same licence, and anyone may propose a correction, a chapter or research to it. Statuses are as of the edition; the repository's status page is authoritative."
+  ],
+  "parts": [
+    {
+      "title": "Part I · Why we exist",
+      "art": "blueprint-lines",
+      "chapters": [
+        {
+          "file": "01-mission.html"
+        },
+        {
+          "file": "02-home.html"
+        },
+        {
+          "file": "03-missions.html"
+        },
+        {
+          "file": "04-loop.html"
+        },
+        {
+          "file": "05-future.html"
+        }
+      ]
+    },
+    {
+      "title": "Part II · How we work",
+      "art": "wood-lamellae",
+      "chapters": [
+        {
+          "file": "06-culture.html"
+        },
+        {
+          "file": "07-open-and-free.html"
+        }
+      ]
+    },
+    {
+      "title": "Part III · The engine",
+      "art": "steel-profile",
+      "chapters": [
+        {
+          "file": "08-gathering-point.html"
+        },
+        {
+          "file": "09-hubs-and-mesh.html"
+        },
+        {
+          "file": "10-bankable.html"
+        }
+      ]
+    },
+    {
+      "title": "Part IV · The civic engine",
+      "art": "brick-bond",
+      "chapters": [
+        {
+          "file": "11-doorway.html"
+        },
+        {
+          "file": "12-residents-decide.html"
+        },
+        {
+          "file": "13-follow-the-money.html"
+        },
+        {
+          "file": "14-learning-and-culture.html"
+        },
+        {
+          "file": "15-reputation-and-lines.html"
+        }
+      ]
+    },
+    {
+      "title": "Part V · The system as it will be",
+      "art": "facade-cassettes",
+      "chapters": [
+        {
+          "file": "16-experience.html"
+        },
+        {
+          "file": "17-scenarios.html"
+        }
+      ]
+    },
+    {
+      "title": "Part VI · Where we stand",
+      "art": "rebar-mesh",
+      "chapters": [
+        {
+          "file": "18-built.html"
+        }
+      ]
+    },
+    {
+      "title": "Part VII · The five years",
+      "art": "glass-night",
+      "chapters": [
+        {
+          "file": "19-arc.html"
+        }
+      ]
+    },
+    {
+      "title": "Part VIII · Country by country",
+      "art": "wall-layers",
+      "chapters": [
+        {
+          "file": "20-countries.html"
+        }
+      ]
+    },
+    {
+      "title": "Part IX · Building it together",
+      "art": "timber-frame",
+      "chapters": [
+        {
+          "file": "21-partners.html"
+        },
+        {
+          "file": "22-joining.html"
+        },
+        {
+          "file": "23-with-contribuda.html"
+        }
+      ]
+    },
+    {
+      "title": "Part X · Reference",
+      "art": "corrugated-sheet",
+      "chapters": [
+        {
+          "file": "24-glossary.html"
+        },
+        {
+          "file": "25-invitation.html"
+        },
+        {
+          "file": "26-author.html",
+          "links": true
+        },
+        {
+          "file": "27-growing.html",
+          "repoPaths": true
+        },
+        {
+          "file": "28-sources.html",
+          "sources": true
+        }
+      ]
+    }
+  ],
+  "author": "<b>Dmitry Parshkov</b> · founder of Contribuda and Trustwork"
+}

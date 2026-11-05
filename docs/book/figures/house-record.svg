@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 360" role="img" aria-labelledby="house-record-title house-record-desc">
+<title id="house-record-title">One house record across three generations</title>
+<desc id="house-record-desc">A horizontal timeline with six stations: plan and build, completion, repairs and maintenance, renovation, sale or inheritance, and the next family, drawn as an open circle. A bracket over the first two stations is the build file; a bracket over all of them is the house record. Beneath, the couple, the daughter and the buyer mark the generations. A dashed amber arrow carries a consented aggregate from the record down to a box, the observatory, from which an arrow leads to insurers and lenders, who read with consent.</desc>
+<text x="300" y="30" text-anchor="middle" class="bold ink" style="font-size:18px">the house record</text>
+<path d="M40 50 V42 H560 V50" class="wire-blue"/>
+<text x="104" y="78" text-anchor="middle" class="bold blueink" style="font-size:16px">the build file</text>
+<path d="M40 98 V90 H168 V98" class="wire-blue"/>
+<path d="M30 124 L578 124" class="wire-blue"/>
+<path d="M570 116 L578 124 L570 132" class="wire-blue"/>
+<circle cx="55" cy="124" r="14" class="blue"/>
+<text x="55" y="160" text-anchor="middle" class="ink" style="font-size:16px">plan and</text>
+<text x="55" y="180" text-anchor="middle" class="ink" style="font-size:16px">build</text>
+<circle cx="153" cy="124" r="14" class="blue"/>
+<text x="153" y="160" text-anchor="middle" class="ink" style="font-size:16px">completion</text>
+<circle cx="251" cy="124" r="14" class="blue"/>
+<text x="251" y="160" text-anchor="middle" class="ink" style="font-size:16px">repairs and</text>
+<text x="251" y="180" text-anchor="middle" class="ink" style="font-size:16px">maintenance</text>
+<circle cx="349" cy="124" r="14" class="blue"/>
+<text x="349" y="160" text-anchor="middle" class="ink" style="font-size:16px">renovation</text>
+<circle cx="447" cy="124" r="14" class="blue"/>
+<text x="447" y="160" text-anchor="middle" class="ink" style="font-size:16px">sale or</text>
+<text x="447" y="180" text-anchor="middle" class="ink" style="font-size:16px">inheritance</text>
+<circle cx="545" cy="124" r="14" class="open"/>
+<text x="545" y="160" text-anchor="middle" class="ink" style="font-size:16px">the next</text>
+<text x="545" y="180" text-anchor="middle" class="ink" style="font-size:16px">family</text>
+<text x="104" y="204" text-anchor="middle" class="ink3" style="font-size:16px">the couple</text>
+<text x="349" y="204" text-anchor="middle" class="ink3" style="font-size:16px">the daughter</text>
+<text x="545" y="204" text-anchor="middle" class="ink3" style="font-size:16px">the buyer</text>
+<path d="M240 212 L240 254" class="wire-amber" stroke-dasharray="10 8"/>
+<path d="M232 246 L240 254 L248 246" class="wire-amber"/>
+<text x="254" y="240" class="amberink" style="font-size:16px">aggregate, with consent</text>
+<rect x="150" y="256" width="180" height="56" rx="10" class="boxa"/>
+<text x="240" y="280" text-anchor="middle" class="bold ink" style="font-size:18px">the observatory</text>
+<text x="240" y="302" text-anchor="middle" class="ink2" style="font-size:15px">read together</text>
+<path d="M330 284 L400 284" class="wire-amber"/>
+<path d="M392 276 L400 284 L392 292" class="wire-amber"/>
+<rect x="402" y="256" width="178" height="56" rx="10" class="box"/>
+<text x="491" y="280" text-anchor="middle" class="bold ink" style="font-size:17px">insurers and lenders</text>
+<text x="491" y="302" text-anchor="middle" class="ink2" style="font-size:15px">read with consent</text>
+<text x="300" y="346" text-anchor="middle" class="ink3" style="font-size:16px">the record belongs to the family; the statistic never names it</text>
+</svg>

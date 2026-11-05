@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 640" role="img" aria-labelledby="stages-title stages-desc">
+<title id="stages-title">A house in six gates: evidence, an inspector's act and acceptance release a tranche</title>
+<desc id="stages-desc">Six stage boxes stand in a column on the left, from top to bottom: plan, foundation, frame, roof, services, finish. Beside each stage a gate holds three small squares: amber for the builder's field evidence, blue for the independent inspector's act, green for the owner's acceptance. From each closed gate an amber wire runs to a tall box on the right labelled licensed lender, which releases one tranche per gate. Trustwork keeps the records in the middle; the money moves on the right, outside it.</desc>
+<rect x="452" y="40" width="128" height="560" rx="14" class="boxa"/>
+<text x="516" y="312" text-anchor="middle" class="bold ink" style="font-size:22px">licensed</text>
+<text x="516" y="340" text-anchor="middle" class="bold ink" style="font-size:22px">lender</text>
+<text x="300" y="30" text-anchor="middle" class="ink3" style="font-size:16px">records on the hub</text>
+<text x="516" y="30" text-anchor="middle" class="ink3" style="font-size:16px">money, outside</text>
+<rect x="20" y="52" width="200" height="60" rx="10" class="boxb"/>
+<text x="120" y="90" text-anchor="middle" class="bold ink" style="font-size:22px">plan</text>
+<rect x="244" y="60" width="150" height="44" rx="8" class="box"/>
+<rect x="258" y="70" width="24" height="24" rx="4" class="amber"/>
+<rect x="307" y="70" width="24" height="24" rx="4" class="blue"/>
+<rect x="356" y="70" width="24" height="24" rx="4" class="green"/>
+<path d="M394 82 L452 82" class="wire-amber"/>
+<path d="M440 74 L452 82 L440 90" class="wire-amber"/>
+<rect x="20" y="146" width="200" height="60" rx="10" class="boxb"/>
+<text x="120" y="184" text-anchor="middle" class="bold ink" style="font-size:22px">foundation</text>
+<rect x="244" y="154" width="150" height="44" rx="8" class="box"/>
+<rect x="258" y="164" width="24" height="24" rx="4" class="amber"/>
+<rect x="307" y="164" width="24" height="24" rx="4" class="blue"/>
+<rect x="356" y="164" width="24" height="24" rx="4" class="green"/>
+<path d="M394 176 L452 176" class="wire-amber"/>
+<path d="M440 168 L452 176 L440 184" class="wire-amber"/>
+<rect x="20" y="240" width="200" height="60" rx="10" class="boxb"/>
+<text x="120" y="278" text-anchor="middle" class="bold ink" style="font-size:22px">frame</text>
+<rect x="244" y="248" width="150" height="44" rx="8" class="box"/>
+<rect x="258" y="258" width="24" height="24" rx="4" class="amber"/>
+<rect x="307" y="258" width="24" height="24" rx="4" class="blue"/>
+<rect x="356" y="258" width="24" height="24" rx="4" class="green"/>
+<path d="M394 270 L452 270" class="wire-amber"/>
+<path d="M440 262 L452 270 L440 278" class="wire-amber"/>
+<rect x="20" y="334" width="200" height="60" rx="10" class="boxb"/>
+<text x="120" y="372" text-anchor="middle" class="bold ink" style="font-size:22px">roof</text>
+<rect x="244" y="342" width="150" height="44" rx="8" class="box"/>
+<rect x="258" y="352" width="24" height="24" rx="4" class="amber"/>
+<rect x="307" y="352" width="24" height="24" rx="4" class="blue"/>
+<rect x="356" y="352" width="24" height="24" rx="4" class="green"/>
+<path d="M394 364 L452 364" class="wire-amber"/>
+<path d="M440 356 L452 364 L440 372" class="wire-amber"/>
+<rect x="20" y="428" width="200" height="60" rx="10" class="boxb"/>
+<text x="120" y="466" text-anchor="middle" class="bold ink" style="font-size:22px">services</text>
+<rect x="244" y="436" width="150" height="44" rx="8" class="box"/>
+<rect x="258" y="446" width="24" height="24" rx="4" class="amber"/>
+<rect x="307" y="446" width="24" height="24" rx="4" class="blue"/>
+<rect x="356" y="446" width="24" height="24" rx="4" class="green"/>
+<path d="M394 458 L452 458" class="wire-amber"/>
+<path d="M440 450 L452 458 L440 466" class="wire-amber"/>
+<rect x="20" y="522" width="200" height="60" rx="10" class="boxb"/>
+<text x="120" y="560" text-anchor="middle" class="bold ink" style="font-size:22px">finish</text>
+<rect x="244" y="530" width="150" height="44" rx="8" class="box"/>
+<rect x="258" y="540" width="24" height="24" rx="4" class="amber"/>
+<rect x="307" y="540" width="24" height="24" rx="4" class="blue"/>
+<rect x="356" y="540" width="24" height="24" rx="4" class="green"/>
+<path d="M394 552 L452 552" class="wire-amber"/>
+<path d="M440 544 L452 552 L440 560" class="wire-amber"/>
+<path d="M120 112 L120 146" class="wire-blue"/>
+<path d="M120 206 L120 240" class="wire-blue"/>
+<path d="M120 300 L120 334" class="wire-blue"/>
+<path d="M120 394 L120 428" class="wire-blue"/>
+<path d="M120 488 L120 522" class="wire-blue"/>
+<text x="319" y="618" text-anchor="middle" class="ink3" style="font-size:16px">three records, three persons, one gate</text>
+</svg>
