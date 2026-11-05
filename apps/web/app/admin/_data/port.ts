@@ -15,6 +15,7 @@ import type {
   TaxonomyTree,
 } from './schemas.js';
 import type { Overview, Residency } from './read-models.js';
+import type { VerificationView } from './live-verification.js';
 import type { SectionDef } from './section-types.js';
 import type { HubProduct } from '../hubs/[hub]/modules/_kit/schemas.js';
 
@@ -72,6 +73,11 @@ export interface ConsoleDataPort {
   approvals(hubId: string): Promise<{ requests: ApprovalRequest[]; decisions: ApprovalDecision[]; ready?: ReadyApproval[]; waiting?: WaitingActivation[] }>;
   legal(hubId: string): Promise<{ operator: Operator | null; documents: LegalDocument[] }>;
   residency(hubId: string): Promise<Residency | null>;
+  /**
+   * HC-23 on the API: recipes, check providers, claim periods and screening lists as the viewer may read them. Only the live
+   * adapter answers; the demo screen keeps its own fixtures, so the fixture adapter answers null.
+   */
+  verification(hubId: string): Promise<VerificationView | null>;
   localAdditions(hubId: string): Promise<LocalAddition[]>;
   taxonomy(hubId: string): Promise<TaxonomyTree[]>;
   brandChecks(hubId: string): Promise<Array<{ locale: string; ratio: string; passes: boolean }>>;

@@ -27,6 +27,8 @@ import type { ConsoleAccess, StaffViewer } from './port.js';
 // HUBC-005: commands of the agent product, product modules, billing and communications live with their screens.
 import { evaluateProductCommand, isProductCommand, PRODUCT_COMMAND_PERMISSIONS, PRODUCT_COMMANDS, PRODUCT_REJECT_CODES } from '../hubs/[hub]/modules/_kit/commands.js';
 import type { HubProduct } from '../hubs/[hub]/modules/_kit/schemas.js';
+// HC-23 on the live API (HUBC-007): the commands of the verification screen live with it.
+import { isVerificationCommand, VERIFICATION_COMMAND_PERMISSIONS, VERIFICATION_COMMANDS, verificationFormProblem } from '../hubs/[hub]/participants/verification/_commands.js';
 import { LEGAL_DOCUMENT_KINDS, TAXONOMY_KINDS, type ApprovalDecision, type ApprovalRequest, type HubRecord, type LegalDocument, type SetupRun } from './schemas.js';
 
 /**
@@ -43,6 +45,7 @@ export const COMMANDS = [
   'country.add_addition', 'taxonomy.add_term', 'launch.mark_passed', 'approvals.decide', 'approvals.withdraw', 'approvals.apply', 'approvals.request_activation', 'staff.assign', 'staff.revoke',
   'staff.invite', 'staff.invitation_apply', 'staff.invitation_withdraw', 'killswitch.engage', 'setup.save',
   ...PRODUCT_COMMANDS,
+  ...VERIFICATION_COMMANDS,
 ] as const;
 export type CommandId = (typeof COMMANDS)[number];
 export function isCommandId(value: unknown): value is CommandId {
@@ -74,6 +77,7 @@ export const COMMAND_PERMISSIONS: Record<Exclude<CommandId, 'setup.save'>, 'staf
   'staff.invitation_withdraw': ['admin.staff.assign'],
   'killswitch.engage': ['admin.providers.kill', 'admin.agents.kill'],
   ...PRODUCT_COMMAND_PERMISSIONS,
+  ...VERIFICATION_COMMAND_PERMISSIONS,
 };
 
 /** Who may approve a second-person action: a different person holding one of these permissions on the same scope. */
@@ -353,6 +357,10 @@ export function evaluateCommand(input: CommandInput, ctx: CommandContext): Comma
   const f = input.fields;
   const revisioned = ['identity.save', 'modes.save', 'modules.toggle', 'lifecycle.request'].includes(input.command);
   if (revisioned && input.expectedRevision !== hub.hub.revision) return reject('stale');
+  if (isVerificationCommand(input.command)) {
+    const problem = verificationFormProblem(input.command, f);
+    return problem ? reject('invalid', problem.field) : accepted();
+  }
   if (isProductCommand(input.command)) return evaluateProductCommand(input.command, f, { viewerId: viewer.person.id, hub, product: ctx.product ?? null, now: ctx.now, isRestricted: ctx.isRestricted });
 
   switch (input.command) {

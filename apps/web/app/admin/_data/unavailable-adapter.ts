@@ -23,6 +23,7 @@ export const unavailableConsolePort: ConsoleDataPort = {
   approvals: async () => ({ requests: [], decisions: [] }),
   legal: async () => ({ operator: null, documents: [] }),
   residency: async () => null,
+  verification: async () => null,
   localAdditions: async () => [],
   taxonomy: async () => [],
   brandChecks: async () => [],

@@ -112,6 +112,8 @@ export const fixtureConsolePort: ConsoleDataPort = {
   async residency(hubId) {
     return RESIDENCY.find((r) => r.hubId === hubId) ?? null;
   },
+  // The demo verification screen reads its own fixtures (participants/_fixtures); only live mode uses this read.
+  verification: async () => null,
   async localAdditions(hubId) {
     return [...(LOCAL_ADDITIONS[hubId] ?? [])];
   },

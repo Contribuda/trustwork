@@ -263,7 +263,119 @@
       "addList": "Add a list from the country pack",
       "packList": "List from the country pack",
       "costAndUse": "Cost and use this month",
-      "retentionAndBasis": "Retention and legal basis"
+      "retentionAndBasis": "Retention and legal basis",
+      "live": {
+        "hidden": "This section is not available to you on this hub.",
+        "states": {
+          "draft": "Draft",
+          "active": "Active",
+          "superseded": "Superseded",
+          "retired": "Retired"
+        },
+        "modes": {
+          "fake": "Fake (synthetic)",
+          "manual": "Manual",
+          "live": "Live"
+        },
+        "checks": {
+          "register_match": "Register match",
+          "officer_match": "Officer match",
+          "tax_status": "Tax status",
+          "licence": "Licence",
+          "qualification": "Professional qualification",
+          "ownership": "Ownership",
+          "sanctions_screening": "Sanctions screening",
+          "domain_confirmed": "Domain confirmed",
+          "signed_authority": "Signed authority",
+          "callback_confirmed": "Call-back confirmed"
+        },
+        "triggers": {
+          "claim_claimed": "A company is claimed",
+          "claim_verified": "A company is verified",
+          "seller_onboarding": "A seller joins",
+          "regulated_category": "A regulated category",
+          "professional_qualification": "A professional qualification"
+        },
+        "legalBases": {
+          "statutory_public_register": "Statutory public register",
+          "contract": "Contract",
+          "consent": "Consent",
+          "legitimate_interest_assessed": "Legitimate interest, assessed",
+          "legal_obligation": "Legal obligation"
+        },
+        "recipes": {
+          "required": "required",
+          "optional": "optional",
+          "anyOf": "One of: {checks}",
+          "recheck": "re-checked after {months, plural, one {# month} other {# months}}",
+          "badges": "Badge categories",
+          "draftedBy": "Drafted by",
+          "activatedBy": "Activated by",
+          "activate": "Activate this version",
+          "newVersion": "Start a new version from this one"
+        },
+        "draft": {
+          "title": "New recipe version",
+          "help": "A version never changes once drafted. Using an existing key makes the next version of that recipe; activating it replaces the active one.",
+          "key": "Recipe key",
+          "keyHelp": "Small letters, digits, hyphens and underscores, for example company-verified.",
+          "subject": "Who it verifies",
+          "trigger": "When it runs",
+          "recheckMonths": "Re-check after, in months",
+          "recheckHelp": "From 1 to 24 months.",
+          "badges": "Badge categories",
+          "badgesHelp": "Separated by commas, for example register_record_matches. A badge shows the category only.",
+          "steps": "Steps",
+          "anyHelp": "Mark two to four checks as one of a group: any one of them passing is enough.",
+          "submit": "Save as a draft version",
+          "uses": {
+            "off": "Not used",
+            "required": "Required",
+            "optional": "Optional",
+            "any": "One of a group"
+          }
+        },
+        "providers": {
+          "cost": "Cost per check",
+          "noCost": "Not recorded",
+          "costMinor": "{minor} minor units",
+          "register": "Register a provider",
+          "adapter": "Adapter",
+          "adapterHelp": "The adapter's name: small letters, digits and underscores.",
+          "retentionDays": "Retention in days",
+          "legalBasis": "Legal basis",
+          "costField": "Cost per check in minor units",
+          "costHelp": "Whole number; leave empty when no cost is recorded."
+        },
+        "goLive": {
+          "title": "Switch a provider to live",
+          "digest": "Digest",
+          "ask": "Ask a second person",
+          "apply": "Switch to live",
+          "waiting": "Waiting for a second person; asked by",
+          "approvedForOther": "Approved; only the person who asked can finish it:",
+          "openApprovals": "Open approvals",
+          "noCredentials": "No active credential of this hub can be used yet. A fake credential never counts.",
+          "credentialsHidden": "Your roles do not show this hub's credentials, so a provider cannot be switched from here."
+        },
+        "claims": {
+          "title": "Claim periods",
+          "help": "How long a claim waits before it takes effect, and how long a hand-over can be stopped.",
+          "waitingDays": "Waiting period in days",
+          "waitingHelp": "From 1 to 30 days.",
+          "coolingDays": "Cooling-off period in days",
+          "coolingHelp": "From 1 to 30 days.",
+          "save": "Save the claim periods",
+          "hidden": "Your roles do not show the claim periods."
+        },
+        "lists": {
+          "age": "Age of the data",
+          "noAge": "No version yet",
+          "note": "Lists are added and confirmed on the screening screen; baseline lists have no switch.",
+          "open": "Open screening",
+          "hidden": "Your roles do not show the screening lists."
+        }
+      }
     },
     "credentials": {
       "title": "Credentials",
