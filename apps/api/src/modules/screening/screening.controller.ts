@@ -80,8 +80,9 @@ const draftView = (r: ScreeningReportDraftRow) => ({
  * session; the database checks the compliance-officer role at the node, refuses the subject, members of the subject
  * company and conflicted reviewers, requires a second person for "not the same person" and reversals, serialises
  * concurrent reviewers and writes the audit row in the same transaction. The same people are filtered out of every read
- * by row-level security. The queue, the subject and the match are the compliance panel (console design, section 4.1):
- * the compliance officer's alone, so an auditor gets the answer any other staff member gets.
+ * by row-level security. The queue, the subject, the match and the report drafts name a subject and a list entry, so they
+ * are the compliance panel (console design, section 4.1): the compliance officer's alone, so an auditor gets the answer
+ * any other staff member gets.
  */
 @Controller('v1/admin/screening')
 @Authenticated()
@@ -138,7 +139,7 @@ export class ScreeningStaffController {
 
   @Get('report-drafts')
   drafts(@ReqState() state: RequestState) {
-    return this.principals.runAs(state, async (trx) => ({ items: (await screeningStaff.reportDrafts(trx)).map(draftView) }));
+    return this.panel(state, async (trx) => ({ items: (await screeningStaff.reportDrafts(trx)).map(draftView) }));
   }
 
   @Post('matches/:id/appeal-assignment') @HttpCode(200) @Idempotent('screening.appeal_reassign', 'id')

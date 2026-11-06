@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { withMaintenance } from '@trustwork/data';
+import { sql } from 'kysely';
+import { withMaintenance, withPrincipal } from '@trustwork/data';
 import { SKIP_REASON, startHarness, expectError, type Response } from '../../../backend/helpers/app.js';
 import { buildSupportWorld, query } from '../../../support/helpers.js';
 import { screen } from '../../../screening/helpers.js';
@@ -59,7 +60,7 @@ test('SANC-006 card: other staff see neither the status nor its absence', { skip
 
   await t.test('holds and the queue stay closed to them', async () => {
     for (const key of ['agent', 'lead', 'moderator'] as const) {
-      for (const route of ['/v1/admin/jurisdiction/holds', '/v1/admin/screening/queue']) {
+      for (const route of ['/v1/admin/jurisdiction/holds', '/v1/admin/screening/queue', '/v1/admin/screening/report-drafts']) {
         const response = await c[key].get(route);
         const items = (response.body as { items?: unknown[] }).items;
         assert.ok(response.status >= 400 || items?.length === 0, `${key} ${route}: ${JSON.stringify(response.body)}`);
@@ -136,11 +137,18 @@ test('SANC-006 reads: an officer who is the subject, a member of the subject com
     assert.equal(confirmed.status, 200, JSON.stringify(confirmed.body));
     const drafts = async () => ((await officer.get('/v1/admin/screening/report-drafts')).body as { items: { matchId: string }[] }).items.map((item) => item.matchId);
     assert.ok((await drafts()).includes(matchId));
+    await withMaintenance(w.h.db.admin, (trx) => trx.insertInto('jurisdiction_hold').values({ person_id: petr.id, place: 'CU', source: 'geolocation', dataset: 'synthetic-fake' }).execute());
+    const held = async () => ((await officer.get(`/v1/admin/jurisdiction/holds?personId=${petr.id}`)).body as { items: { personId: string }[] }).items.map((item) => item.personId);
+    assert.deepEqual(await held(), [petr.id]);
     const declared = (await w.h.db.admin.query<{ id: string }>("INSERT INTO trustwork.staff_conflict_declaration(staff_person_id,conflict_person_id,reason) VALUES($1,$2,'Synthetic declared conflict') RETURNING id", [w.seed.people.anna, petr.id])).rows[0]!.id;
     const { stateId } = await caseOf(w, petr);
     for (const route of panelRoutes(petr, stateId, matchId)) expectError(await officer.get(route), 404, 'access.not_found');
     assert.ok(!(await drafts()).includes(matchId));
+    assert.deepEqual(await held(), [], 'nor a hold of that subject, by the list or by the filter');
+    assert.equal((await independent.get(`/v1/admin/jurisdiction/holds?personId=${petr.id}`)).status, 200);
+    assert.deepEqual(((await independent.get(`/v1/admin/jurisdiction/holds?personId=${petr.id}`)).body as { items: { personId: string }[] }).items.map((item) => item.personId), [petr.id], 'an independent officer still reads it');
     await w.h.db.admin.query('UPDATE trustwork.staff_conflict_declaration SET ended_at=now() WHERE id=$1', [declared]);
+    assert.deepEqual(await held(), [petr.id], 'the hold comes back when the conflict ends');
     assert.equal((await officer.get(panelRoutes(petr, stateId, matchId)[1]!)).status, 200, 'the same officer reads again once the conflict has ended');
   });
 });
@@ -151,8 +159,13 @@ test('SANC-006 reads: a node auditor reaches no panel route, also when holding t
   const w = await screeningWorld('sanc006_auditor_panel', 'https://trustwork.test', { auditorSecond: true, servedHubId }); t.after(() => w.close());
   const petr = { kind: 'person' as const, id: w.seed.people.petr };
   const { stateId, matchId } = await caseOf(w, petr);
-  const routes = [...panelRoutes(petr, stateId, matchId), '/v1/admin/screening/queue'];
-  const absent = [...panelRoutes({ kind: 'person', id: randomUUID() }, randomUUID(), randomUUID()), '/v1/admin/screening/queue'];
+  // Holds and report drafts name a subject and a list entry too; neither list opens by having nothing in it.
+  const lists = ['/v1/admin/screening/queue', '/v1/admin/jurisdiction/holds', `/v1/admin/jurisdiction/holds?personId=${petr.id}`, '/v1/admin/screening/report-drafts'];
+  const routes = [...panelRoutes(petr, stateId, matchId), ...lists];
+  const absent = [...panelRoutes({ kind: 'person', id: randomUUID() }, randomUUID(), randomUUID()), ...lists];
+  const confirmed = await w.first.post(`/v1/admin/screening/matches/${matchId}/confirm`, { reason: 'Synthetic confirmation', evidence: 'date_of_birth' });
+  assert.equal(confirmed.status, 200, JSON.stringify(confirmed.body));
+  await withMaintenance(w.h.db.admin, (trx) => trx.insertInto('jurisdiction_hold').values({ person_id: petr.id, place: 'CU', source: 'geolocation', dataset: 'synthetic-fake' }).execute());
   const noPanel = async (label: string) => {
     for (const [index, route] of routes.entries()) {
       const response = await w.second.get(route);
@@ -163,8 +176,20 @@ test('SANC-006 reads: a node auditor reaches no panel route, also when holding t
   };
   await t.test('the officer reads them, the auditor does not', async () => {
     for (const route of routes.slice(0, 3)) assert.equal((await w.first.get(route)).status, 200, route);
-    assert.equal((await w.first.get(routes[4]!)).status, 200);
+    assert.equal((await w.first.get(lists[0]!)).status, 200, 'the confirmed case has left the queue');
+    for (const route of lists.slice(1)) assert.ok(((await w.first.get(route)).body as { items: unknown[] }).items.length > 0, route);
     await noPanel('auditor');
+  });
+  await t.test('the tables answer the same, whatever route a read comes through', async () => {
+    const tables = ['jurisdiction_hold', 'screening_report_draft', 'screening_subject_state', 'screening_result', 'screening_match', 'screening_decision'] as const;
+    const count = async (personId: string, table: (typeof tables)[number]) => {
+      const authzEpoch = (await w.h.db.admin.query<{ authz_epoch: number }>('SELECT authz_epoch FROM trustwork.person WHERE id = $1', [personId])).rows[0]!.authz_epoch;
+      return withPrincipal(w.h.pool, { personId, authzEpoch }, async (trx) => Number((await sql<{ n: string }>`SELECT count(*) AS n FROM ${sql.table(`trustwork.${table}`)}`.execute(trx)).rows[0]!.n));
+    };
+    for (const table of tables) {
+      assert.ok(await count(w.seed.people.anna, table) > 0, `the officer reads ${table}`);
+      assert.equal(await count(w.seed.people.boris, table), 0, `the auditor reads nothing of ${table}`);
+    }
   });
   await t.test('a compliance role scoped to a hub does not open them for the node auditor', async () => {
     // This world has one officer, so the second person a compliance role needs does not exist here; that approval has

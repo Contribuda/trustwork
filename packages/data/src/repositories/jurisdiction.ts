@@ -67,4 +67,9 @@ export const jurisdictionStaff = {
     const { rows } = await sql<{ allowed: boolean }>`SELECT trustwork.jurisdiction_staff_reader() AS allowed`.execute(trx);
     return rows[0]?.allowed === true;
   },
+  /** A hold names a person: the compliance officer's at the node, as the panel of the screening console. */
+  async canReadHolds(trx: Transaction): Promise<boolean> {
+    const { rows } = await sql<{ allowed: boolean }>`SELECT trustwork.screening_panel_reader() AS allowed`.execute(trx);
+    return rows[0]?.allowed === true;
+  },
 };
