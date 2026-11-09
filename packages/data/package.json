@@ -20,7 +20,7 @@
     "embedded-postgres": "18.3.0-beta.17"
   },
   "dependencies": {
-    "kysely": "0.29.7",
+    "kysely": "0.29.8",
     "pg": "8.23.1"
   }
 }
